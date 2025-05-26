@@ -450,6 +450,13 @@ class Navigation {
             }
         });
         
+        // Instead of adding another event handler to linkEl, let's handle clicks without opening multiple tabs
+        // Fix for volunteer link - prevent multiple tabs from opening
+        linkEl.addEventListener('click', (e) => {
+            // Make sure we only handle this click once
+            e.stopPropagation();
+        });
+        
         // Assemble the structure
         NewParagraph.textContent = title + ' ';
         NewParagraph.appendChild(arrowImg);
@@ -657,7 +664,28 @@ class Navigation {
             }
         });
         
-        // Fix the Restaurant arrow click handler - replace removeEventListener with addEventListener
+        // Add click handler for the Restaurant text
+        RestaurantParagraph.addEventListener('click', (e) => {
+            // Only handle if clicking directly on the paragraph element (not its children)
+            if (e.target === RestaurantParagraph) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (restaurantPreviewShown) {
+                    // If preview is shown, hide it
+                    restaurantIsHovering = false;
+                    arrowImgRestaurant.style.transform = 'rotate(-90deg)';
+                    hoverDivRestaurant.style.display = 'none';
+                    restaurantPreviewShown = false;
+                } else {
+                    // If preview is hidden, show it
+                    showRestaurantPreview();
+                }
+                // Never navigate directly to URL when clicking the text
+            }
+        });
+        
+        // Fix for restaurant arrow click behavior
         arrowImgRestaurant.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -674,26 +702,10 @@ class Navigation {
             }
         });
         
-        // Add click handler for the Restaurant menu text
-        RestaurantParagraph.addEventListener('click', (e) => {
-            // Prevent default behavior and stop event propagation
-            e.preventDefault();
+        // Single click handler for restaurant link
+        linkElRestaurant.addEventListener('click', (e) => {
+            // Make sure we only handle this click once
             e.stopPropagation();
-            
-            // Only handle clicks on the paragraph text, not the arrow
-            if (e.target === RestaurantParagraph) {
-                // Toggle preview visibility
-                if (restaurantPreviewShown) {
-                    // If preview is shown, hide it
-                    restaurantIsHovering = false;
-                    arrowImgRestaurant.style.transform = 'rotate(-90deg)';
-                    hoverDivRestaurant.style.display = 'none';
-                    restaurantPreviewShown = false;
-                } else {
-                    // If preview is hidden, show it
-                    showRestaurantPreview();
-                }
-            }
         });
         
         // Assemble the structure
@@ -798,10 +810,25 @@ class Navigation {
             const tapLeft = item.querySelector('.tap-left');
             const tapRight = item.querySelector('.tap-right');
             const tapBottom = item.querySelector('.tap-bottom');
-            tapTop.addEventListener('click', this.eventHandlers[slideId+'tap']);
-            tapLeft.addEventListener('click', this.eventHandlers[slideId+'tap']);
-            tapRight.addEventListener('click', this.eventHandlers[slideId+'tap']);
-            tapBottom.addEventListener('click', this.eventHandlers[slideId+'tap']);
+            
+            // Check if it's mobile device and events section
+            const isMobileDevice = (window.innerWidth <= 768 || 
+                           navigator.maxTouchPoints > 0 || 
+                           navigator.msMaxTouchPoints > 0 ||
+                           ('ontouchstart' in window) || 
+                           (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                           (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+            
+            const isEventsSection = (slideId === 'eventos' || slideId === 'events');
+            
+            // Only skip tap event listeners if it's mobile device AND events section
+            if (!(isMobileDevice && isEventsSection)) {
+                tapTop.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapLeft.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapRight.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapBottom.addEventListener('click', this.eventHandlers[slideId+'tap']);
+            }
+            
             this.menuToActivate.addEventListener('click', (e) => {e.preventDefault();this.desActivateMenu(e); e.stopPropagation();});
         });
 
@@ -831,12 +858,16 @@ class Navigation {
 
     desActivateMenu(e) {
         console.log('menuopen', this.menuopened);
-        if (e != null && e.target.tagName == 'IMG') {
+        // Only try to open a URL if we have a valid event and target with data-src attribute
+        if (e && e.target && e.target.tagName === 'IMG' && e.target.hasAttribute('data-src')) {
             const url = e.target.getAttribute('data-src');
-            const linkEl = document.createElement('a');
-            linkEl.setAttribute('href', url);
-            linkEl.setAttribute('target', '_blank');
-            linkEl.click();
+            // Only open the URL if it's not already being handled by a parent anchor tag
+            const isInsideLink = e.target.closest('a') !== null;
+            if (!isInsideLink && url) {
+                // Use window.open to ensure only one tab is opened
+                window.open(url, '_blank');
+                // Don't create and click a link element as this can cause multiple tabs
+            }
         }
         
         // Close all previews when the menu is closed
@@ -888,6 +919,10 @@ class Navigation {
             SliderConstructor('slider4');
           }else if(slideId==="calendar" || slideId==="calendario"){
            // initializeCalendar(jQuery);
+           this.initializeCompactCalendarNav();
+          }else if(slideId==="eventos" || slideId==="events"){
+           // Initialize compact calendar navigation for events section
+           this.initializeCompactCalendarNav();
           }
           this.theFrontVideo.forEach(function(el) {
        //     console.log(el);
@@ -1084,7 +1119,316 @@ class Navigation {
         });
     }
 
-
+    initializeCompactCalendarNav() {
+        // Implementation of initializeCompactCalendarNav method
+        console.log('Compact calendar navigation initialized for eventos/events section');
+        
+        // Function to create compact navigation
+        const createCompactNav = () => {
+            // Check if already processed
+            if (document.querySelector('.compact-calendar-nav')) {
+                console.log('Compact navigation already exists');
+                return true;
+            }
+            
+            // Find the calendar container
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) {
+                console.log('Calendar not found');
+                return false;
+            }
+            
+            // Find all year and month links in the entire calendar header area
+            const allLinks = Array.from(calendar.querySelectorAll('a'));
+            
+            // Separate years and months
+            const years = [];
+            const months = [];
+            let currentYear = null;
+            let currentMonth = null;
+            
+            allLinks.forEach(link => {
+                const text = link.textContent.trim();
+                // Check if it's a year (4 digits)
+                if (/^(2024|2025|2026|2027)$/.test(text)) {
+                    years.push(link);
+                    if (link.classList.contains('current')) {
+                        currentYear = link;
+                    }
+                    // Hide the year link
+                    link.style.display = 'none';
+                    // Also hide any parent span or container
+                    if (link.parentElement && link.parentElement.tagName !== 'BODY') {
+                        link.parentElement.style.display = 'none';
+                    }
+                } else if (/^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)$/i.test(text)) {
+                    months.push(link);
+                    if (link.classList.contains('current')) {
+                        currentMonth = link;
+                    }
+                    // Hide the month link
+                    link.style.display = 'none';
+                    // Also hide any parent span or container
+                    if (link.parentElement && link.parentElement.tagName !== 'BODY') {
+                        link.parentElement.style.display = 'none';
+                    }
+                }
+            });
+            
+            console.log('Years found:', years.map(y => y.textContent).join(', '));
+            console.log('Months found:', months.map(m => m.textContent).join(', '));
+            console.log('Current year:', currentYear?.textContent || 'none');
+            console.log('Current month:', currentMonth?.textContent || 'none');
+            
+            if (years.length === 0 || months.length === 0) {
+                console.log('Not enough date elements found');
+                return false;
+            }
+            
+            // Default to 2025 and MAY if no current selection
+            if (!currentYear) {
+                currentYear = years.find(y => y.textContent === '2025') || years[0];
+            }
+            if (!currentMonth) {
+                currentMonth = months.find(m => m.textContent.toUpperCase() === 'MAY') || months[4]; // MAY is at index 4
+            }
+            
+            // Find where to insert the compact navigation
+            const calendarHeader = calendar.querySelector('.calendar_header');
+            if (!calendarHeader) {
+                console.log('Calendar header not found');
+                return false;
+            }
+            
+            // Detect mobile device for positioning
+            const isMobileDevice = (window.innerWidth <= 768 || 
+                           navigator.maxTouchPoints > 0 || 
+                           navigator.msMaxTouchPoints > 0 ||
+                           ('ontouchstart' in window) || 
+                           (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                           (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+            
+            // Ensure calendar header has positioning context for mobile absolute positioning
+            if (isMobileDevice) {
+                calendarHeader.style.position = 'relative';
+            }
+            
+            // Create the compact navigation container
+            const compactNav = document.createElement('div');
+            compactNav.className = 'compact-calendar-nav';
+            
+            // Apply different styling based on device type
+            if (isMobileDevice) {
+                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: 2px; bottom: 0px; z-index: 10; overflow: visible;';
+            } else {
+                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -3px;';
+            }
+            
+            // Year navigation elements
+            const yearLeft = document.createElement('img');
+            yearLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+            const yearCaretSize = isMobileDevice ? '19px' : '20px';
+            yearLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0;`;
+            yearLeft.onmouseover = () => yearLeft.style.opacity = '0.85';
+            yearLeft.onmouseout = () => yearLeft.style.opacity = '1';
+            
+            const yearText = document.createElement('span');
+            yearText.textContent = currentYear.textContent;
+            yearText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
+            
+            const yearRight = document.createElement('img');
+            yearRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+            yearRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0;`;
+            yearRight.onmouseover = () => yearRight.style.opacity = '0.85';
+            yearRight.onmouseout = () => yearRight.style.opacity = '1';
+            
+            // Month navigation elements  
+            const monthLeft = document.createElement('img');
+            monthLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+            // Use the same mobile detection variable from above
+            const monthLeftMargin = isMobileDevice ? '8px' : '20px';
+            monthLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0;`;
+            monthLeft.onmouseover = () => monthLeft.style.opacity = '0.85';
+            monthLeft.onmouseout = () => monthLeft.style.opacity = '1';
+            
+            const monthText = document.createElement('span');
+            monthText.textContent = currentMonth.textContent;
+            monthText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; text-transform: uppercase; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
+            
+            const monthRight = document.createElement('img');
+            monthRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+            monthRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0;`;
+            monthRight.onmouseover = () => monthRight.style.opacity = '0.85';
+            monthRight.onmouseout = () => monthRight.style.opacity = '1';
+            
+            // Add all elements to the container
+            compactNav.appendChild(yearLeft);
+            compactNav.appendChild(yearText);
+            compactNav.appendChild(yearRight);
+            compactNav.appendChild(monthLeft);
+            compactNav.appendChild(monthText);
+            compactNav.appendChild(monthRight);
+            
+            // Insert at the beginning of calendar header
+            calendarHeader.insertBefore(compactNav, calendarHeader.firstChild);
+            
+            // Add resize event listener to handle orientation changes
+            const updateMobilePositioning = () => {
+                const isCurrentlyMobile = (window.innerWidth <= 768 || 
+                               navigator.maxTouchPoints > 0 || 
+                               navigator.msMaxTouchPoints > 0 ||
+                               ('ontouchstart' in window) || 
+                               (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                               (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+                
+                // Use different caret sources and sizes based on device type
+                const currentCaretSize = isCurrentlyMobile ? '19px' : '20px';
+                const currentCaretSrc = isCurrentlyMobile ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+                
+                yearLeft.src = currentCaretSrc;
+                yearLeft.style.width = currentCaretSize;
+                yearLeft.style.height = currentCaretSize;
+                
+                yearRight.src = currentCaretSrc;
+                yearRight.style.width = currentCaretSize;
+                yearRight.style.height = currentCaretSize;
+                
+                monthLeft.src = currentCaretSrc;
+                monthLeft.style.width = currentCaretSize;
+                monthLeft.style.height = currentCaretSize;
+                
+                monthRight.src = currentCaretSrc;
+                monthRight.style.width = currentCaretSize;
+                monthRight.style.height = currentCaretSize;
+                
+                if (isCurrentlyMobile) {
+                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: 10px; bottom: 10px; z-index: 10; overflow: visible;';
+                    calendarHeader.style.position = 'relative';
+                } else {
+                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -3px;';
+                    calendarHeader.style.position = '';
+                }
+            };
+            
+            window.addEventListener('resize', updateMobilePositioning);
+            window.addEventListener('orientationchange', updateMobilePositioning);
+            
+            // Hide the entire evo_j_dates container if it exists
+            const evoJDates = calendarHeader.querySelector('.evo_j_dates');
+            if (evoJDates) {
+                evoJDates.style.display = 'none';
+            }
+            
+            // Set up navigation handlers
+            let currentYearIndex = years.indexOf(currentYear);
+            let currentMonthIndex = months.indexOf(currentMonth);
+            
+            // Helper function to find month by name and update indices
+            const updateToMonth = (monthName) => {
+                const targetMonth = months.find(m => m.textContent.toUpperCase() === monthName.toUpperCase());
+                if (targetMonth) {
+                    currentMonth = targetMonth;
+                    currentMonthIndex = months.indexOf(targetMonth);
+                    monthText.textContent = currentMonth.textContent;
+                    return true;
+                }
+                return false;
+            };
+            
+            // Helper function to change year and update display
+            const changeYear = (direction) => {
+                if (direction === 'previous' && currentYearIndex > 0) {
+                    currentYearIndex--;
+                    currentYear = years[currentYearIndex];
+                    yearText.textContent = currentYear.textContent;
+                    return true;
+                } else if (direction === 'next' && currentYearIndex < years.length - 1) {
+                    currentYearIndex++;
+                    currentYear = years[currentYearIndex];
+                    yearText.textContent = currentYear.textContent;
+                    return true;
+                }
+                return false;
+            };
+            
+            // Year navigation with intelligent month defaults
+            yearLeft.onclick = () => {
+                if (changeYear('previous')) {
+                    // When going to previous year, default to December
+                    updateToMonth('DIC');
+                    // Click year first, then month
+                    currentYear.click();
+                    setTimeout(() => currentMonth.click(), 100);
+                }
+            };
+            
+            yearRight.onclick = () => {
+                if (changeYear('next')) {
+                    // When going to next year, default to January
+                    updateToMonth('ENE');
+                    // Click year first, then month
+                    currentYear.click();
+                    setTimeout(() => currentMonth.click(), 100);
+                }
+            };
+            
+            // Intelligent month navigation with automatic year adjustment
+            monthLeft.onclick = () => {
+                // If we're at January (ENE), go to December of previous year
+                if (currentMonth.textContent.toUpperCase() === 'ENE') {
+                    if (changeYear('previous')) {
+                        updateToMonth('DIC');
+                        // Click year first, then month
+                        currentYear.click();
+                        setTimeout(() => currentMonth.click(), 100);
+                    }
+                } else {
+                    // Normal previous month navigation
+                    currentMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
+                    currentMonth = months[currentMonthIndex];
+                    monthText.textContent = currentMonth.textContent;
+                    currentMonth.click();
+                }
+            };
+            
+            monthRight.onclick = () => {
+                // If we're at December (DIC), go to January of next year
+                if (currentMonth.textContent.toUpperCase() === 'DIC') {
+                    if (changeYear('next')) {
+                        updateToMonth('ENE');
+                        // Click year first, then month
+                        currentYear.click();
+                        setTimeout(() => currentMonth.click(), 100);
+                    }
+                } else {
+                    // Normal next month navigation
+                    currentMonthIndex = currentMonthIndex < months.length - 1 ? currentMonthIndex + 1 : 0;
+                    currentMonth = months[currentMonthIndex];
+                    monthText.textContent = currentMonth.textContent;
+                    currentMonth.click();
+                }
+            };
+            
+            console.log('Compact calendar navigation created successfully');
+            return true;
+        };
+        
+        // Try to create the navigation with retries
+        let attempts = 0;
+        const tryCreate = () => {
+            attempts++;
+            if (createCompactNav()) {
+                console.log('Success on attempt', attempts);
+            } else if (attempts < 20) {
+                setTimeout(tryCreate, 250);
+            } else {
+                console.log('Failed to create compact navigation after 20 attempts');
+            }
+        };
+        
+        // Start trying after a short delay
+        setTimeout(tryCreate, 500);
+    }
 
 }
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,3 +1,31 @@
+/* Add font-display property to optimize font loading */
+@font-face {
+	font-family: 'ClearSans';
+	font-style: normal;
+	font-weight: 300;
+	font-display: swap;
+	src: url(https://camp.mx/font/clear-sans/woff2/ClearSans-Light.woff2) format('woff2'),
+		 url(https://camp.mx/font/clear-sans/woff/ClearSans-Light.woff) format('woff');
+}
+
+@font-face {
+	font-family: 'ClearSans';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url(https://camp.mx/font/clear-sans/woff2/ClearSans-Regular.woff2) format('woff2'),
+		 url(https://camp.mx/font/clear-sans/woff/ClearSans-Regular.woff) format('woff');
+}
+
+@font-face {
+	font-family: 'ClearSans';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url(https://camp.mx/font/clear-sans/woff2/ClearSans-Medium.woff2) format('woff2'),
+		 url(https://camp.mx/font/clear-sans/woff/ClearSans-Medium.woff) format('woff');
+}
+
 body {
 	font-family: 'ClearSans', helvetica, sans-serif;
 	font-weight: 450;
@@ -328,13 +356,13 @@ button.ct-toggle svg.ct-icon {
 }
 
 h2:after {
-	background-image: url(/img/caret.png);
+	background-image: url(https://camp.mx/img/caret28.svg);
 	background-repeat: no-repeat;
-	background-size: 20px;
+	background-size: 19px;
 	content: '';
 	display: inline-block;
 	filter: invert(1);
-	height: 20px;
+	height: 19px;
 	left: 3px;
 	position: relative;
 	top: 9px;
@@ -342,7 +370,7 @@ h2:after {
 	transform: rotate(-90deg);
 	transition: transform 0.5s ease;
 	vertical-align: top;
-	width: 20px;
+	width: 19px;
 }
 
 .slides.menuactive h2:after {
@@ -359,9 +387,7 @@ h2:after {
 	}
 
 	h2:after {
-
-		top: 8px;
-
+		top: 9px;
 	}
 }
 
@@ -916,6 +942,66 @@ body.hoveron .tap-top {
 	display: none;
 }
 
+/* Hide tap areas on mobile devices for events section to prevent accidental closing */
+@media screen and (max-width: 768px) {
+	#eventos .tap-left,
+	#eventos .tap-right,
+	#eventos .tap-top,
+	#eventos .tap-bottom,
+	#events .tap-left,
+	#events .tap-right,
+	#events .tap-top,
+	#events .tap-bottom {
+		display: none !important;
+		pointer-events: none !important;
+	}
+}
+
+/* Expanded tap areas for events section with pointer cursor */
+#eventos .tap-left,
+#events .tap-left {
+	cursor: pointer;
+}
+
+#eventos .tap-right,
+#events .tap-right {
+	cursor: pointer;
+}
+
+#eventos .tap-top,
+#events .tap-top {
+	cursor: pointer;
+}
+
+#eventos .tap-bottom,
+#events .tap-bottom {
+	cursor: pointer;
+}
+
+/* Larger tap areas for events section on desktop */
+@media screen and (min-width: 1000px) {
+	#eventos .tap-left,
+	#events .tap-left {
+		width: calc((100vw - 800px)/2);
+	}
+	
+	#eventos .tap-right,
+	#events .tap-right {
+		width: calc((100vw - 800px)/2);
+	}
+}
+
+@media screen and (min-width: 1300px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1000px)/2);
+	}
+}
+@media screen and (min-width: 1650px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1200px)/2);
+	}
+}
+
 /*events */
 
 .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
@@ -1051,4 +1137,72 @@ body.galeria footer {
 
 .mobile-menu ul li p:hover, .mobile-menu ul li a:hover {
 	color: white !important;
+}
+
+/* Compact Date Selector for Events Calendar */
+.compact-date-selector {
+    margin-bottom: 15px;
+}
+
+.date-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'ClearSans', helvetica, sans-serif;
+    font-size: 16px;
+    color: #f5f5f5;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.date-selector-container .caret-left,
+.date-selector-container .caret-right {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+    filter: brightness(0) invert(1); /* Make SVG white */
+}
+
+.date-selector-container .caret-left:hover,
+.date-selector-container .caret-right:hover {
+    opacity: 1;
+}
+
+.date-selector-container .caret-left {
+    transform: rotate(90deg);
+}
+
+.date-selector-container .caret-right {
+    transform: rotate(-90deg);
+}
+
+.date-selector-container .current-year,
+.date-selector-container .current-month {
+    min-width: 60px;
+    text-align: center;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.date-selector-container .current-year {
+    margin-right: 20px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 600px) {
+    .date-selector-container {
+        font-size: 14px;
+    }
+    
+    .date-selector-container .caret-left,
+    .date-selector-container .caret-right {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .date-selector-container .current-year {
+        margin-right: 15px;
+    }
 }
