@@ -1151,31 +1151,31 @@ class Navigation {
             'central': {
                 detailId: 'central-detail',
                 layers: ['central-down-1', 'central-down-2', 'central-down-3'],
-                contourImage: 'https://camp.mx/wp-content/uploads/hover-central.png',
+                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-central.png',
                 isClicked: false
             },
             'casita': {
                 detailId: 'casita-detail', 
                 layers: ['casita-down-1', 'casita-down-2'],
-                contourImage: 'https://camp.mx/wp-content/uploads/hover-casa.png',
+                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png',
                 isClicked: false
             },
             'chozas': {
                 detailId: 'chozas-detail',
                 layers: ['chozas-down-1', 'chozas-down-2'],
-                contourImage: 'https://camp.mx/wp-content/uploads/hover-chozas.png',
+                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png',
                 isClicked: false
             },
             'calle': {
                 detailId: 'calle-detail',
                 layers: ['calle-down-1', 'calle-down-2', 'calle-down-3'],
-                contourImage: 'https://camp.mx/wp-content/uploads/hover-calle.png',
+                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png',
                 isClicked: false
             },
             'jardin': {
                 detailId: 'jardin-detail',
                 layers: ['jardin-down-1', 'jardin-down-2', 'jardin-down-3', 'jardin-down-4'],
-                contourImage: 'https://camp.mx/wp-content/uploads/hover-foro.png',
+                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png',
                 isClicked: false
             }
         };
@@ -1511,9 +1511,9 @@ class Navigation {
             
             // Year navigation elements
             const yearLeft = document.createElement('img');
-            yearLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
-            const yearCaretSize = isMobileDevice ? '19px' : '20px';
-            yearLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0;`;
+            yearLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+            const yearCaretSize = isMobileDevice ? '19px' : '19px';
+            yearLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
             yearLeft.onmouseover = () => yearLeft.style.opacity = '0.85';
             yearLeft.onmouseout = () => yearLeft.style.opacity = '1';
             
@@ -1522,17 +1522,17 @@ class Navigation {
             yearText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
             
             const yearRight = document.createElement('img');
-            yearRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
-            yearRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0;`;
+            yearRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+            yearRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
             yearRight.onmouseover = () => yearRight.style.opacity = '0.85';
             yearRight.onmouseout = () => yearRight.style.opacity = '1';
             
             // Month navigation elements  
             const monthLeft = document.createElement('img');
-            monthLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+            monthLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
             // Use the same mobile detection variable from above
             const monthLeftMargin = isMobileDevice ? '8px' : '20px';
-            monthLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0;`;
+            monthLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
             monthLeft.onmouseover = () => monthLeft.style.opacity = '0.85';
             monthLeft.onmouseout = () => monthLeft.style.opacity = '1';
             
@@ -1541,8 +1541,8 @@ class Navigation {
             monthText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; text-transform: uppercase; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
             
             const monthRight = document.createElement('img');
-            monthRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
-            monthRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0;`;
+            monthRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+            monthRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
             monthRight.onmouseover = () => monthRight.style.opacity = '0.85';
             monthRight.onmouseout = () => monthRight.style.opacity = '1';
             
@@ -1567,24 +1567,25 @@ class Navigation {
                                (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
                 
                 // Use different caret sources and sizes based on device type
-                const currentCaretSize = isCurrentlyMobile ? '19px' : '20px';
-                const currentCaretSrc = isCurrentlyMobile ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret4.svg';
+                const currentCaretSize = isCurrentlyMobile ? '19px' : '19px';
+                const currentCaretSrc = isCurrentlyMobile ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+                const currentMonthLeftMargin = isCurrentlyMobile ? '8px' : '20px';
                 
+                // Update year left caret with h2::after-style properties
                 yearLeft.src = currentCaretSrc;
-                yearLeft.style.width = currentCaretSize;
-                yearLeft.style.height = currentCaretSize;
+                yearLeft.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
                 
+                // Update year right caret with h2::after-style properties
                 yearRight.src = currentCaretSrc;
-                yearRight.style.width = currentCaretSize;
-                yearRight.style.height = currentCaretSize;
+                yearRight.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
                 
+                // Update month left caret with h2::after-style properties
                 monthLeft.src = currentCaretSrc;
-                monthLeft.style.width = currentCaretSize;
-                monthLeft.style.height = currentCaretSize;
+                monthLeft.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${currentMonthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
                 
+                // Update month right caret with h2::after-style properties
                 monthRight.src = currentCaretSrc;
-                monthRight.style.width = currentCaretSize;
-                monthRight.style.height = currentCaretSize;
+                monthRight.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
                 
                 if (isCurrentlyMobile) {
                     compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -3px; bottom: 0px; z-index: 10; overflow: visible;';
