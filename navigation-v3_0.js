@@ -1,8 +1,6 @@
 /*
-
 2025-05-05 Burger menu test
 Hovering the menu items to show a preview of the content
-
 */ 
 class Navigation {
     constructor() {
@@ -11,7 +9,6 @@ class Navigation {
         this.targetSlide = 'none';
         this.menuopened = false;
         this.scrolling = false;
-
         // connexion des elements structurels
         this.allmenulink = document.querySelectorAll('nav.mobile-menu a.ct-menu-link');
         this.slider = document.getElementById('slides');
@@ -21,14 +18,11 @@ class Navigation {
 		this.menuToActivate.inert=false; /* Somehow somewere it is inert by default so menu was not clickable */
         this.burgerMenu = document.querySelector('button.ct-header-trigger.ct-toggle');
         this.theFrontVideo= this.slider.querySelectorAll('.thefrontvideo');
-
         // Store event handler references
         this.eventHandlers = {};
-
         this.slideIndexMap = {};
         this.slideVisibleIndex = 0;
         this.slideVisibleId = 0;
-
         // Create safe closeAllPreviews function for use before MenuConstruct
         if (!window.closeAllPreviews) {
             window.closeAllPreviews = function() {
@@ -36,10 +30,8 @@ class Navigation {
                 console.log("Placeholder closeAllPreviews called before initialization");
             };
         }
-
         //orientation
         this.currentOrientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
-
         // initialisation de la navigation
         this.init();
 	
@@ -80,19 +72,15 @@ class Navigation {
         let visibleSlideIndex = -1;
         let visibleSlideId = null;
         const viewportHeight = window.innerHeight;
-
         this.slides.forEach((slide, index) => {
             const rect = slide.getBoundingClientRect();
-
             // Vérifiez si le centre de la diapositive est dans la vue
             const isCenterInView = (rect.top + rect.height / 2) >= 0 && (rect.top + rect.height / 2) <= viewportHeight;
-
             if (isCenterInView) {
                 visibleSlideIndex = index;
                 visibleSlideId = slide.getAttribute('id');
             }
         });
-
         // Mise à jour des variables de classe avec les valeurs obtenues
         this.slideVisibleIndex = visibleSlideIndex;
         this.slideVisibleId = visibleSlideId;
@@ -105,7 +93,6 @@ class Navigation {
         }
 		*/
     }
-
     //navigation depuis  un url avec ashtag
     UrlVerif() {
         var urlHash = window.location.hash;
@@ -121,7 +108,6 @@ class Navigation {
             this.gotoSlide(slideData);
         }
     }
-
     //enlever les videos de la gallerie en fermeture  de card
     removeVideosFromGallery(){
         let gallerySlides = document.querySelectorAll('.slide-camp .slide');
@@ -223,7 +209,7 @@ class Navigation {
         
         // Create arrow element
         const arrowImg = document.createElement('img');
-        arrowImg.src = isMobileDevice() ? "https://camp.mx/img/caret3.svg" : "https://camp.mx/img/caret35.svg";
+        arrowImg.src = isMobileDevice() ? "https://camp.mx/img/caret28.svg" : "https://camp.mx/img/caret28.svg";
         arrowImg.classList.add('menu-arrow');
         arrowImg.style.width = '16px'; // Original width
         arrowImg.style.height = 'auto';
@@ -234,7 +220,7 @@ class Navigation {
         arrowImg.style.display = 'inline';
         arrowImg.style.verticalAlign = 'middle';
         arrowImg.style.position = 'relative'; 
-        arrowImg.style.top = '-2px'; // Move slightly upward
+        arrowImg.style.top = '-1.75px'; // Move slightly upward
         
         // Create the hover div that will be used for the preview
         const hoverDiv = document.createElement('div');
@@ -480,7 +466,7 @@ class Navigation {
         
         // Create arrow element
         const arrowImgRestaurant = document.createElement('img');
-        arrowImgRestaurant.src = isMobileDevice() ? "https://camp.mx/img/caret3.svg" : "https://camp.mx/img/caret35.svg";
+        arrowImgRestaurant.src = isMobileDevice() ? "https://camp.mx/img/caret28.svg" : "https://camp.mx/img/caret28.svg";
         arrowImgRestaurant.classList.add('menu-arrow');
         arrowImgRestaurant.style.width = '16px'; // Original width
         arrowImgRestaurant.style.height = 'auto';
@@ -491,7 +477,7 @@ class Navigation {
         arrowImgRestaurant.style.display = 'inline';
         arrowImgRestaurant.style.verticalAlign = 'middle';
         arrowImgRestaurant.style.position = 'relative';
-        arrowImgRestaurant.style.top = '-2px'; // Move slightly upward
+        arrowImgRestaurant.style.top = '-1.75px'; // Move slightly upward
         
         // Create the hover div that will be used for the preview
         const hoverDivRestaurant = document.createElement('div');
@@ -716,13 +702,9 @@ class Navigation {
         
         list.appendChild(RestaurantMenuItem);
     }
-
    //on met  des listen sur els ahtag internes a la page qui ont la class openthecard
    ashTagLinks(){
-
-
      let linksToOpenCard = document.querySelectorAll('.openthecard');
-
     linksToOpenCard.forEach(item => {
         var url = item.getAttribute('href');
         var parsedUrl = new URL(url);
@@ -736,12 +718,8 @@ class Navigation {
         item.addEventListener('click', (e)=>{e.preventDefault; this.gotoSlide(slideData)});
         item.style.behavior='smooth';
     })
-
      //trouver var url
     }
-
-
-
     //navigation to the slide
     gotoSlide(obj) {
         // Close all previews when navigating to a slide
@@ -762,7 +740,6 @@ class Navigation {
           const isElementInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
           if (isElementInView) {
               console.log('Element is already in view');
-
               this.desActivateMenu();
               this.openCard(obj);
               this.scrolling = false;
@@ -792,7 +769,6 @@ class Navigation {
           }
       }
   }
-
     // Ajouter les event listener pour ouvrir/fermer les slides
     LetsListen() {
             this.slides.forEach(item => {
@@ -831,21 +807,17 @@ class Navigation {
             
             this.menuToActivate.addEventListener('click', (e) => {e.preventDefault();this.desActivateMenu(e); e.stopPropagation();});
         });
-
     }
-
     replaceDefaultBurgerFunction() {
         const newburgerMenu = this.burgerMenu.cloneNode(true);
         newburgerMenu.removeAttribute('data-toggle-panel');
         newburgerMenu.addEventListener('click', (e) => this.triggerMenu(e));
         this.burgerMenu.parentNode.replaceChild(newburgerMenu, this.burgerMenu);
     }
-
     triggerMenu(e) {
         e.preventDefault();
         this.menuopened ? this.desActivateMenu() : this.activateMenu();
     }
-
     activateMenu() {
         console.log('menuopen', this.menuopened);
         if(this.cardopened===true){this.closeCards()};
@@ -855,7 +827,6 @@ class Navigation {
         this.menuopened = true;
         console.log('menu ouvert ?');
     }
-
     desActivateMenu(e) {
         console.log('menuopen', this.menuopened);
         // Only try to open a URL if we have a valid event and target with data-src attribute
@@ -896,7 +867,6 @@ class Navigation {
         datasrc[i].setAttribute('src', thisdatasrc)
       }
     }
-
     openCard(obj) {
         // Handle both string and object formats for backward compatibility
         const slideId = typeof obj === 'string' ? obj : obj.divId;
@@ -942,8 +912,6 @@ class Navigation {
        //     console.log(el);
             el.pause();
         });
-
-
         //this.cardopened ?? this.closeCards();
         this.desActivateMenu();
         this.targetSlide = slideId;
@@ -965,24 +933,16 @@ class Navigation {
 				this.initMapInteractions();
 		    },100)
 		}
-
-
-
        // Supprimer l'événement a slide_scroll click en utilisant la référence stockée
         const zoneClick = slideopened.querySelector('.slide_10_scroll');
         zoneClick.removeEventListener('click', this.eventHandlers[slideId+'scroll'], false);
-
-
         // Ajoute lèvenement a header
         const cardHeader = slideopened.querySelector('.card-header');
         this.eventHandlers[slideId+'header'] = this.closeCardsE.bind(this);
         cardHeader.addEventListener('click', this.eventHandlers[slideId+'header']);
-
-
         this.cardopened = true;
         console.log('END opening card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
     }
-
     closeCardsE(event) {
         event.stopPropagation();
         this.closeCards();
@@ -993,22 +953,18 @@ class Navigation {
         if(this.targetSlide==='gallery'||this.targetSlide==='galeria'){
             this.removeVideosFromGallery();
         }
-
         this.body.classList.remove(this.targetSlide);
         this.body.classList.remove('bodycardopened');
         const slideopened = document.getElementById(this.targetSlide);
         slideopened.classList.add('closed');
         slideopened.classList.remove('opened');
-
         // enleve lèvenement a header
         const cardHeader = slideopened.querySelector('.card-header');
         cardHeader.removeEventListener('click', this.eventHandlers[this.targetSlide+'header']);
-
         // remet l'événement
         const zoneClick = slideopened.querySelector('.slide_10_scroll');
         this.eventHandlers[this.targetSlide+'scroll'] = this.openCard.bind(this, { divId: this.targetSlide });
         zoneClick.addEventListener('click', this.eventHandlers[this.targetSlide+'scroll'], false);
-
         this.targetSlide = 'none';
         this.cardopened = false;
         this.theFrontVideo.forEach(function(el) {
@@ -1018,15 +974,12 @@ class Navigation {
         //this.theFrontVideo.play();
         console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
     }
-
     onMenuItemClick(event) {
         const target = event.currentTarget;
         const tabId = target.getAttribute('data-tab');
-
         this.tabContents.forEach(tab => {
             tab.classList.remove('active');
         });
-
         const activeTab = this.container.querySelector(`#${tabId}`);
         if (activeTab) {
             activeTab.classList.add('active');
@@ -1074,7 +1027,6 @@ class Navigation {
     }
     empecherDefilementSurChangementOrientation() {
         const slider = document.getElementById('slides');
-
         const gererChangementOrientation = () => {
             // Désactiver temporairement le défilement pour #slider
             if(this.targetSlide!=='none'){
@@ -1099,11 +1051,9 @@ class Navigation {
                 }
             }, 500); // Ajustez la durée selon vos besoins
         };
-
         function bloqueDeplacement(event) {
             event.preventDefault();
         }
-
         window.addEventListener('orientationchange', gererChangementOrientation);
     }
     initArrowKeyNavigation() {
@@ -1135,7 +1085,6 @@ class Navigation {
             }
         });
     }
-
     initMapInteractions() {
         // Initialize interactive map hover effects for CASA, CHOZAS, CENTRAL, CALLE, FORO
         console.log('Initializing map interactions');
@@ -1282,7 +1231,6 @@ class Navigation {
         }
     }
     
-
     
     showContour(areaName) {
         const area = this.mapAreas[areaName];
@@ -1370,7 +1318,6 @@ class Navigation {
             }
         });
     }
-
     initializeCompactCalendarNav() {
         // Implementation of initializeCompactCalendarNav method
         console.log('Compact calendar navigation initialized for eventos/events section');
@@ -1504,46 +1451,46 @@ class Navigation {
             
             // Apply different styling based on device type
             if (isMobileDevice) {
-                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -3px; bottom: 0px; z-index: 10; overflow: visible;';
+                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -5px; bottom: 0px; z-index: 10; overflow: visible;';
             } else {
-                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -3px;';
+                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -9px;';
             }
             
             // Year navigation elements
-            const yearLeft = document.createElement('img');
-            yearLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+            const yearLeft = document.createElement('div');
+            yearLeft.style.backgroundImage = 'url(https://camp.mx/img/caret28.svg)';
+            yearLeft.style.backgroundRepeat = 'no-repeat';
+            yearLeft.style.backgroundSize = '19px';
+            yearLeft.style.content = '';
             const yearCaretSize = isMobileDevice ? '19px' : '19px';
-            yearLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
-            yearLeft.onmouseover = () => yearLeft.style.opacity = '0.85';
+            yearLeft.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
+            yearLeft.onmouseover = () => yearLeft.style.opacity = '1';
             yearLeft.onmouseout = () => yearLeft.style.opacity = '1';
             
             const yearText = document.createElement('span');
             yearText.textContent = currentYear.textContent;
             yearText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
             
-            const yearRight = document.createElement('img');
-            yearRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
-            yearRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
-            yearRight.onmouseover = () => yearRight.style.opacity = '0.85';
+            const yearRight = document.createElement('div');
+            yearRight.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5.7px; transition: transform 0.5s ease; vertical-align: top;`;
+            yearRight.onmouseover = () => yearRight.style.opacity = '1';
             yearRight.onmouseout = () => yearRight.style.opacity = '1';
             
             // Month navigation elements  
-            const monthLeft = document.createElement('img');
-            monthLeft.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+            const monthLeft = document.createElement('div');
             // Use the same mobile detection variable from above
             const monthLeftMargin = isMobileDevice ? '8px' : '20px';
-            monthLeft.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
-            monthLeft.onmouseover = () => monthLeft.style.opacity = '0.85';
+            monthLeft.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
+            monthLeft.onmouseover = () => monthLeft.style.opacity = '1';
             monthLeft.onmouseout = () => monthLeft.style.opacity = '1';
             
             const monthText = document.createElement('span');
             monthText.textContent = currentMonth.textContent;
             monthText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; text-transform: uppercase; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
             
-            const monthRight = document.createElement('img');
-            monthRight.src = isMobileDevice ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
-            monthRight.style.cssText = `width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
-            monthRight.onmouseover = () => monthRight.style.opacity = '0.85';
+            const monthRight = document.createElement('div');
+            monthRight.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5.7px; transition: transform 0.5s ease; vertical-align: top;`;
+            monthRight.onmouseover = () => monthRight.style.opacity = '1';
             monthRight.onmouseout = () => monthRight.style.opacity = '1';
             
             // Add all elements to the container
@@ -1568,24 +1515,20 @@ class Navigation {
                 
                 // Use different caret sources and sizes based on device type
                 const currentCaretSize = isCurrentlyMobile ? '19px' : '19px';
-                const currentCaretSrc = isCurrentlyMobile ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret41.svg';
+                const currentCaretSrc = isCurrentlyMobile ? 'https://camp.mx/img/caret28.svg' : 'https://camp.mx/img/caret28.svg';
                 const currentMonthLeftMargin = isCurrentlyMobile ? '8px' : '20px';
                 
                 // Update year left caret with h2::after-style properties
-                yearLeft.src = currentCaretSrc;
-                yearLeft.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
+                yearLeft.style.cssText = `background-image: url(${currentCaretSrc}); background-repeat: no-repeat; background-size: ${currentCaretSize}; content: ''; display: inline-block; width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
                 
                 // Update year right caret with h2::after-style properties
-                yearRight.src = currentCaretSrc;
-                yearRight.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
+                yearRight.style.cssText = `background-image: url(${currentCaretSrc}); background-repeat: no-repeat; background-size: ${currentCaretSize}; content: ''; display: inline-block; width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
                 
                 // Update month left caret with h2::after-style properties
-                monthLeft.src = currentCaretSrc;
-                monthLeft.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${currentMonthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
+                monthLeft.style.cssText = `background-image: url(${currentCaretSrc}); background-repeat: no-repeat; background-size: ${currentCaretSize}; content: ''; display: inline-block; width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${currentMonthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
                 
                 // Update month right caret with h2::after-style properties
-                monthRight.src = currentCaretSrc;
-                monthRight.style.cssText = `width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 0px; transition: transform 0.5s ease; vertical-align: top;`;
+                monthRight.style.cssText = `background-image: url(${currentCaretSrc}); background-repeat: no-repeat; background-size: ${currentCaretSize}; content: ''; display: inline-block; width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
                 
                 if (isCurrentlyMobile) {
                     compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -3px; bottom: 0px; z-index: 10; overflow: visible;';
@@ -1715,7 +1658,6 @@ class Navigation {
         // Start trying after a short delay
         setTimeout(tryCreate, 500);
     }
-
 }
 document.addEventListener('DOMContentLoaded', () => {
     var navigation = new Navigation();
