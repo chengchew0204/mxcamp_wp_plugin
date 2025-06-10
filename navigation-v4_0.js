@@ -413,8 +413,73 @@ class Navigation {
 			this.preloadLeafletMapImages();
 		}
 		
+		// Initialize legacy DOM-based map support (v3 compatibility)
+		this.initLegacyMapSupport();
+
 		this.mapInitialized = true;
 		console.log('Enhanced Leaflet Map v4.0 initialized successfully with dynamic proportions');
+	}
+
+	initLegacyMapSupport() {
+		// Legacy area definitions for DOM-based layer system (v3 compatibility)
+		this.mapAreas = {
+			central: {
+				detailId: 'central-detail',
+				layers: ['central-down-1', 'central-down-2', 'central-down-3'],
+				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-central.png'
+			},
+			casita: {
+				detailId: 'casita-detail',
+				layers: ['casita-down-1', 'casita-down-2'],
+				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png'
+			},
+			chozas: {
+				detailId: 'chozas-detail',
+				layers: ['chozas-down-1', 'chozas-down-2'],
+				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png'
+			},
+			calle: {
+				detailId: 'calle-detail',
+				layers: ['calle-down-1', 'calle-down-2', 'calle-down-3'],
+				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png'
+			},
+			jardin: {
+				detailId: 'jardin-detail',
+				layers: ['jardin-down-1', 'jardin-down-2', 'jardin-down-3', 'jardin-down-4'],
+				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png'
+			}
+		};
+
+		// Create contour overlay container
+		this.createContourOverlay();
+
+		// Store current contour for tracking
+		this.currentContour = null;
+
+		// Set up event listeners for legacy DOM areas if they exist
+		Object.entries(this.mapAreas).forEach(([areaName, area]) => {
+			const detailElement = document.getElementById(area.detailId);
+			if (detailElement) {
+				// Add mouseenter event to show contour
+				detailElement.addEventListener('mouseenter', () => {
+					this.showContour(areaName);
+				});
+
+				// Add mouseleave event to hide contour
+				detailElement.addEventListener('mouseleave', () => {
+					this.hideContour();
+				});
+
+				// Add click event to toggle layers
+				detailElement.addEventListener('click', () => {
+					this.toggleMapArea(areaName);
+				});
+
+				console.log(`✓ Legacy DOM events set up for ${areaName}`);
+			}
+		});
+
+		console.log('✓ Legacy DOM-based map support initialized');
 	}
 	
 	preloadLeafletMapImages() {
@@ -704,6 +769,85 @@ class Navigation {
 		this.currentActiveArea = null;
 		
 		console.log('✅ All Leaflet map layers reset to base image state');
+	}
+
+	// Legacy DOM-based contour functionality (v3 compatibility)
+	createContourOverlay() {
+		// Create overlay container for contour images if it doesn't exist
+		if (!document.getElementById('map-contour-overlay')) {
+			const mapContainer = document.querySelector('.interactive-map') || document.querySelector('.map-container');
+			if (mapContainer) {
+				this.contourOverlay = document.createElement('div');
+				this.contourOverlay.id = 'map-contour-overlay';
+				this.contourOverlay.style.cssText = `
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 100%;
+					pointer-events: none;
+					z-index: 1000;
+				`;
+				mapContainer.appendChild(this.contourOverlay);
+				console.log('✓ Created DOM contour overlay container');
+			}
+		} else {
+			this.contourOverlay = document.getElementById('map-contour-overlay');
+		}
+	}
+
+	showContour(areaName) {
+		// Legacy DOM-based contour display (v3 compatibility)
+		if (!this.contourOverlay) {
+			this.createContourOverlay();
+		}
+
+		// If same contour is already showing, do nothing
+		if (this.currentContour === areaName) return;
+
+		// Clear any existing contour
+		this.hideContour();
+
+		// Map area names to contour images (v3 compatibility)
+		const contourImages = {
+			central: 'https://camp.mx/wp-content/uploads/palapa-hover-central.png',
+			casita: 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png',
+			chozas: 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png',
+			calle: 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png',
+			jardin: 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png'
+		};
+
+		const contourUrl = contourImages[areaName];
+		if (contourUrl && this.contourOverlay) {
+			// Create and show contour
+			const contourImg = document.createElement('img');
+			contourImg.src = contourUrl;
+			contourImg.style.cssText = `
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				pointer-events: none;
+				opacity: 1;
+				transition: opacity 0.3s ease;
+			`;
+			contourImg.classList.add('map-contour-image');
+
+			this.contourOverlay.appendChild(contourImg);
+			this.currentContour = areaName;
+			console.log(`✓ DOM contour shown for ${areaName}`);
+		}
+	}
+
+	hideContour() {
+		// Legacy DOM-based contour hiding (v3 compatibility)
+		if (this.contourOverlay) {
+			this.contourOverlay.innerHTML = '';
+			this.currentContour = null;
+			console.log('✓ DOM contours hidden');
+		}
 	}
 	
     getVisibleSlideInfo() {
@@ -2205,25 +2349,94 @@ class Navigation {
     }
     
     toggleMapArea(areaName) {
-        // v4.0: Redirect to Leaflet system
-        console.log(`toggleMapArea called for ${areaName} - redirecting to Leaflet`);
-        
-        if (this.leafletMapAreas && this.leafletMapAreas[areaName]) {
+        console.log(`🖱️ Clicked ${areaName} area`);
+
+        // Handle Leaflet system (v4)
+        const leafletArea = this.leafletMapAreas[areaName];
+        if (leafletArea) {
             this.toggleLeafletMapArea(areaName);
-        } else {
-            console.warn(`Leaflet area ${areaName} not found`);
+        }
+
+        // Handle legacy DOM system (v3 compatibility)
+        const legacyArea = this.mapAreas[areaName];
+        if (legacyArea) {
+            this.toggleLegacyMapArea(areaName);
+        }
+
+        if (!leafletArea && !legacyArea) {
+            console.error(`Area ${areaName} not found in either Leaflet or legacy systems`);
         }
     }
-    
-    showMapLayers(layerIds) {
-        // v4.0: Deprecated - Leaflet handles layer management
-        console.log('showMapLayers called - using Leaflet system instead');
+
+    toggleLegacyMapArea(areaName) {
+        // Legacy DOM-based area toggling (v3 compatibility)
+        const area = this.mapAreas[areaName];
+        if (!area) return;
+
+        // Check if area is currently on first layer
+        if (this.isOnFirstLayer(areaName)) {
+            // Show the layers
+            this.showMapLayers(area.layers);
+            console.log(`✓ Legacy area ${areaName} activated - layers shown`);
+        } else {
+            // Hide the layers
+            this.hideMapLayers(area.layers);
+            console.log(`✓ Legacy area ${areaName} deactivated - layers hidden`);
+        }
+    }
+
+    isOnFirstLayer(areaName) {
+        // Check if the area is currently showing the first layer (z-index: -1)
+        const area = this.mapAreas[areaName];
+        if (!area) return true;
+
+        // Check if all layers for this area have z-index: -1 (first layer state)
+        const allLayersOnFirstLevel = area.layers.every(layerId => {
+            const layer = document.getElementById(layerId);
+            if (!layer) return true; // If layer doesn't exist, consider it as first level
+
+            const zIndex = window.getComputedStyle(layer).zIndex;
+            return zIndex === '-1' || zIndex === 'auto';
+        });
+
+        return allLayersOnFirstLevel;
     }
     
-    hideMapLayers(layerIds) {
-        // v4.0: Deprecated - Leaflet handles layer management  
-        console.log('hideMapLayers called - using Leaflet system instead');
-    }
+    	showMapLayers(layerIds) {
+		// v4.0: Hybrid system - support both Leaflet and DOM layers for compatibility
+		console.log('showMapLayers called - checking both Leaflet and DOM systems');
+		
+		// DOM-based layer management (v3 compatibility)
+		if (layerIds && Array.isArray(layerIds)) {
+			layerIds.forEach(layerId => {
+				const layer = document.getElementById(layerId);
+				if (layer) {
+					layer.style.zIndex = '1';
+					layer.style.opacity = '1';
+					layer.style.transition = 'opacity 0.3s ease';
+					console.log(`✓ DOM layer shown: ${layerId}`);
+				}
+			});
+		}
+	}
+
+	hideMapLayers(layerIds) {
+		// v4.0: Hybrid system - support both Leaflet and DOM layers for compatibility
+		console.log('hideMapLayers called - checking both Leaflet and DOM systems');
+		
+		// DOM-based layer management (v3 compatibility)
+		if (layerIds && Array.isArray(layerIds)) {
+			layerIds.forEach(layerId => {
+				const layer = document.getElementById(layerId);
+				if (layer) {
+					layer.style.zIndex = '-1';
+					layer.style.opacity = '0.8';
+					layer.style.transition = 'opacity 0.3s ease';
+					console.log(`✓ DOM layer hidden: ${layerId}`);
+				}
+			});
+		}
+	}
 }
 document.addEventListener('DOMContentLoaded', () => {
     var navigation = new Navigation();
