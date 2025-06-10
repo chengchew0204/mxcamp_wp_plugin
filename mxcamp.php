@@ -109,7 +109,7 @@ function mxcamp_get_posts_cb_v3($atts) {
         $output .= '
         </div>
         </div>
-        <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/navigation-v3_0.js"></script>
+        <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/navigation-v4_0.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/slider_vimeo.js"></script>
 		<script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/hovers.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/assets.js"></script>
