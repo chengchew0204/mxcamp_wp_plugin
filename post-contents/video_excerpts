@@ -1,0 +1,3 @@
+<video loading="lazy" id="thefrontvideo" class="thefrontvideo" autoplay playsinline muted loop poster="https://camp.mx/wp-content/uploads/senembkgcover-scaled.webp" async>
+    <source src="https://camp.mx/wp-content/uploads/senembkgnd.m4v"/>
+</video>

@@ -64,6 +64,13 @@ class Navigation {
 			gifDetail.id = "gif-detail";
 			mapa.append(gifDetail);
 			
+			// Add click handler to gif-detail to open the mapa card
+			gifDetail.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.openCard({ divId: 'mapa' });
+			});
+			
 			// Initialize Leaflet map integration
 			this.setupLeafletMapContainer(mapa);
 		} catch {
@@ -71,6 +78,13 @@ class Navigation {
 			const gifDetail = document.createElement("div");
 			gifDetail.id = "gif-detail";
 			map.append(gifDetail);
+			
+			// Add click handler to gif-detail to open the map card
+			gifDetail.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.openCard({ divId: 'map' });
+			});
 			
 			// Initialize Leaflet map integration
 			this.setupLeafletMapContainer(map);
@@ -85,65 +99,26 @@ class Navigation {
 			// Create Leaflet container within existing imap structure - v4.0 Enhanced with 90% scaling and cropping
 			const leafletContainer = document.createElement('div');
 			leafletContainer.id = 'leaflet-map-container';
-			// Detect mobile device for container sizing - Conservative approach to preserve desktop
-			const isMobileDevice = (window.innerWidth <= 768 && 
-	                   (navigator.maxTouchPoints > 0 || 
-	                   navigator.msMaxTouchPoints > 0 ||
-	                   navigator.userAgent.toLowerCase().indexOf('mobile') !== -1 ||
-	                   navigator.userAgent.toLowerCase().indexOf('android') !== -1));
-			
-			if (isMobileDevice) {
-				// Mobile: Match exact proportions with underlying map container
-				leafletContainer.style.cssText = `
-					width: 100%;
-					height: 100%;
-					position: absolute;
-					top: 0;
-					left: 0;
-					z-index: 10;
-					pointer-events: auto;
-					overflow: hidden;
-					background: transparent;
-					transform: none;
-					transform-origin: center center;
-					touch-action: none;
-				`;
-				// Ensure parent container matches the underlying map behavior
-				imapContainer.style.overflow = 'auto';
-				imapContainer.style.position = 'relative';
-				
-				// Ensure both layers have identical dimensions
-				setTimeout(() => {
-					const imapRect = imapContainer.getBoundingClientRect();
-					leafletContainer.style.width = imapRect.width + 'px';
-					leafletContainer.style.height = imapRect.height + 'px';
-					console.log(`📱 Mobile Leaflet container matched to imap: ${imapRect.width}x${imapRect.height}`);
-				}, 100);
-				
-				console.log('📱 Mobile Leaflet container: Exact match with underlying map');
-			} else {
-				// Desktop: Scaled and cropped (preserve original desktop experience)
-				leafletContainer.style.cssText = `
-					width: 111%;
-					height: 111%;
-					position: absolute;
-					top: -8.5%;
-					bottom: -8.5%;
-					left: -5.5%;
-					z-index: 1;
-					pointer-events: auto;
-					overflow: hidden;
-					background: transparent;
-					transform: scale(0.9);
-					transform-origin: center center;
-				`;
-				// Prevent scrolling beyond range - lock container bounds
-				imapContainer.style.overflow = 'hidden';
-				console.log('🖥️ Desktop Leaflet container: Scaled and cropped');
-			}
+			leafletContainer.style.cssText = `
+				width: 111%;
+				height: 111%;
+				position: absolute;
+				top: -8.5%;
+                bottom: -8.5%;
+				left: -5.5%;
+				z-index: 1;
+				pointer-events: auto;
+				overflow: hidden;
+				background: transparent;
+				transform: scale(0.9);
+				transform-origin: center center;
+			`;
 			imapContainer.appendChild(leafletContainer);
 			
-			// Add required CSS for proper Leaflet image display - v4.0 Enhanced with Mobile Support
+			// Prevent scrolling beyond range - lock container bounds
+			imapContainer.style.overflow = 'hidden';
+			
+			// Add required CSS for proper Leaflet image display - v4.0 Enhanced
 			const style = document.createElement('style');
 			style.textContent = `
 				#leaflet-map-container {
@@ -171,53 +146,6 @@ class Navigation {
 				#imap {
 					background: transparent !important;
 				}
-				
-				/* Mobile-specific optimizations - ONLY apply on mobile screens */
-				@media screen and (max-width: 768px) {
-					#leaflet-map-container {
-						touch-action: none;
-						/* Ensure container matches underlying map exactly */
-						position: absolute !important;
-						top: 0 !important;
-						left: 0 !important;
-						transform: none !important;
-						z-index: 10 !important;
-						pointer-events: auto !important;
-					}
-					#leaflet-map-container .leaflet-container {
-						touch-action: none;
-						cursor: default !important;
-						outline: none !important;
-						/* Match underlying map scrolling behavior */
-						width: 100% !important;
-						height: 100% !important;
-						pointer-events: auto !important;
-					}
-					#leaflet-map-container .leaflet-interactive {
-						cursor: pointer !important;
-						pointer-events: auto !important;
-						/* Increase touch target area */
-						stroke-width: 15 !important;
-						stroke: transparent !important;
-					}
-					#leaflet-map-container .leaflet-image-layer img {
-						user-select: none !important;
-						-webkit-user-select: none !important;
-						-moz-user-select: none !important;
-						-ms-user-select: none !important;
-						pointer-events: none !important;
-					}
-					/* Ensure Leaflet map layers match underlying container exactly */
-					#leaflet-map-container .leaflet-zoom-box,
-					#leaflet-map-container .leaflet-image-layer {
-						width: 100% !important;
-						height: 100% !important;
-					}
-					/* Hide any overlapping elements that might interfere */
-					#leaflet-map-container .leaflet-control-container {
-						display: none !important;
-					}
-				}
 			`;
 			document.head.appendChild(style);
 			
@@ -238,8 +166,13 @@ class Navigation {
 	initLeafletMap() {
 		console.log('Initializing Enhanced Leaflet Map v4.0 - Fixed Proportions with Mobile Support');
 		
-		// Conservative mobile detection - only for actual touch devices
-		const isMobileDevice = false; // Disabled for compatibility
+		// Detect mobile device for touch interactions
+		const isMobileDevice = (window.innerWidth <= 768 || 
+                       navigator.maxTouchPoints > 0 || 
+                       navigator.msMaxTouchPoints > 0 ||
+                       ('ontouchstart' in window) || 
+                       (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                       (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
 		
 		console.log('Mobile device detected:', isMobileDevice);
 		
@@ -251,41 +184,22 @@ class Navigation {
 		const mapOptions = {
 			crs: L.CRS.Simple,
 			minZoom: 0,
-			maxZoom: 0, // Restore desktop compatibility
+			maxZoom: 0,
 			zoomControl: false,
 			attributionControl: false,
-			dragging: false, // Disable dragging to prevent conflicts with underlying map
+			dragging: isMobileDevice, // Enable dragging on mobile
 			scrollWheelZoom: false,
 			doubleClickZoom: false,
-			touchZoom: false, // Disable zoom for all devices to preserve desktop experience
+			touchZoom: false, // Keep zoom disabled but allow dragging
 			boxZoom: false,
 			keyboard: false
 		};
 		
-		// Add mobile-specific options only if on mobile
-		if (isMobileDevice) {
-			mapOptions.tap = true;
-			mapOptions.tapTolerance = 25; // Increase tolerance for better touch detection
-			mapOptions.touchZoom = false; // Keep zoom disabled but allow tap
-			console.log(`📱 Mobile-specific Leaflet options added - dragging disabled to prevent conflicts`);
-		}
-		
-		console.log(`Creating Leaflet map with options:`, mapOptions);
 		this.leafletMap = L.map('leaflet-map-container', mapOptions);
 		
 		// Add base image - the main palapas view
 		L.imageOverlay('https://camp.mx/wp-content/uploads/01-start-palapas.jpg', bounds).addTo(this.leafletMap);
 		this.leafletMap.fitBounds(bounds);
-		
-		// Force map to fit container properly, especially on mobile
-		if (isMobileDevice) {
-			setTimeout(() => {
-				this.leafletMap.invalidateSize(true);
-				// Ensure the map view matches the container exactly
-				this.leafletMap.fitBounds(bounds);
-				console.log('📱 Mobile Leaflet map resized to match container');
-			}, 200);
-		}
 		
 		// Add click event to map background (for closing map when clicking empty areas)
 		this.leafletMap.on('click', (e) => {
@@ -397,89 +311,13 @@ class Navigation {
 			}
 		};
 		
-		// Initialize all map components with proper timing for mobile
-		if (isMobileDevice) {
-			// For mobile, delay polygon initialization to ensure container sizing is complete
-			setTimeout(() => {
-				this.initLeafletMapOverlays();
-				this.initLeafletMapPolygons();
-				this.preloadLeafletMapImages();
-				console.log('📱 Mobile map components initialized with delay');
-			}, 300);
-		} else {
-			// Desktop can initialize immediately
-			this.initLeafletMapOverlays();
-			this.initLeafletMapPolygons();
-			this.preloadLeafletMapImages();
-		}
+		// Initialize all map components
+		this.initLeafletMapOverlays();
+		this.initLeafletMapPolygons();
+		this.preloadLeafletMapImages();
 		
-		// Initialize legacy DOM-based map support (v3 compatibility)
-		this.initLegacyMapSupport();
-
 		this.mapInitialized = true;
-		console.log('Enhanced Leaflet Map v4.0 initialized successfully with dynamic proportions');
-	}
-
-	initLegacyMapSupport() {
-		// Legacy area definitions for DOM-based layer system (v3 compatibility)
-		this.mapAreas = {
-			central: {
-				detailId: 'central-detail',
-				layers: ['central-down-1', 'central-down-2', 'central-down-3'],
-				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-central.png'
-			},
-			casita: {
-				detailId: 'casita-detail',
-				layers: ['casita-down-1', 'casita-down-2'],
-				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png'
-			},
-			chozas: {
-				detailId: 'chozas-detail',
-				layers: ['chozas-down-1', 'chozas-down-2'],
-				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png'
-			},
-			calle: {
-				detailId: 'calle-detail',
-				layers: ['calle-down-1', 'calle-down-2', 'calle-down-3'],
-				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png'
-			},
-			jardin: {
-				detailId: 'jardin-detail',
-				layers: ['jardin-down-1', 'jardin-down-2', 'jardin-down-3', 'jardin-down-4'],
-				contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png'
-			}
-		};
-
-		// Create contour overlay container
-		this.createContourOverlay();
-
-		// Store current contour for tracking
-		this.currentContour = null;
-
-		// Set up event listeners for legacy DOM areas if they exist
-		Object.entries(this.mapAreas).forEach(([areaName, area]) => {
-			const detailElement = document.getElementById(area.detailId);
-			if (detailElement) {
-				// Add mouseenter event to show contour
-				detailElement.addEventListener('mouseenter', () => {
-					this.showContour(areaName);
-				});
-
-				// Add mouseleave event to hide contour
-				detailElement.addEventListener('mouseleave', () => {
-					this.hideContour();
-				});
-
-				// Add click event to toggle layers
-				detailElement.addEventListener('click', () => {
-					this.toggleMapArea(areaName);
-				});
-
-				console.log(`✓ Legacy DOM events set up for ${areaName}`);
-			}
-		});
-
-		console.log('✓ Legacy DOM-based map support initialized');
+		console.log('Enhanced Leaflet Map v4.0 initialized successfully with fixed proportions');
 	}
 	
 	preloadLeafletMapImages() {
@@ -537,44 +375,59 @@ class Navigation {
 		this.currentActiveArea = null;
 		this.currentActiveLeafletArea = null; // Track active area for cycling
 		
-		// Conservative mobile detection
-		const isMobileDevice = false; // Disabled for desktop compatibility
+		// Detect mobile device for touch-optimized events
+		const isMobileDevice = (window.innerWidth <= 768 || 
+                       navigator.maxTouchPoints > 0 || 
+                       navigator.msMaxTouchPoints > 0 ||
+                       ('ontouchstart' in window) || 
+                       (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                       (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
 		
 		// Create interactive polygons with enhanced event handling
 		Object.entries(this.leafletMapAreas).forEach(([k, a]) => {
-			// Standard polygon configuration
-			const polygonOptions = {
+			const poly = L.polygon(a.polygon, {
 				color: 'transparent',
 				weight: 0,
 				fillOpacity: 0,
 				fillColor: 'transparent'
-			};
-			
-			console.log(`📐 Creating polygon for ${k}:`, a.polygon.slice(0, 2), '... (showing first 2 points)');
-			
-			const poly = L.polygon(a.polygon, polygonOptions).addTo(this.leafletMap);
+			}).addTo(this.leafletMap);
 			
 			// Store polygon reference
 			a._polygon = poly;
 			
 			if (isMobileDevice) {
-				// Mobile touch events
-				console.log(`📱 Setting up mobile events for ${k} area`);
-				
-				poly.on('click', (e) => {
-					console.log(`📱 Touch detected on ${k} area`);
-					e.originalEvent.stopPropagation();
-					this.cycleLeafletLayer(k);
-				});
-				
+				// Mobile-optimized touch events
 				poly.on('touchstart', (e) => {
-					console.log(`📱 Touch start on ${k} area`);
+					console.log(`📱 Touch started on ${k} area`);
 					this.showLeafletContour(k);
+					e.target.setStyle({fillOpacity: 0.15});
 				});
 				
 				poly.on('touchend', (e) => {
-					console.log(`📱 Touch end on ${k} area`);
-					setTimeout(() => this.hideLeafletContour(k), 300);
+					console.log(`📱 Touch ended on ${k} area`);
+					// Prevent event from bubbling to map background
+					if (e.originalEvent) {
+						e.originalEvent.stopPropagation();
+						e.originalEvent.preventDefault();
+					}
+					L.DomEvent.stopPropagation(e);
+					this.cycleLeafletLayer(k);
+					// Reset highlight after a delay
+					setTimeout(() => {
+						this.hideLeafletContour(k);
+						e.target.setStyle({fillOpacity: 0});
+					}, 500);
+				});
+				
+				// Also keep click event as fallback for mobile
+				poly.on('click', (e) => {
+					console.log(`📱 Click fallback on ${k} area`);
+					if (e.originalEvent) {
+						e.originalEvent.stopPropagation();
+						e.originalEvent.preventDefault();
+					}
+					L.DomEvent.stopPropagation(e);
+					this.cycleLeafletLayer(k);
 				});
 			} else {
 				// Desktop mouse events (unchanged for perfect desktop experience)
@@ -769,85 +622,6 @@ class Navigation {
 		this.currentActiveArea = null;
 		
 		console.log('✅ All Leaflet map layers reset to base image state');
-	}
-
-	// Legacy DOM-based contour functionality (v3 compatibility)
-	createContourOverlay() {
-		// Create overlay container for contour images if it doesn't exist
-		if (!document.getElementById('map-contour-overlay')) {
-			const mapContainer = document.querySelector('.interactive-map') || document.querySelector('.map-container');
-			if (mapContainer) {
-				this.contourOverlay = document.createElement('div');
-				this.contourOverlay.id = 'map-contour-overlay';
-				this.contourOverlay.style.cssText = `
-					position: absolute;
-					top: 0;
-					left: 0;
-					width: 100%;
-					height: 100%;
-					pointer-events: none;
-					z-index: 1000;
-				`;
-				mapContainer.appendChild(this.contourOverlay);
-				console.log('✓ Created DOM contour overlay container');
-			}
-		} else {
-			this.contourOverlay = document.getElementById('map-contour-overlay');
-		}
-	}
-
-	showContour(areaName) {
-		// Legacy DOM-based contour display (v3 compatibility)
-		if (!this.contourOverlay) {
-			this.createContourOverlay();
-		}
-
-		// If same contour is already showing, do nothing
-		if (this.currentContour === areaName) return;
-
-		// Clear any existing contour
-		this.hideContour();
-
-		// Map area names to contour images (v3 compatibility)
-		const contourImages = {
-			central: 'https://camp.mx/wp-content/uploads/palapa-hover-central.png',
-			casita: 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png',
-			chozas: 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png',
-			calle: 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png',
-			jardin: 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png'
-		};
-
-		const contourUrl = contourImages[areaName];
-		if (contourUrl && this.contourOverlay) {
-			// Create and show contour
-			const contourImg = document.createElement('img');
-			contourImg.src = contourUrl;
-			contourImg.style.cssText = `
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				pointer-events: none;
-				opacity: 1;
-				transition: opacity 0.3s ease;
-			`;
-			contourImg.classList.add('map-contour-image');
-
-			this.contourOverlay.appendChild(contourImg);
-			this.currentContour = areaName;
-			console.log(`✓ DOM contour shown for ${areaName}`);
-		}
-	}
-
-	hideContour() {
-		// Legacy DOM-based contour hiding (v3 compatibility)
-		if (this.contourOverlay) {
-			this.contourOverlay.innerHTML = '';
-			this.currentContour = null;
-			console.log('✓ DOM contours hidden');
-		}
 	}
 	
     getVisibleSlideInfo() {
@@ -1705,77 +1479,11 @@ class Navigation {
 		
         if(slideId==="mapa" || slideId==="map"){
 			setTimeout(() => { 
-				// Get the correct map container - prioritize Leaflet container
-				const leafletContainer = document.getElementById('leaflet-map-container');
-				const imapContainer = document.getElementById('imap');
-				const mapContainer = leafletContainer || imapContainer;
-				
-				if (mapContainer) {
-					// Detect mobile device for optimized scrolling - Conservative approach to preserve desktop
-					const isMobileDevice = (window.innerWidth <= 768 && 
-	                           (navigator.maxTouchPoints > 0 || 
-	                           navigator.msMaxTouchPoints > 0 ||
-	                           navigator.userAgent.toLowerCase().indexOf('mobile') !== -1 ||
-	                           navigator.userAgent.toLowerCase().indexOf('android') !== -1));
-					
-					if (isMobileDevice) {
-						// Mobile-optimized positioning
-						console.log('📱 Setting up mobile-optimized map positioning');
-						
-						// Wait for both containers to be fully rendered and matched
-						setTimeout(() => {
-							const containerHeight = mapContainer.offsetHeight;
-							const containerWidth = mapContainer.offsetWidth;
-							const scrollHeight = mapContainer.scrollHeight;
-							const scrollWidth = mapContainer.scrollWidth;
-							
-							// Set horizontal scroll to start from left edge (x=0)
-							mapContainer.scrollLeft = 0;
-							
-							// Center map vertically for mobile viewing
-							const optimalScrollTop = Math.max(0, (scrollHeight - containerHeight) / 3);
-							mapContainer.scrollTop = optimalScrollTop;
-							
-							console.log(`📱 Mobile map positioned: scrollLeft=0, scrollTop=${optimalScrollTop}`);
-							console.log(`📱 Container size: ${containerWidth}x${containerHeight}, Scroll area: ${scrollWidth}x${scrollHeight}`);
-							
-							// Ensure Leaflet container matches the scroll container exactly
-							const leafletContainer = document.getElementById('leaflet-map-container');
-							if (leafletContainer && this.leafletMap) {
-								// Match the exact scroll behavior
-								leafletContainer.style.width = mapContainer.scrollWidth + 'px';
-								leafletContainer.style.height = mapContainer.scrollHeight + 'px';
-								
-								// Force Leaflet map to recalculate size after positioning
-								this.leafletMap.invalidateSize(true);
-								console.log(`📱 Leaflet container synchronized: ${mapContainer.scrollWidth}x${mapContainer.scrollHeight}`);
-								
-								// Reinitialize polygons with correct dimensions on mobile
-								if (this.leafletMapAreas) {
-									console.log('📱 Reinitializing polygons with updated container dimensions');
-									// Clear existing polygons
-									Object.values(this.leafletMapAreas).forEach(area => {
-										if (area._polygon) {
-											this.leafletMap.removeLayer(area._polygon);
-										}
-									});
-									// Reinitialize with updated dimensions
-									setTimeout(() => {
-										this.initLeafletMapPolygons();
-									}, 100);
-								}
-							}
-						}, 200);
-					} else {
-						// Desktop positioning (original logic)
-						mapContainer.scrollLeft = 0;
-						mapContainer.scrollTop = (mapContainer.scrollHeight - mapContainer.offsetHeight) * 2/3;
-						console.log('🖥️ Desktop map positioned');
-					}
-					
-					console.log('Map positioned at: Left=' + mapContainer.scrollLeft + ', Top=' + mapContainer.scrollTop);
-					console.log('Map dimensions: ScrollW=' + mapContainer.scrollWidth + ', ScrollH=' + mapContainer.scrollHeight + ', ViewW=' + mapContainer.offsetWidth + ', ViewH=' + mapContainer.offsetHeight);
-				}
+				//document.getElementById('focus-point').scrollIntoView({behavior: "auto"})
+				const mapContainer = document.getElementById('imap'); //Get scroll object
+				mapContainer.scrollLeft = 0;
+				mapContainer.scrollTop=(mapContainer.scrollHeight-mapContainer.offsetHeight)*2/3;//allign vertical
+				console.log('Map scrolled to Pos:'+mapContainer.scrollLeft+', '+mapContainer.scrollTop+' Max:'+mapContainer.scrollWidth+','+mapContainer.scrollHeight+' Size:'+mapContainer.offsetWidth+','+mapContainer.offsetHeight);
 				
 				// Initialize enhanced Leaflet map if not already initialized
 				if (!this.mapInitialized) {
@@ -2182,6 +1890,12 @@ class Navigation {
             monthRight.onmouseover = () => monthRight.style.opacity = '1';
             monthRight.onmouseout = () => monthRight.style.opacity = '1';
             
+            // Add onmouseover-detail class to carets for clickable emphatic icons
+            const caretElements = [yearLeft, yearRight, monthLeft, monthRight];
+            caretElements.forEach(caret => {
+                caret.classList.add('onmouseover-detail');
+            });
+            
             // Add all elements to the container
             compactNav.appendChild(yearLeft);
             compactNav.appendChild(yearText);
@@ -2328,6 +2042,14 @@ class Navigation {
             };
             
             console.log('Compact calendar navigation created successfully');
+            
+            // Ensure the OnMouseOverDetailAdder processes the new carets
+            if (window.onMouseOverDetailAdder) {
+                setTimeout(() => {
+                    window.onMouseOverDetailAdder.addClasses();
+                }, 100);
+            }
+            
             return true;
         };
         
@@ -2349,94 +2071,25 @@ class Navigation {
     }
     
     toggleMapArea(areaName) {
-        console.log(`🖱️ Clicked ${areaName} area`);
-
-        // Handle Leaflet system (v4)
-        const leafletArea = this.leafletMapAreas[areaName];
-        if (leafletArea) {
+        // v4.0: Redirect to Leaflet system
+        console.log(`toggleMapArea called for ${areaName} - redirecting to Leaflet`);
+        
+        if (this.leafletMapAreas && this.leafletMapAreas[areaName]) {
             this.toggleLeafletMapArea(areaName);
-        }
-
-        // Handle legacy DOM system (v3 compatibility)
-        const legacyArea = this.mapAreas[areaName];
-        if (legacyArea) {
-            this.toggleLegacyMapArea(areaName);
-        }
-
-        if (!leafletArea && !legacyArea) {
-            console.error(`Area ${areaName} not found in either Leaflet or legacy systems`);
-        }
-    }
-
-    toggleLegacyMapArea(areaName) {
-        // Legacy DOM-based area toggling (v3 compatibility)
-        const area = this.mapAreas[areaName];
-        if (!area) return;
-
-        // Check if area is currently on first layer
-        if (this.isOnFirstLayer(areaName)) {
-            // Show the layers
-            this.showMapLayers(area.layers);
-            console.log(`✓ Legacy area ${areaName} activated - layers shown`);
         } else {
-            // Hide the layers
-            this.hideMapLayers(area.layers);
-            console.log(`✓ Legacy area ${areaName} deactivated - layers hidden`);
+            console.warn(`Leaflet area ${areaName} not found`);
         }
-    }
-
-    isOnFirstLayer(areaName) {
-        // Check if the area is currently showing the first layer (z-index: -1)
-        const area = this.mapAreas[areaName];
-        if (!area) return true;
-
-        // Check if all layers for this area have z-index: -1 (first layer state)
-        const allLayersOnFirstLevel = area.layers.every(layerId => {
-            const layer = document.getElementById(layerId);
-            if (!layer) return true; // If layer doesn't exist, consider it as first level
-
-            const zIndex = window.getComputedStyle(layer).zIndex;
-            return zIndex === '-1' || zIndex === 'auto';
-        });
-
-        return allLayersOnFirstLevel;
     }
     
-    	showMapLayers(layerIds) {
-		// v4.0: Hybrid system - support both Leaflet and DOM layers for compatibility
-		console.log('showMapLayers called - checking both Leaflet and DOM systems');
-		
-		// DOM-based layer management (v3 compatibility)
-		if (layerIds && Array.isArray(layerIds)) {
-			layerIds.forEach(layerId => {
-				const layer = document.getElementById(layerId);
-				if (layer) {
-					layer.style.zIndex = '1';
-					layer.style.opacity = '1';
-					layer.style.transition = 'opacity 0.3s ease';
-					console.log(`✓ DOM layer shown: ${layerId}`);
-				}
-			});
-		}
-	}
-
-	hideMapLayers(layerIds) {
-		// v4.0: Hybrid system - support both Leaflet and DOM layers for compatibility
-		console.log('hideMapLayers called - checking both Leaflet and DOM systems');
-		
-		// DOM-based layer management (v3 compatibility)
-		if (layerIds && Array.isArray(layerIds)) {
-			layerIds.forEach(layerId => {
-				const layer = document.getElementById(layerId);
-				if (layer) {
-					layer.style.zIndex = '-1';
-					layer.style.opacity = '0.8';
-					layer.style.transition = 'opacity 0.3s ease';
-					console.log(`✓ DOM layer hidden: ${layerId}`);
-				}
-			});
-		}
-	}
+    showMapLayers(layerIds) {
+        // v4.0: Deprecated - Leaflet handles layer management
+        console.log('showMapLayers called - using Leaflet system instead');
+    }
+    
+    hideMapLayers(layerIds) {
+        // v4.0: Deprecated - Leaflet handles layer management  
+        console.log('hideMapLayers called - using Leaflet system instead');
+    }
 }
 document.addEventListener('DOMContentLoaded', () => {
     var navigation = new Navigation();

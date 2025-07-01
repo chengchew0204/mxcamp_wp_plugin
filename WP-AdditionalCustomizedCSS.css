@@ -1,8 +1,9 @@
-/* Force grid display for events in Chrome */
+/* Force grid display for events in Chrome with responsive columns */
 @media screen and (-webkit-min-device-pixel-ratio:0) {
+    /* Desktop ≥ 1025px: 6 columns */
     .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
       display: grid !important;
-      grid-template-columns: repeat(4, 1fr) !important;
+      grid-template-columns: repeat(6, 1fr) !important;
     }
     
     /* Additional fix for event content */
@@ -10,6 +11,21 @@
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
+    }
+  }
+
+  /* Chrome-specific responsive grid rules */
+  @media screen and (-webkit-min-device-pixel-ratio:0) and (max-width: 600px) {
+    /* Phone ≤ 600px: 4 columns */
+    .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+  }
+
+  @media screen and (-webkit-min-device-pixel-ratio:0) and (min-width: 601px) and (max-width: 1024px) {
+    /* Tablet 601-1024px: 5 columns */
+    .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+      grid-template-columns: repeat(5, 1fr) !important;
     }
   }
   
@@ -241,7 +257,7 @@
           width:26px; height:26px;
           
       }
-      .[class*=ct-toggle] {
+      [class*=ct-toggle] {
           display:block
       }
   button.ct-toggle svg.ct-icon{
@@ -250,7 +266,7 @@
   transition:0.5s;
       }
       button.ct-toggle:hover svg.ct-icon{
-          /*opacity:0.6*/;
+          /*opacity:0.6*/
           fill:white;
       }
       button.ct-toggle-close svg.ct-icon{

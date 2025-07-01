@@ -59,12 +59,70 @@ class Navigation {
 			const mapa = document.querySelector("div.slide_10#mapa");
 			const gifDetail = document.createElement("div");
 			gifDetail.id = "gif-detail";
+			
+			// Add the onmouseover-detail class for emphatic cursor
+			gifDetail.classList.add('onmouseover-detail');
+			
+			// Append to the slide container, not inside slide_10_scroll to avoid event interception
 			mapa.append(gifDetail);
+			
+			// Force the OnMouseOverDetailAdder to process this element
+			if (window.onMouseOverDetailAdder) {
+				window.onMouseOverDetailAdder.addToElements([gifDetail]);
+			}
+			
+			// Add debugging event listeners to help identify issues
+			gifDetail.addEventListener('mouseenter', (e) => {
+				console.log('gif-detail mouseenter event triggered');
+				console.log('Element classList:', e.target.classList.toString());
+				console.log('Computed cursor style:', window.getComputedStyle(e.target).cursor);
+			});
+			
+			gifDetail.addEventListener('mouseleave', (e) => {
+				console.log('gif-detail mouseleave event triggered');
+			});
+			
+			// Add click handler to gif-detail to open the mapa card
+			gifDetail.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				console.log('gif-detail clicked!');
+				this.openCard({ divId: 'mapa' });
+			});
 		} catch {
 			const map = document.querySelector("div.slide_10#map");
 			const gifDetail = document.createElement("div");
 			gifDetail.id = "gif-detail";
+			
+			// Add the onmouseover-detail class for emphatic cursor
+			gifDetail.classList.add('onmouseover-detail');
+			
+			// Append to the slide container, not inside slide_10_scroll to avoid event interception
 			map.append(gifDetail);
+			
+			// Force the OnMouseOverDetailAdder to process this element
+			if (window.onMouseOverDetailAdder) {
+				window.onMouseOverDetailAdder.addToElements([gifDetail]);
+			}
+			
+			// Add debugging event listeners to help identify issues
+			gifDetail.addEventListener('mouseenter', (e) => {
+				console.log('gif-detail mouseenter event triggered');
+				console.log('Element classList:', e.target.classList.toString());
+				console.log('Computed cursor style:', window.getComputedStyle(e.target).cursor);
+			});
+			
+			gifDetail.addEventListener('mouseleave', (e) => {
+				console.log('gif-detail mouseleave event triggered');
+			});
+			
+			// Add click handler to gif-detail to open the map card
+			gifDetail.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				console.log('gif-detail clicked!');
+				this.openCard({ divId: 'map' });
+			});
 		}
 	}
 	
@@ -95,8 +153,63 @@ class Navigation {
     }
     //navigation depuis  un url avec ashtag
     UrlVerif() {
+        // URL path to slide ID mapping
+        const urlToSlideMap = {
+            '/about': 'contexto',
+            '/airbnb': 'huespedes', 
+            '/art': 'art',
+            '/artists': 'artistas',
+            '/artistas': 'artistas',
+            '/cal': 'calendario',
+            '/calendar': 'calendario',
+            '/calendario': 'calendario',
+            '/chat': 'chat',
+            '/context': 'contexto',
+            '/contexto': 'contexto',
+            '/estac': 'estacionamiento',
+            '/eventos': 'eventos',
+            '/events': 'eventos',
+            '/familiacamp': 'familiacamp',
+            '/galeria': 'galeria',
+            '/gallery': 'galeria',
+            '/guests': 'huespedes',
+            '/guia': 'guia',
+            '/guide': 'guia',
+            '/huespedes': 'huespedes',
+            '/logos': 'logos',
+            '/map': 'mapa',
+            '/nos': 'nosotros',
+            '/nosotros': 'nosotros',
+            '/nosotrxs': 'nosotros',
+            '/org': 'organizadores',
+            '/organiser': 'organizadores',
+            '/organisers': 'organizadores',
+            '/organizadores': 'organizadores',
+            '/organizadxr': 'organizadores',
+            '/organizer': 'organizadores',
+            '/organizers': 'organizadores',
+            '/park': 'estacionamiento',
+            '/pro': 'promotores',
+            '/promoters': 'promotores',
+            '/promotores': 'promotores',
+            '/promotorxs': 'promotores',
+            '/zipolite': 'zipolite'
+        };
+
+        // Check URL path for direct navigation
+        var currentPath = window.location.pathname;
+        if (currentPath && urlToSlideMap[currentPath]) {
+            const slideData = {
+                post: 'dontknow',
+                divId: urlToSlideMap[currentPath],
+                openTheCard: true
+            };
+            this.gotoSlide(slideData);
+            return;
+        }
+
+        // Check URL hash for navigation
         var urlHash = window.location.hash;
-        // Vérifier si un hash existe
         if (urlHash && urlHash.length>1) {
             // Retirer le caractère # du hash
             var cleanHash = urlHash.substring(1);
@@ -151,7 +264,7 @@ class Navigation {
             const slideData = {
                 post: postId,
                 divId: divId,
-                openTheCard: true
+                openTheCard: false
             };
             
             NewParagraph.addEventListener('click', async (e) => {
@@ -302,11 +415,13 @@ class Navigation {
             hoverDiv.style.display = 'none';
             volunteerPreviewShown = false;
             
+            /* COMMENTED OUT: Restaurant preview variables - no longer needed
             // Close restaurant preview
             restaurantIsHovering = false;
             arrowImgRestaurant.style.transform = 'rotate(-90deg)';
             hoverDivRestaurant.style.display = 'none';
             restaurantPreviewShown = false;
+            END COMMENTED OUT */
         }
         
         // Make closeAllPreviews globally accessible
@@ -324,6 +439,7 @@ class Navigation {
             volunteerPreviewShown = true;
         }
         
+        /* COMMENTED OUT: Restaurant preview function - no longer needed
         function showRestaurantPreview() {
             // Close any open previews first
             closeAllPreviews();
@@ -338,6 +454,7 @@ class Navigation {
             restaurantIsHovering = true;
             restaurantPreviewShown = true;
         }
+        END COMMENTED OUT */
         
         function hideVolunteerPreview() {
             // Small delay before hiding to allow mouse movement between elements
@@ -350,6 +467,7 @@ class Navigation {
             }, 250);
         }
         
+        /* COMMENTED OUT: Restaurant hide preview function - no longer needed
         function hideRestaurantPreview() {
             // Small delay before hiding to allow mouse movement between elements
             restaurantHoverTimer = setTimeout(() => {
@@ -360,6 +478,7 @@ class Navigation {
                 }
             }, 250);
         }
+        END COMMENTED OUT */
         
         // Change hover behavior - only enable hover events on arrows, not paragraph text
         
@@ -452,6 +571,7 @@ class Navigation {
         const artistMenuItem = list.querySelectorAll("li")[3];
         artistMenuItem.after(NewMenuItem);
     
+        /* COMMENTED OUT: Old Restaurant section - now using WordPress post with video background
         // Restaurant section
         const RestaurantMenuItem = document.createElement('li');
         const RestaurantParagraph = document.createElement('p');
@@ -701,6 +821,7 @@ class Navigation {
         RestaurantMenuItem.appendChild(RestaurantParagraph);
         
         list.appendChild(RestaurantMenuItem);
+        END COMMENTED OUT Restaurant section */
     }
    //on met  des listen sur els ahtag internes a la page qui ont la class openthecard
    ashTagLinks(){
@@ -774,10 +895,17 @@ class Navigation {
             this.slides.forEach(item => {
             const slideId = item.getAttribute('id');
             const slideScroll = item.querySelector('.slide_10_scroll');
+            const slideBg = item.querySelector('.slide_10_bg');
             // Store the handler reference
             this.eventHandlers[slideId+'scroll'] = this.openCard.bind(this, { divId: slideId });
             // Ajouter l'événement click en utilisant une méthode liée
             slideScroll.addEventListener('click', this.eventHandlers[slideId+'scroll']);
+            
+            // Also add click handler to slide_10_bg elements
+            if (slideBg) {
+                this.eventHandlers[slideId+'bg'] = this.openCard.bind(this, { divId: slideId });
+                slideBg.addEventListener('click', this.eventHandlers[slideId+'bg']);
+            }
             this.eventHandlers[slideId+'tap'] = this.closeCardsE.bind(this);
          //   const tapTop = item.getElementById('mapExit1');
 			console.log('adding:'+slideId);
@@ -936,6 +1064,12 @@ class Navigation {
        // Supprimer l'événement a slide_scroll click en utilisant la référence stockée
         const zoneClick = slideopened.querySelector('.slide_10_scroll');
         zoneClick.removeEventListener('click', this.eventHandlers[slideId+'scroll'], false);
+        
+        // Also remove slide_10_bg click event listener
+        const zoneBg = slideopened.querySelector('.slide_10_bg');
+        if (zoneBg && this.eventHandlers[slideId+'bg']) {
+            zoneBg.removeEventListener('click', this.eventHandlers[slideId+'bg'], false);
+        }
         // Ajoute lèvenement a header
         const cardHeader = slideopened.querySelector('.card-header');
         this.eventHandlers[slideId+'header'] = this.closeCardsE.bind(this);
@@ -965,6 +1099,13 @@ class Navigation {
         const zoneClick = slideopened.querySelector('.slide_10_scroll');
         this.eventHandlers[this.targetSlide+'scroll'] = this.openCard.bind(this, { divId: this.targetSlide });
         zoneClick.addEventListener('click', this.eventHandlers[this.targetSlide+'scroll'], false);
+        
+        // Also re-add slide_10_bg click event listener
+        const zoneBg = slideopened.querySelector('.slide_10_bg');
+        if (zoneBg) {
+            this.eventHandlers[this.targetSlide+'bg'] = this.openCard.bind(this, { divId: this.targetSlide });
+            zoneBg.addEventListener('click', this.eventHandlers[this.targetSlide+'bg'], false);
+        }
         this.targetSlide = 'none';
         this.cardopened = false;
         this.theFrontVideo.forEach(function(el) {
@@ -1493,6 +1634,12 @@ class Navigation {
             monthRight.onmouseover = () => monthRight.style.opacity = '1';
             monthRight.onmouseout = () => monthRight.style.opacity = '1';
             
+            // Add onmouseover-detail class to carets for clickable emphatic icons
+            const caretElements = [yearLeft, yearRight, monthLeft, monthRight];
+            caretElements.forEach(caret => {
+                caret.classList.add('onmouseover-detail');
+            });
+            
             // Add all elements to the container
             compactNav.appendChild(yearLeft);
             compactNav.appendChild(yearText);
@@ -1639,6 +1786,14 @@ class Navigation {
             };
             
             console.log('Compact calendar navigation created successfully');
+            
+            // Ensure the OnMouseOverDetailAdder processes the new carets
+            if (window.onMouseOverDetailAdder) {
+                setTimeout(() => {
+                    window.onMouseOverDetailAdder.addClasses();
+                }, 100);
+            }
+            
             return true;
         };
         

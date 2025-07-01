@@ -880,7 +880,7 @@ body.bodycardopened #playbutton {
 .tap-left,
 .tap-right {
 	position: fixed;
-	z-index: 8
+	z-index: -1
 }
 
 .tap-top,
@@ -888,7 +888,8 @@ body.bodycardopened #playbutton {
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 52px
+	height: 52px;
+	z-index: -1;
 }
 
 .tap-left {
@@ -1011,10 +1012,11 @@ body.hoveron .tap-top {
 .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 	display: grid !important;
 	font-family: 'ClearSans', helvetica, sans-serif !important;
-	grid-template-columns: repeat(5, 1fr) !important;
+	grid-template-columns: repeat(6, 1fr) !important;
 }
 
-@media screen and (max-width: 1000px) {
+/* Phone ≤ 600px: 4-column grid */
+@media screen and (max-width: 600px) {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		grid-template-columns: repeat(4, 1fr) !important;
@@ -1023,12 +1025,22 @@ body.hoveron .tap-top {
 	}
 }
 
-@media screen and (max-width: 768px) {
+/* Tablet 601-1024px: 5 columns */
+@media screen and (min-width: 601px) and (max-width: 1024px) {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
-		grid-template-columns: repeat(3, 1fr) !important;
+		grid-template-columns: repeat(5, 1fr) !important;
 		margin-left: -20px;
 		margin-right: -20px;
+	}
+}
+
+/* Desktop ≥ 1025px: 6 columns */
+@media screen and (min-width: 1025px) {
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		font-family: 'ClearSans', helvetica, sans-serif !important;
+		grid-template-columns: repeat(6, 1fr) !important;
 	}
 }
 
@@ -1042,7 +1054,7 @@ body.hoveron .tap-top {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		font-family: 'ClearSans', helvetica, sans-serif !important;
-		grid-template-columns: repeat(5, 1fr) !important;
+		grid-template-columns: repeat(6, 1fr) !important;
 	}
 }
 
@@ -1056,7 +1068,7 @@ body.hoveron .tap-top {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		font-family: 'ClearSans', helvetica, sans-serif !important;
-		grid-template-columns: repeat(5, 1fr) !important;
+		grid-template-columns: repeat(6, 1fr) !important;
 	}
 }
 
@@ -1108,6 +1120,32 @@ body.galeria footer {
     left: 28%;
     background-size: contain;
     background-image: url(https://camp.mx/wp-content/uploads/map_thumbnail.gif);
+    z-index: 50; /* Much higher than slide_10_scroll (z-index: 2) and other elements to ensure hover events work */
+}
+
+/* Disable pointer events on slide_10_scroll for map slides to allow gif-detail to receive hover events */
+#mapa .slide_10_scroll,
+#map .slide_10_scroll {
+	pointer-events: none !important;
+}
+
+/* Re-enable pointer events for specific areas within map slides that need them */
+#mapa .slide_10_scroll .card,
+#map .slide_10_scroll .card,
+#mapa .slide_10_scroll .card-header,
+#map .slide_10_scroll .card-header {
+	pointer-events: auto !important;
+}
+
+/* Emphatic cursor for gif-detail - High specificity to override any conflicting rules */
+div.slide_10 #gif-detail.onmouseover-detail,
+div.slide_10 #gif-detail:hover,
+div.slide_10 #gif-detail,
+#gif-detail.onmouseover-detail,
+#gif-detail:hover,
+#gif-detail {
+	cursor: pointer !important;
+	pointer-events: auto !important;
 }
 
 .slide_10#mapa, .slide_10#map {
@@ -1119,6 +1157,7 @@ body.galeria footer {
         left: 15%;
         height: 166.5px;
         width: 292.5px;
+        z-index: 50; /* Ensure z-index is maintained in responsive breakpoints */
 	}
 }
 
@@ -1128,6 +1167,7 @@ body.galeria footer {
 	    width: 192px;
 		left: 20px;
         bottom: 22%;
+        z-index: 50; /* Ensure z-index is maintained in mobile breakpoints */
 	}
 	
 	.slide_10#mapa, .slide_10#map {
@@ -1319,3 +1359,66 @@ body.galeria footer {
     visibility: visible !important;
     display: flex !important;
 }
+/*
+a,
+button,
+[onclick],
+input[type="submit"],
+input[type="button"],
+.tap-top,
+.tap-left,
+.tap-right,
+.tap-bottom,
+.mobile-menu p,
+.mobile-menu a,
+.menu-arrow,
+.slide_10_scroll,
+.card-header,
+#playbutton,
+.cursor-pointer {
+    cursor: auto !important;
+}
+*/
+
+/* Hide gif-detail when menu is active (consistent across desktop and mobile) */
+.slides.menuactive #gif-detail {
+	display: none !important;
+}
+
+/* CSS additions to make video frames clickable for play/pause */
+
+/* Make video frames clearly clickable */
+.slide video {
+    cursor: pointer;
+}
+
+/* Video controls overlay should be clickable */
+.slide > div[style*="position: absolute"][style*="z-index: 22"] {
+    cursor: pointer;
+}
+
+/* Indicate clickable area on hover */
+.slide:hover {
+    cursor: pointer;
+}
+
+/* Don't override cursor for control buttons */
+.playbut,
+.pausebut,
+.fullscreenbut {
+    cursor: pointer !important;
+}
+
+/* Additional visual feedback for better UX */
+.slide-camp .slide {
+    transition: all 1s, transform 0.2s ease;
+}
+
+.slide-camp .slide:hover {
+    transform: scale(1.02);
+}
+
+/* Ensure proper z-index layering for clickable areas */
+.slide > div[style*="z-index: 22"] {
+    pointer-events: auto;
+} 

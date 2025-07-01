@@ -16,6 +16,9 @@ function SliderConstructor(el) {
     let next = target.querySelector('.next');
     prev.innerHTML = arrowIconLeft;
     next.innerHTML = arrowIconRight;
+    // Add onmouseover-detail class to navigation carets for emphatic cursor
+    prev.classList.add('onmouseover-detail');
+    next.classList.add('onmouseover-detail');
     for (let index = 0; index < slides.length; index++) {
         const element = slides[index];
         element.style.transform = "translateX(" + 100 * (index) + "%)";
@@ -37,6 +40,8 @@ function SliderConstructor(el) {
             divcontrols.style.width='100%';
             divcontrols.style.position='absolute';
             divcontrols.style.zIndex='22!important';
+            // Add onmouseover-detail class for emphatic cursor
+            divcontrols.classList.add('onmouseover-detail');
             thisvideo.setAttribute('type', 'video/mp4');
             thisvideo.setAttribute('playsinline', 'playsinline');
             thisvideo.setAttribute('preload', 'auto');
@@ -56,15 +61,21 @@ function SliderConstructor(el) {
             playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
             playbut.classList.add('playbut');
             playbut.style.position = 'absolute';
+            // Add onmouseover-detail class for emphatic cursor
+            playbut.classList.add('onmouseover-detail');
 
             divcontrols.appendChild(playbut);
             let pausebut= document.createElement('img');
             pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
             pausebut.classList.add('pausebut');
+            // Add onmouseover-detail class for emphatic cursor
+            pausebut.classList.add('onmouseover-detail');
             divcontrols.appendChild(pausebut);
             let fullscreenbut= document.createElement('img');
             fullscreenbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/full-screen.svg');
             fullscreenbut.classList.add('fullscreenbut');
+            // Add onmouseover-detail class for emphatic cursor
+            fullscreenbut.classList.add('onmouseover-detail');
             divcontrols.appendChild(fullscreenbut);
 
             // Crée la barre de progression
@@ -132,6 +143,10 @@ function SliderConstructor(el) {
                 });
                 thisvideo.play();
                 thisvideo.closest(".slide").classList.add('videoplaying');
+                
+                // Mark this slider as the active one for keyboard navigation
+                othersliders.forEach(slider => slider.removeAttribute('data-keyboard-active'));
+                myparent.setAttribute('data-keyboard-active', 'true');
             }
             let  playthisvideo = play;
             if(playthisvideo===true){
@@ -156,6 +171,26 @@ function SliderConstructor(el) {
                 event.preventDefault();
                 thisvideo.pause();
                 pausevideo();
+            });
+            
+            // Make entire video frame clickable for play/pause
+            divcontrols.addEventListener('click', (event) => {
+                event.preventDefault();
+                
+                // Don't trigger if clicking on existing control buttons
+                if (event.target.classList.contains('playbut') || 
+                    event.target.classList.contains('pausebut') || 
+                    event.target.classList.contains('fullscreenbut')) {
+                    return;
+                }
+                
+                // Toggle play/pause based on current state
+                if (thisvideo.paused) {
+                    playvideo();
+                } else {
+                    thisvideo.pause();
+                    pausevideo();
+                }
             });
             thisvideo.addEventListener('ended', function (data) {
                 thisvideo.currentTime = 0;
@@ -242,47 +277,72 @@ function SliderConstructor(el) {
     chargeplayer(thisslide, false);
     next.addEventListener('click', (event)=>{
         event.preventDefault();
-        target.classList.remove('play');
-        let divplaying = target.querySelectorAll('.videoplaying');
-         // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
-         if(divplaying.length>0){
-            divplaying.forEach(div => {
-                div.classList.remove('videoplaying');
-            });
-         }
-         let videos = target.querySelectorAll('.slider video');
-         // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
-         if(videos.length>0){
-            videos.forEach(video => {
-                video.pause();
-            });
-         }
-         goNext();
+        
+        // Check if any video is currently playing globally to maintain autoplay
+        let allDivPlaying = document.querySelectorAll('.videoplaying');
+        let wasPlaying = allDivPlaying.length > 0;
+        
+        // Stop current playback globally (as playvideo() does)
+        let othersliders = document.querySelectorAll('.slider');
+        othersliders.forEach(slider => slider.classList.remove('play'));
+        
+        let allVideos = document.querySelectorAll('.slider video');
+        allVideos.forEach(video => video.pause());
+        
+        allDivPlaying.forEach(div => div.classList.remove('videoplaying'));
+         
+         // Navigate and maintain playing state if video was playing
+         goNext(wasPlaying);
     });
     prev.addEventListener('click', (event)=>{
         event.preventDefault();
-        target.classList.remove('play');
-        let divplaying = target.querySelectorAll('.videoplaying');
-         // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
-         if(divplaying.length>0){
-            divplaying.forEach(div => {
-                div.classList.remove('videoplaying');
-            });
-         }
-         let videos = target.querySelectorAll('.slider video');
-         // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
-         if(videos.length>0){
-            videos.forEach(video => {
-                video.pause();
-            });
-         }
-         goPrev();
+        
+        // Check if any video is currently playing globally to maintain autoplay
+        let allDivPlaying = document.querySelectorAll('.videoplaying');
+        let wasPlaying = allDivPlaying.length > 0;
+        
+        // Stop current playback globally (as playvideo() does)
+        let othersliders = document.querySelectorAll('.slider');
+        othersliders.forEach(slider => slider.classList.remove('play'));
+        
+        let allVideos = document.querySelectorAll('.slider video');
+        allVideos.forEach(video => video.pause());
+        
+        allDivPlaying.forEach(div => div.classList.remove('videoplaying'));
+         
+         // Navigate and maintain playing state if video was playing
+         goPrev(wasPlaying);
     });
-    document.addEventListener('keydown', function (e) {
-        if (e.code === 'ArrowRight') {
-            goNext();
-        } else if (e.code === 'ArrowLeft') {
-            goPrev();
-        }
-    });
+    // Store navigation functions on the target element for global access
+    target.goNextFunc = goNext;
+    target.goPrevFunc = goPrev;
+    
+    // Only add one global keyboard listener (check if it already exists)
+    if (!window.globalSliderKeyboardListenerAdded) {
+        window.globalSliderKeyboardListenerAdded = true;
+        
+        document.addEventListener('keydown', function (e) {
+            if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+                                 // Find the currently active/playing slider
+                 let activeSlider = document.querySelector('.slider.play') || 
+                                  document.querySelector('.slider[data-keyboard-active="true"]') ||
+                                  document.querySelector('.slider[data-keyboard-listener="true"]');
+                
+                if (activeSlider && (activeSlider.goNextFunc || activeSlider.goPrevFunc)) {
+                    // Check if any video is currently playing globally to maintain autoplay
+                    let allDivPlaying = document.querySelectorAll('.videoplaying');
+                    let wasPlaying = allDivPlaying.length > 0;
+                    
+                    if (e.code === 'ArrowRight' && activeSlider.goNextFunc) {
+                        activeSlider.goNextFunc(wasPlaying);
+                    } else if (e.code === 'ArrowLeft' && activeSlider.goPrevFunc) {
+                        activeSlider.goPrevFunc(wasPlaying);
+                    }
+                }
+            }
+        });
+    }
+    
+    // Mark this slider as keyboard-enabled
+    target.setAttribute('data-keyboard-listener', 'true');
 }
