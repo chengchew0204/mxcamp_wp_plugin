@@ -52,6 +52,7 @@ class Navigation {
         inite.style.display = "none";
         this.getVisibleSlideInfo();
         this.initArrowKeyNavigation();
+        this.initMobileLandscapeWarning();
     }
 	
 	addGifToMapBackground() {
@@ -139,6 +140,17 @@ class Navigation {
                 visibleSlideId = slide.getAttribute('id');
             }
         });
+        
+        // Remove previous visible slide classes for giving/contribuir
+        this.body.classList.remove('visible-giving', 'visible-contribuir');
+        
+        // Add body class when giving/contribuir slides are visible
+        if (visibleSlideId === 'giving') {
+            this.body.classList.add('visible-giving');
+        } else if (visibleSlideId === 'contribuir') {
+            this.body.classList.add('visible-contribuir');
+        }
+        
         // Mise à jour des variables de classe avec les valeurs obtenues
         this.slideVisibleIndex = visibleSlideIndex;
         this.slideVisibleId = visibleSlideId;
@@ -1048,6 +1060,9 @@ class Navigation {
         const slideopened = document.getElementById(slideId);
         slideopened.classList.remove('closed');
         slideopened.classList.add('opened');
+        
+        // Reset card progression - scroll all containers to top
+        this.resetCardScrollPosition(slideId);
 		
         if(slideId==="mapa" || slideId==="map"){
 			setTimeout(() => { 
@@ -1114,6 +1129,29 @@ class Navigation {
         });
         //this.theFrontVideo.play();
         console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+    }
+    resetCardScrollPosition(slideId) {
+        console.log('Resetting scroll position for card:', slideId);
+        
+        // Get the opened slide container
+        const slideContainer = document.getElementById(slideId);
+        if (!slideContainer) return;
+        
+        // Simple and efficient: Reset all elements with scrolling capability
+        const allElements = slideContainer.querySelectorAll('*');
+        
+        // Reset the container itself first
+        slideContainer.scrollTop = 0;
+        slideContainer.scrollLeft = 0;
+        
+        // Reset all child elements that might have scroll
+        allElements.forEach(el => {
+            // Only reset if element actually has scroll position to avoid unnecessary DOM writes
+            if (el.scrollTop > 0) el.scrollTop = 0;
+            if (el.scrollLeft > 0) el.scrollLeft = 0;
+        });
+        
+        console.log('Card scroll position reset completed for:', slideId);
     }
     onMenuItemClick(event) {
         const target = event.currentTarget;
@@ -1812,6 +1850,125 @@ class Navigation {
         
         // Start trying after a short delay
         setTimeout(tryCreate, 500);
+    }
+    
+    // Mobile Landscape Warning Methods
+    initMobileLandscapeWarning() {
+        console.log('Initializing mobile landscape warning system');
+        
+        // Create the overlay element
+        this.createLandscapeWarningOverlay();
+        
+        // Check initial orientation
+        this.checkMobileLandscapeOrientation();
+        
+        // Listen for orientation changes
+        window.addEventListener('orientationchange', () => {
+            // Small delay to ensure orientation change is complete
+            setTimeout(() => {
+                this.checkMobileLandscapeOrientation();
+            }, 100);
+        });
+        
+        // Also listen for resize events (fallback for some devices)
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                this.checkMobileLandscapeOrientation();
+            }, 100);
+        });
+    }
+    
+    createLandscapeWarningOverlay() {
+        // Check if overlay already exists
+        if (document.getElementById('landscape-warning-overlay')) {
+            console.log('Landscape warning overlay already exists');
+            return;
+        }
+        
+        // Determine language for messages
+        const isEnglish = document.documentElement.lang === "en-US";
+        
+        const title = isEnglish ? "Vertical Mode Recommended" : "Modo Vertical Recomendado";
+        const message = isEnglish ? 
+            "Please rotate your device to vertical orientation for the best experience." : 
+            "Para la mejor experiencia, por favor rota tu dispositivo al modo vertical.";
+        
+        // Create overlay HTML
+        const overlayHTML = `
+            <div id="landscape-warning-overlay">
+                <div class="warning-content">
+                    <div class="warning-title">${title}</div>
+                    <div class="warning-message">${message}</div>
+                    <div class="phone-animation">
+                        <div class="phone-outline"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insert into DOM
+        document.body.insertAdjacentHTML('beforeend', overlayHTML);
+        
+        this.landscapeOverlay = document.getElementById('landscape-warning-overlay');
+        
+        console.log('Landscape warning overlay created');
+    }
+    
+    isMobileDevice() {
+        return (window.innerWidth <= 768 || 
+               window.innerHeight <= 768 ||
+               navigator.maxTouchPoints > 0 || 
+               navigator.msMaxTouchPoints > 0 ||
+               ('ontouchstart' in window) || 
+               (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+               (navigator.userAgent.toLowerCase().indexOf('android') !== -1) ||
+               (navigator.userAgent.toLowerCase().indexOf('iphone') !== -1) ||
+               (navigator.userAgent.toLowerCase().indexOf('ipad') !== -1));
+    }
+    
+    checkMobileLandscapeOrientation() {
+        if (!this.landscapeOverlay) {
+            console.log('Landscape overlay not found, skipping orientation check');
+            return;
+        }
+        
+        const isMobile = this.isMobileDevice();
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        // Show warning if mobile device is in landscape mode
+        if (isMobile && isLandscape) {
+            console.log('Mobile device in landscape detected - showing warning');
+            this.showLandscapeWarning();
+        } else {
+            console.log('Portrait mode or desktop detected - hiding warning');
+            this.hideLandscapeWarning();
+        }
+    }
+    
+    showLandscapeWarning() {
+        if (this.landscapeOverlay) {
+            this.landscapeOverlay.style.display = 'flex';
+            // Prevent scrolling when overlay is shown
+            document.body.style.overflow = 'hidden';
+            
+            // Add body class for additional styling if needed
+            document.body.classList.add('landscape-warning-active');
+            
+            console.log('Landscape warning overlay shown');
+        }
+    }
+    
+    hideLandscapeWarning() {
+        if (this.landscapeOverlay) {
+            this.landscapeOverlay.style.display = 'none';
+            // Restore scrolling
+            document.body.style.overflow = '';
+            
+            // Remove body class
+            document.body.classList.remove('landscape-warning-active');
+            
+            console.log('Landscape warning overlay hidden');
+        }
     }
 }
 document.addEventListener('DOMContentLoaded', () => {

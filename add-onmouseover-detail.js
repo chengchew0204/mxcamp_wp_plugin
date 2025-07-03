@@ -36,6 +36,23 @@ class OnMouseOverDetailAdder {
             '.hb-thumbnail-link',   // Thumbnail links
             '.pgcsimplygalleryblock-grid-content img', // Gallery images
             '.sliders4',            // Videos grid for Gallery
+            // Specific selectors for clickable elements within hover content
+            '.hover-content a',
+            '.hover-content button',
+            '.hover-content [onclick]',
+            '.hover-content [role="button"]',
+            '.hover-content input[type="submit"]',
+            '.hover-content input[type="button"]',
+            '.hover-content [data-href]',
+            '.hover-content [data-url]',
+            '.hover-content [data-link]',
+            '.hover-content .clickable',
+            '.hover-content .link',
+            '.hover-content .btn',
+            '.hover-content .button',
+            '.hover-content [tabindex]:not([tabindex="-1"])',
+            '.hover-content a img',  // Images inside links (truly clickable)
+            '.hover-content [onclick] img',  // Images with click handlers
         ];
         
         this.init();
@@ -44,10 +61,46 @@ class OnMouseOverDetailAdder {
     init() {
         // Wait for DOM to load
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.addClasses());
+            document.addEventListener('DOMContentLoaded', () => {
+                this.addClasses();
+                // Process again very quickly to catch any missed elements
+                setTimeout(() => this.addClasses(), 100);
+                setTimeout(() => this.addClasses(), 500);
+            });
         } else {
             this.addClasses();
+            // Process again very quickly to catch any missed elements
+            setTimeout(() => this.addClasses(), 100);
+            setTimeout(() => this.addClasses(), 500);
         }
+        
+        // Set up real-time processing for hover content
+        this.setupHoverContentProcessing();
+    }
+
+    setupHoverContentProcessing() {
+        // Process hover content immediately when it becomes visible
+        const processHoverContent = () => {
+            const visibleHoverContent = document.querySelectorAll('.hover-content[style*="display: block"], .hover-content[style*="display:block"]');
+            visibleHoverContent.forEach(content => {
+                const clickableElements = content.querySelectorAll('a, button, [onclick], [role="button"], input[type="submit"], input[type="button"], [data-href], [data-url], [data-link], .clickable, .link, .btn, .button, [tabindex]:not([tabindex="-1"]), a img, [onclick] img');
+                this.addToElements(Array.from(clickableElements));
+            });
+        };
+
+        // Use event delegation to catch hover content changes
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.closest('.hover-content')) {
+                processHoverContent();
+            }
+        });
+
+        // Also process when hover elements are hovered
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.classList.contains('hover') || e.target.closest('.hover')) {
+                setTimeout(processHoverContent, 10); // Very short delay to let content appear
+            }
+        });
     }
 
     addClasses() {

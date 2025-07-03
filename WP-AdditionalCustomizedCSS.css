@@ -29,7 +29,7 @@
     }
   }
   
-  /* Clear Sans Webfonts */
+  /* Clear Sans Webfonts */
   @font-face {
     font-family: 'ClearSans';
     font-weight: 300;
@@ -726,7 +726,27 @@
               margin-top:19px;
               margin-left:-4px;
               border: 0px solid transparent;
+              cursor: default; /* Default cursor for the container */
           }
+
+/* Immediate pointer cursor for clickable elements in hover content (fallback while JS processes) */
+.hover-content a,
+.hover-content button,
+.hover-content [onclick],
+.hover-content [role="button"],
+.hover-content input[type="submit"],
+.hover-content input[type="button"],
+.hover-content [data-href],
+.hover-content [data-url],
+.hover-content [data-link],
+.hover-content .clickable,
+.hover-content .link,
+.hover-content .btn,
+.hover-content .button,
+.hover-content [tabindex]:not([tabindex="-1"]),
+.hover-content a img {
+    cursor: pointer !important;
+}
   .hover:hover .hover-content.bottom{
               bottom:0
           }

@@ -442,6 +442,26 @@ h2:after {
     border: 0px solid transparent;
     overflow-y: auto;
     max-height: 80vh;
+    cursor: default; /* Default cursor for the container */
+}
+
+/* Immediate pointer cursor for clickable elements in hover content (fallback while JS processes) */
+.hover-content a,
+.hover-content button,
+.hover-content [onclick],
+.hover-content [role="button"],
+.hover-content input[type="submit"],
+.hover-content input[type="button"],
+.hover-content [data-href],
+.hover-content [data-url],
+.hover-content [data-link],
+.hover-content .clickable,
+.hover-content .link,
+.hover-content .btn,
+.hover-content .button,
+.hover-content [tabindex]:not([tabindex="-1"]),
+.hover-content a img {
+    cursor: pointer !important;
 }
 
 /* Show hover content when hovering the parent */
@@ -812,6 +832,18 @@ body.bgvideo .ct-social-box a:nth-child(1),
 body.bgvideo .ct-social-box a:nth-child(2),
 body.bgvideo .ct-social-box a:nth-child(3)
 {pointer-events: none;}
+
+/* Hide first three social icons (Telegram, Instagram, TikTok) when GIVING/CONTRIBUIR slides are visible */
+body.visible-giving .ct-social-box a:nth-child(1),
+body.visible-giving .ct-social-box a:nth-child(2),
+body.visible-giving .ct-social-box a:nth-child(3),
+body.visible-contribuir .ct-social-box a:nth-child(1),
+body.visible-contribuir .ct-social-box a:nth-child(2),
+body.visible-contribuir .ct-social-box a:nth-child(3) {
+	visibility: hidden !important;
+	pointer-events: none !important;
+}
+
 /* Menu mobile */
 .mobile-menu ul li p, 
 .mobile-menu ul li a {
@@ -1421,4 +1453,145 @@ input[type="button"],
 /* Ensure proper z-index layering for clickable areas */
 .slide > div[style*="z-index: 22"] {
     pointer-events: auto;
+} 
+
+/* Mobile Landscape Orientation Warning Overlay */
+#landscape-warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(32, 16, 16, 0.70);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    touch-action: none;
+    pointer-events: auto;
+    user-select: none;
+}
+
+#landscape-warning-overlay .warning-content {
+    text-align: center;
+    color: rgba(245, 245, 245, 0.95);
+    font-family: 'ClearSans', Helvetica, sans-serif;
+    font-weight: 500;
+    padding: 40px 30px;
+    max-width: 400px;
+}
+
+#landscape-warning-overlay .warning-icon {
+    display: none;
+}
+
+#landscape-warning-overlay .warning-title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#landscape-warning-overlay .warning-message {
+    font-size: 18px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+#landscape-warning-overlay .phone-animation {
+    width: 60px;
+    height: 100px;
+    margin: 20px auto;
+    position: relative;
+}
+
+#landscape-warning-overlay .phone-outline {
+    width: 50px;
+    height: 90px;
+    border: 2px solid rgba(245, 245, 245, 0.8);
+    border-radius: 8px;
+    position: relative;
+    margin: 0 auto;
+    background: transparent;
+    animation: rotateToPortrait 3s ease-in-out infinite;
+    transform-origin: center center;
+}
+
+#landscape-warning-overlay .phone-outline::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 2px;
+    background: rgba(245, 245, 245, 0.6);
+    border-radius: 2px;
+}
+
+#landscape-warning-overlay .phone-outline::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border: 2px solid rgba(245, 245, 245, 0.6);
+    border-radius: 50%;
+    background: transparent;
+}
+
+@keyframes rotateToPortrait {
+    0% { 
+        transform: rotate(90deg);
+        opacity: 0.7;
+    }
+    30% { 
+        transform: rotate(90deg);
+        opacity: 1;
+    }
+    70% { 
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+    100% { 
+        transform: rotate(0deg);
+        opacity: 0.7;
+    }
+}
+
+#landscape-warning-overlay .rotation-animation {
+    display: none;
+}
+
+/* Responsive adjustments for very small landscape screens */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #landscape-warning-overlay .warning-content {
+        padding: 20px 25px;
+        max-width: 350px;
+    }
+    
+    #landscape-warning-overlay .warning-icon {
+        font-size: 36px;
+        margin-bottom: 15px;
+    }
+    
+    #landscape-warning-overlay .warning-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    #landscape-warning-overlay .warning-message {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+    
+    #landscape-warning-overlay .rotation-animation {
+        font-size: 28px;
+        margin: 10px 0;
+    }
 } 
