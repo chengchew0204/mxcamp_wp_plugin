@@ -1102,33 +1102,45 @@ class Navigation {
         if(this.targetSlide==='gallery'||this.targetSlide==='galeria'){
             this.removeVideosFromGallery();
         }
-        this.body.classList.remove(this.targetSlide);
-        this.body.classList.remove('bodycardopened');
-        const slideopened = document.getElementById(this.targetSlide);
-        slideopened.classList.add('closed');
-        slideopened.classList.remove('opened');
-        // enleve lèvenement a header
-        const cardHeader = slideopened.querySelector('.card-header');
-        cardHeader.removeEventListener('click', this.eventHandlers[this.targetSlide+'header']);
-        // remet l'événement
-        const zoneClick = slideopened.querySelector('.slide_10_scroll');
-        this.eventHandlers[this.targetSlide+'scroll'] = this.openCard.bind(this, { divId: this.targetSlide });
-        zoneClick.addEventListener('click', this.eventHandlers[this.targetSlide+'scroll'], false);
         
-        // Also re-add slide_10_bg click event listener
-        const zoneBg = slideopened.querySelector('.slide_10_bg');
-        if (zoneBg) {
-            this.eventHandlers[this.targetSlide+'bg'] = this.openCard.bind(this, { divId: this.targetSlide });
-            zoneBg.addEventListener('click', this.eventHandlers[this.targetSlide+'bg'], false);
-        }
-        this.targetSlide = 'none';
-        this.cardopened = false;
-        this.theFrontVideo.forEach(function(el) {
-       //     console.log(el);
-            el.play();
-        });
-        //this.theFrontVideo.play();
-        console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+        const slideopened = document.getElementById(this.targetSlide);
+        
+        // Add closing class to trigger fade-out animation without removing opened class yet
+        slideopened.classList.add('closing');
+        
+        // Wait for fade-out animation to complete (0.5s) before completing the close
+        setTimeout(() => {
+            // Remove opened class only after fade-out is complete to prevent scroll jump
+            slideopened.classList.remove('opened');
+            // Complete the closing after fade-out animation
+            this.body.classList.remove(this.targetSlide);
+            this.body.classList.remove('bodycardopened');
+            slideopened.classList.add('closed');
+            slideopened.classList.remove('closing');
+            
+            // enleve lèvenement a header
+            const cardHeader = slideopened.querySelector('.card-header');
+            cardHeader.removeEventListener('click', this.eventHandlers[this.targetSlide+'header']);
+            // remet l'événement
+            const zoneClick = slideopened.querySelector('.slide_10_scroll');
+            this.eventHandlers[this.targetSlide+'scroll'] = this.openCard.bind(this, { divId: this.targetSlide });
+            zoneClick.addEventListener('click', this.eventHandlers[this.targetSlide+'scroll'], false);
+            
+            // Also re-add slide_10_bg click event listener
+            const zoneBg = slideopened.querySelector('.slide_10_bg');
+            if (zoneBg) {
+                this.eventHandlers[this.targetSlide+'bg'] = this.openCard.bind(this, { divId: this.targetSlide });
+                zoneBg.addEventListener('click', this.eventHandlers[this.targetSlide+'bg'], false);
+            }
+            this.targetSlide = 'none';
+            this.cardopened = false;
+            this.theFrontVideo.forEach(function(el) {
+           //     console.log(el);
+                el.play();
+            });
+            //this.theFrontVideo.play();
+            console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+        }, 500); // Wait 500ms for fade-out animation to complete
     }
     resetCardScrollPosition(slideId) {
         console.log('Resetting scroll position for card:', slideId);
@@ -1642,16 +1654,16 @@ class Navigation {
             yearLeft.style.backgroundSize = '19px';
             yearLeft.style.content = '';
             const yearCaretSize = isMobileDevice ? '19px' : '19px';
-            yearLeft.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
+            yearLeft.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 4px; transition: transform 0.5s ease; vertical-align: top;`;
             yearLeft.onmouseover = () => yearLeft.style.opacity = '1';
             yearLeft.onmouseout = () => yearLeft.style.opacity = '1';
             
             const yearText = document.createElement('span');
             yearText.textContent = currentYear.textContent;
-            yearText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
+            yearText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; font-size: 24px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
             
             const yearRight = document.createElement('div');
-            yearRight.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5.7px; transition: transform 0.5s ease; vertical-align: top;`;
+            yearRight.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 4.7px; transition: transform 0.5s ease; vertical-align: top;`;
             yearRight.onmouseover = () => yearRight.style.opacity = '1';
             yearRight.onmouseout = () => yearRight.style.opacity = '1';
             
@@ -1659,16 +1671,16 @@ class Navigation {
             const monthLeft = document.createElement('div');
             // Use the same mobile detection variable from above
             const monthLeftMargin = isMobileDevice ? '8px' : '20px';
-            monthLeft.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
+            monthLeft.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; margin-left: ${monthLeftMargin}; flex-shrink: 0; position: relative; left: 2.6px; top: 4px; transition: transform 0.5s ease; vertical-align: top;`;
             monthLeft.onmouseover = () => monthLeft.style.opacity = '1';
             monthLeft.onmouseout = () => monthLeft.style.opacity = '1';
             
             const monthText = document.createElement('span');
             monthText.textContent = currentMonth.textContent;
-            monthText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; text-transform: uppercase; font-size: 22px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
+            monthText.style.cssText = 'margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; text-transform: uppercase; font-size: 24px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;';
             
             const monthRight = document.createElement('div');
-            monthRight.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 5.7px; transition: transform 0.5s ease; vertical-align: top;`;
+            monthRight.style.cssText = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${yearCaretSize}; content: ''; display: inline-block; width: ${yearCaretSize}; height: ${yearCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: -2px; top: 4.7px; transition: transform 0.5s ease; vertical-align: top;`;
             monthRight.onmouseover = () => monthRight.style.opacity = '1';
             monthRight.onmouseout = () => monthRight.style.opacity = '1';
             

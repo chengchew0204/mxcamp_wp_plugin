@@ -398,6 +398,12 @@ h2:after {
 	padding-bottom: 0px
 }
 
+.slide_10.closing .card-content {
+	display: block !important;
+	animation: fadeout 0.5s linear !important;
+	padding-bottom: 0px
+}
+
 @keyframes getopacity {
 	from {
 		opacity: 0
@@ -405,6 +411,16 @@ h2:after {
 
 	to {
 		opacity: 1
+	}
+}
+
+@keyframes fadeout {
+	from {
+		opacity: 1
+	}
+
+	to {
+		opacity: 0
 	}
 }
 

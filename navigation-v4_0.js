@@ -1529,26 +1529,38 @@ class Navigation {
             // Reset all building layers when map card closes
             this.resetAllLeafletLayers();
         }
-        this.body.classList.remove(this.targetSlide);
-        this.body.classList.remove('bodycardopened');
+        
         const slideopened = document.getElementById(this.targetSlide);
-        slideopened.classList.add('closed');
-        slideopened.classList.remove('opened');
-        // enleve lèvenement a header
-        const cardHeader = slideopened.querySelector('.card-header');
-        cardHeader.removeEventListener('click', this.eventHandlers[this.targetSlide+'header']);
-        // remet l'événement
-        const zoneClick = slideopened.querySelector('.slide_10_scroll');
-        this.eventHandlers[this.targetSlide+'scroll'] = this.openCard.bind(this, { divId: this.targetSlide });
-        zoneClick.addEventListener('click', this.eventHandlers[this.targetSlide+'scroll'], false);
-        this.targetSlide = 'none';
-        this.cardopened = false;
-        this.theFrontVideo.forEach(function(el) {
-       //     console.log(el);
-            el.play();
-        });
-        //this.theFrontVideo.play();
-        console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+        
+        // Add closing class to trigger fade-out animation without removing opened class yet
+        slideopened.classList.add('closing');
+        
+        // Wait for fade-out animation to complete (0.5s) before completing the close
+        setTimeout(() => {
+            // Remove opened class only after fade-out is complete to prevent scroll jump
+            slideopened.classList.remove('opened');
+            // Complete the closing after fade-out animation
+            this.body.classList.remove(this.targetSlide);
+            this.body.classList.remove('bodycardopened');
+            slideopened.classList.add('closed');
+            slideopened.classList.remove('closing');
+            
+            // enleve lèvenement a header
+            const cardHeader = slideopened.querySelector('.card-header');
+            cardHeader.removeEventListener('click', this.eventHandlers[this.targetSlide+'header']);
+            // remet l'événement
+            const zoneClick = slideopened.querySelector('.slide_10_scroll');
+            this.eventHandlers[this.targetSlide+'scroll'] = this.openCard.bind(this, { divId: this.targetSlide });
+            zoneClick.addEventListener('click', this.eventHandlers[this.targetSlide+'scroll'], false);
+            this.targetSlide = 'none';
+            this.cardopened = false;
+            this.theFrontVideo.forEach(function(el) {
+           //     console.log(el);
+                el.play();
+            });
+            //this.theFrontVideo.play();
+            console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+        }, 500); // Wait 500ms for fade-out animation to complete
     }
     onMenuItemClick(event) {
         const target = event.currentTarget;
