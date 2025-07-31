@@ -83,7 +83,8 @@ body.bodycardopened .slides h1 {
 	display: none;
 }
 
-	body.bodycardopened.mapa .slide_10_scroll {
+	body.bodycardopened.mapa .slide_10_scroll,
+	body.bodycardopened.map .slide_10_scroll {
 		position: absolute;
 	}
 
@@ -400,7 +401,7 @@ h2:after {
 
 .slide_10.closing .card-content {
 	display: block !important;
-	animation: fadeout 0.5s linear !important;
+	animation: fadeout 0.25s linear !important;
 	padding-bottom: 0px
 }
 
@@ -582,6 +583,11 @@ h2 br {
 
 #galeria.opened .slide_10_bg,
 #gallery.opened .slide_10_bg {
+	background: rgba(32, 16, 16, 0.70);
+}
+
+#mapa.opened .slide_10_bg,
+#map.opened .slide_10_bg {
 	background: rgba(32, 16, 16, 0.70);
 }
 
@@ -803,7 +809,8 @@ h2 br {
         top: 0;
         opacity: 0.9;
 	}
-	body.bodycardopened.mapa .slide_10_scroll {
+	body.bodycardopened.mapa .slide_10_scroll,
+	body.bodycardopened.map .slide_10_scroll {
 		position: absolute;
 	}
 
@@ -867,7 +874,7 @@ body.visible-contribuir .ct-social-box a:nth-child(3) {
 	color: rgba(245, 245, 245, 0.95) !important;
 	font-weight: 500;
 	font-size: 22px;
-	text-shadow: rgba(0, 0, 0, 1) 0 0 60px, rgba(0, 0, 0, 0.4) 0 0 60px;
+	text-shadow: rgba(0, 0, 0, 1) 0 0 30px, rgba(0, 0, 0, 0.8) 0 0 30px;
 	text-transform: uppercase;
 	cursor: pointer;
 	transition: 0.3s;
@@ -973,14 +980,14 @@ body.bodycardopened #playbutton {
 		height: 100%
 	}
 }
-@media screen and (min-width: 1300px) {
+@media screen and (min-width: 1400px) {
 	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
-		width: calc((100vw - 1300px)/2);
+		width: calc((100vw - 1400px)/2);
 	}
 }
-@media screen and (min-width: 1650px) {
+@media screen and (min-width: 1800px) {
 	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
-		width: calc((100vw - 1500px)/2);
+		width: calc((100vw - 1800px)/2);
 	}
 }
 
@@ -1040,14 +1047,14 @@ body.hoveron .tap-top {
 	}
 }
 
-@media screen and (min-width: 1300px) {
-	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
-		width: calc((100vw - 1000px)/2);
-	}
-}
-@media screen and (min-width: 1650px) {
+@media screen and (min-width: 1400px) {
 	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
 		width: calc((100vw - 1200px)/2);
+	}
+}
+@media screen and (min-width: 1800px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1400px)/2);
 	}
 }
 
@@ -1063,8 +1070,18 @@ body.hoveron .tap-top {
 	grid-template-columns: repeat(6, 1fr) !important;
 }
 
-/* Phone ≤ 600px: 4-column grid */
+/* Mobile ≤ 600px: 3-column grid */
 @media screen and (max-width: 600px) {
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		grid-template-columns: repeat(3, 1fr) !important;
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+}
+
+/* Tablet 601-900px: 4 columns */
+@media screen and (min-width: 601px) and (max-width: 900px) {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		grid-template-columns: repeat(4, 1fr) !important;
@@ -1073,18 +1090,16 @@ body.hoveron .tap-top {
 	}
 }
 
-/* Tablet 601-1024px: 5 columns */
-@media screen and (min-width: 601px) and (max-width: 1024px) {
+/* Mid-size 901-1200px: 5 columns */
+@media screen and (min-width: 901px) and (max-width: 1200px) {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		grid-template-columns: repeat(5, 1fr) !important;
-		margin-left: -20px;
-		margin-right: -20px;
 	}
 }
 
-/* Desktop ≥ 1025px: 6 columns */
-@media screen and (min-width: 1025px) {
+/* Desktop ≥ 1201px: 6 columns */
+@media screen and (min-width: 1201px) {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		font-family: 'ClearSans', helvetica, sans-serif !important;
@@ -1092,11 +1107,11 @@ body.hoveron .tap-top {
 	}
 }
 
-@media screen and (min-width: 1300px) {
+@media screen and (min-width: 1400px) {
 
 	#events .card.ct-container,
 	#eventos .card.ct-container {
-		max-width: 1300px;
+		max-width: 1400px;
 	}
 
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
@@ -1106,11 +1121,11 @@ body.hoveron .tap-top {
 	}
 }
 
-@media screen and (min-width: 1650px) {
+@media screen and (min-width: 1800px) {
 
 	#events .card.ct-container,
 	#eventos .card.ct-container {
-		max-width: 1650px;
+		max-width: 1800px;
 	}
 
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
@@ -1433,6 +1448,12 @@ input[type="button"],
 	display: none !important;
 }
 
+/* Hide gif-detail when map card is opened */
+body.bodycardopened.mapa #gif-detail,
+body.bodycardopened.map #gif-detail {
+	display: none !important;
+}
+
 /* CSS additions to make video frames clickable for play/pause */
 
 /* Make video frames clearly clickable */
@@ -1496,6 +1517,7 @@ input[type="button"],
     font-weight: 500;
     padding: 40px 30px;
     max-width: 400px;
+    transform: translateY(-25px);
 }
 
 #landscape-warning-overlay .warning-icon {

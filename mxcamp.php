@@ -77,7 +77,7 @@ function mxcamp_get_posts_cb_v3($atts) {
             $slide_id = get_post_meta($p->ID, 'slide_id', true);
             $slide_title = get_post_meta($p->ID, 'slide_title', true);
             $title = $p->post_title;
-			$post_excerpt = 
+			//$post_excerpt = 
             $id = $p->ID;
             $caret = ($i == $j) ? '' : '<div class="caretdiviphone"><a style="scroll-behavior:smooth"><img decoding="async" src="https://camp.mx/img/caret3.svg" style="width:60px; margin:20px"></a></div>';
             

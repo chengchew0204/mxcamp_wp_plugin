@@ -2,6 +2,54 @@
 2025-05-05 Burger menu test
 Hovering the menu items to show a preview of the content
 */ 
+
+// Enhanced auto-hide loading overlay functionality for /en pages
+(function() {
+    console.log('Loading overlay auto-hide system initializing...');
+    
+    // Multi-layered auto-hide system for the #inite loading overlay
+    const autoHideLoadingOverlay = () => {
+        const inite = document.getElementById("inite");
+        if (inite && inite.style.display !== "none") {
+            console.log("Auto-hiding loading overlay");
+            inite.style.display = "none";
+            return true;
+        }
+        return false;
+    };
+
+    // Immediate hide attempt for fast connections
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoHideLoadingOverlay);
+    } else {
+        autoHideLoadingOverlay();
+    }
+
+    // Additional triggers for different page load states
+    window.addEventListener('load', autoHideLoadingOverlay);
+    
+    // Hide on first user interaction (mobile-friendly)
+    const userInteractionEvents = ['click', 'scroll', 'touchstart', 'keydown'];
+    userInteractionEvents.forEach(event => {
+        document.addEventListener(event, autoHideLoadingOverlay, { once: true });
+    });
+
+    // Fallback timer - force hide after 2.5 seconds maximum
+    setTimeout(autoHideLoadingOverlay, 2500);
+
+    // Specific check for English pages
+    const isEnglishPage = document.documentElement.lang === "en-US" || 
+                         window.location.pathname.includes('/en') || 
+                         window.location.href.includes('/en/');
+    
+    if (isEnglishPage) {
+        console.log('English page detected - ensuring overlay auto-hide');
+        // More aggressive hiding for English pages
+        setTimeout(autoHideLoadingOverlay, 1000);
+        setTimeout(autoHideLoadingOverlay, 1500);
+    }
+})();
+
 class Navigation {
     constructor() {
         //variables globales
@@ -39,20 +87,67 @@ class Navigation {
     
     // initialisation de la navigation
     init() {
-        const inite = document.getElementById("inite");
-        this.replaceDefaultBurgerFunction();
-        this.LetsListen();
-        this.MenuConstruct();
-		this.addGifToMapBackground()
-        this.initScrollEvent();
-        this.initEscapeButton();
-        this.UrlVerif();
-        this.ashTagLinks();
-        this.empecherDefilementSurChangementOrientation();
-        inite.style.display = "none";
-        this.getVisibleSlideInfo();
-        this.initArrowKeyNavigation();
-        this.initMobileLandscapeWarning();
+        try {
+            // Enhanced loading overlay auto-hide with error handling
+            this.hideLoadingOverlay();
+            
+            this.replaceDefaultBurgerFunction();
+            this.LetsListen();
+            this.MenuConstruct();
+            this.addGifToMapBackground()
+            this.initScrollEvent();
+            this.initEscapeButton();
+            this.UrlVerif();
+            this.ashTagLinks();
+            this.empecherDefilementSurChangementOrientation();
+            
+            // Ensure overlay is hidden again after all initialization
+            this.hideLoadingOverlay();
+            
+            this.getVisibleSlideInfo();
+            this.initArrowKeyNavigation();
+            this.initMobileLandscapeWarning();
+            this.initOrganizadorxsTitleUpdater();
+            
+            // Final overlay hide attempt
+            setTimeout(() => this.hideLoadingOverlay(), 100);
+            
+        } catch (error) {
+            console.error('Navigation initialization error:', error);
+            // Even if navigation fails, ensure overlay is hidden
+            this.hideLoadingOverlay();
+        }
+    }
+
+    // Enhanced loading overlay hide method with multiple safety checks
+    hideLoadingOverlay() {
+        try {
+            const inite = document.getElementById("inite");
+            if (inite) {
+                // Check if we're on an English page for logging
+                const isEnglishPage = document.documentElement.lang === "en-US" || 
+                                     window.location.pathname.includes('/en') || 
+                                     window.location.href.includes('/en/');
+                
+                if (isEnglishPage) {
+                    console.log("Navigation: Hiding loading overlay on English page");
+                }
+                
+                inite.style.display = "none";
+                inite.style.visibility = "hidden";
+                inite.style.opacity = "0";
+                
+                // Also try removing it from DOM if it's still visible
+                if (inite.offsetParent !== null) {
+                    inite.remove();
+                }
+                
+                return true;
+            }
+        } catch (error) {
+            console.error('Error hiding loading overlay:', error);
+        }
+        return false;
     }
 	
 	addGifToMapBackground() {
@@ -205,7 +300,8 @@ class Navigation {
             '/promoters': 'promotores',
             '/promotores': 'promotores',
             '/promotorxs': 'promotores',
-            '/zipolite': 'zipolite'
+            '/zipolite': 'zipolite',
+            '/tandp': 'eventos'
         };
 
         // Check URL path for direct navigation
@@ -262,17 +358,33 @@ class Navigation {
                 return;
             }
     
-            // Remplir l'objet slideIndexMap
+                        // Remplir l'objet slideIndexMap
             this.slideIndexMap[index] = {
                 index: index,
                 id: divId
             };
-    
+
+            // Device-specific title logic for organizadorxs slide
+            let displayTitle = postTitle;
+            if (divId === 'organizadorxs') {
+                // Function to detect mobile device
+                const isMobileDevice = () => {
+                    return (window.innerWidth <= 768 || 
+                           navigator.maxTouchPoints > 0 || 
+                           navigator.msMaxTouchPoints > 0 ||
+                           ('ontouchstart' in window) || 
+                           (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                           (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+                };
+                
+                displayTitle = isMobileDevice() ? 'ORGANIZADXR' : 'ORGANIZADORXS';
+            }
+
             const NewMenuItem = document.createElement('li');
             const NewParagraph = document.createElement('p');
             NewParagraph.classList.add('menu-item', 'menu-item-type-custom', 'menu-item-object-custom');
             NewParagraph.setAttribute('data-post', postId);
-            NewParagraph.textContent = postTitle;
+            NewParagraph.textContent = displayTitle;
             const slideData = {
                 post: postId,
                 divId: divId,
@@ -837,8 +949,9 @@ class Navigation {
     }
    //on met  des listen sur els ahtag internes a la page qui ont la class openthecard
    ashTagLinks(){
+     // Handle both links with .openthecard class and all internal hash links
      let linksToOpenCard = document.querySelectorAll('.openthecard');
-    linksToOpenCard.forEach(item => {
+     linksToOpenCard.forEach(item => {
         var url = item.getAttribute('href');
         var parsedUrl = new URL(url);
         var hash = parsedUrl.hash;
@@ -848,9 +961,36 @@ class Navigation {
             divId: hashWithoutHash,
             openTheCard: true
         };
-        item.addEventListener('click', (e)=>{e.preventDefault; this.gotoSlide(slideData)});
+        item.addEventListener('click', (e)=>{e.preventDefault(); this.gotoSlide(slideData)});
         item.style.behavior='smooth';
-    })
+     });
+
+     // Handle ALL internal anchor links on the page (hash links)
+     let allInternalLinks = document.querySelectorAll('a[href^="#"]');
+     allInternalLinks.forEach(item => {
+        // Skip if already handled by .openthecard class
+        if (item.classList.contains('openthecard')) return;
+        
+        var href = item.getAttribute('href');
+        // Skip empty hashes or just "#"
+        if (!href || href === '#') return;
+        
+        var hashWithoutHash = href.substring(1);
+        // Check if this hash corresponds to an existing slide
+        var targetElement = document.getElementById(hashWithoutHash);
+        if (targetElement && targetElement.classList.contains('slide_10')) {
+            const slideData = {
+                post: href,
+                divId: hashWithoutHash,
+                openTheCard: true
+            };
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.gotoSlide(slideData);
+            });
+            item.style.scrollBehavior = 'smooth';
+        }
+     });
      //trouver var url
     }
     //navigation to the slide
@@ -1085,6 +1225,25 @@ class Navigation {
         if (zoneBg && this.eventHandlers[slideId+'bg']) {
             zoneBg.removeEventListener('click', this.eventHandlers[slideId+'bg'], false);
         }
+        
+        // Device-specific title logic for organizadorxs slide card header
+        if (slideId === 'organizadorxs') {
+            const cardHeader = slideopened.querySelector('.card-header h2');
+            if (cardHeader) {
+                // Function to detect mobile device
+                const isMobileDevice = () => {
+                    return (window.innerWidth <= 768 || 
+                           navigator.maxTouchPoints > 0 || 
+                           navigator.msMaxTouchPoints > 0 ||
+                           ('ontouchstart' in window) || 
+                           (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                           (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+                };
+                
+                cardHeader.textContent = isMobileDevice() ? 'ORGANIZADXR' : 'ORGANIZADORXS';
+            }
+        }
+        
         // Ajoute lèvenement a header
         const cardHeader = slideopened.querySelector('.card-header');
         this.eventHandlers[slideId+'header'] = this.closeCardsE.bind(this);
@@ -1108,7 +1267,7 @@ class Navigation {
         // Add closing class to trigger fade-out animation without removing opened class yet
         slideopened.classList.add('closing');
         
-        // Wait for fade-out animation to complete (0.5s) before completing the close
+        // Wait for fade-out animation to complete (0.25s) before completing the close
         setTimeout(() => {
             // Remove opened class only after fade-out is complete to prevent scroll jump
             slideopened.classList.remove('opened');
@@ -1140,7 +1299,7 @@ class Navigation {
             });
             //this.theFrontVideo.play();
             console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
-        }, 500); // Wait 500ms for fade-out animation to complete
+        }, 250); // Wait 250ms for fade-out animation to complete
     }
     resetCardScrollPosition(slideId) {
         console.log('Resetting scroll position for card:', slideId);
@@ -1513,6 +1672,20 @@ class Navigation {
         // Implementation of initializeCompactCalendarNav method
         console.log('Compact calendar navigation initialized for eventos/events section');
         
+        // Detect language for proper month handling
+        const isEnglish = document.documentElement.lang === "en-US";
+        
+        // Define month patterns for both languages
+        const spanishMonths = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+        const englishMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const monthPattern = isEnglish ? englishMonths : spanishMonths;
+        const monthRegex = new RegExp(`^(${monthPattern.join('|')})$`, 'i');
+        
+        // Language-aware month names for navigation logic
+        const januaryName = isEnglish ? 'JAN' : 'ENE';
+        const decemberName = isEnglish ? 'DEC' : 'DIC';
+        const defaultMonth = isEnglish ? 'MAY' : 'MAY'; // MAY is same in both languages
+        
         // Immediately hide original navigation to prevent glitch
         const hideOriginalNavigation = () => {
             const calendar = document.querySelector('.ajde_evcal_calendar');
@@ -1521,7 +1694,7 @@ class Navigation {
                 const allLinks = Array.from(calendar.querySelectorAll('a'));
                 allLinks.forEach(link => {
                     const text = link.textContent.trim();
-                    if (/^(2024|2025|2026|2027)$/.test(text) || /^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)$/i.test(text)) {
+                    if (/^(2024|2025|2026|2027)$/.test(text) || monthRegex.test(text)) {
                         link.style.display = 'none';
                         if (link.parentElement && link.parentElement.tagName !== 'BODY') {
                             link.parentElement.style.display = 'none';
@@ -1584,7 +1757,7 @@ class Navigation {
                     if (link.parentElement && link.parentElement.tagName !== 'BODY') {
                         link.parentElement.style.display = 'none';
                     }
-                } else if (/^(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)$/i.test(text)) {
+                } else if (monthRegex.test(text)) {
                     months.push(link);
                     if (link.classList.contains('current')) {
                         currentMonth = link;
@@ -1605,6 +1778,7 @@ class Navigation {
             
             if (years.length === 0 || months.length === 0) {
                 console.log('Not enough date elements found');
+                console.log('Available months:', months.length, 'Available years:', years.length);
                 return false;
             }
             
@@ -1613,7 +1787,7 @@ class Navigation {
                 currentYear = years.find(y => y.textContent === '2025') || years[0];
             }
             if (!currentMonth) {
-                currentMonth = months.find(m => m.textContent.toUpperCase() === 'MAY') || months[4]; // MAY is at index 4
+                currentMonth = months.find(m => m.textContent.toUpperCase() === defaultMonth) || months[4]; // MAY is typically at index 4
             }
             
             // Find where to insert the compact navigation
@@ -1756,8 +1930,10 @@ class Navigation {
                     currentMonth = targetMonth;
                     currentMonthIndex = months.indexOf(targetMonth);
                     monthText.textContent = currentMonth.textContent;
+                    console.log(`Updated to month: ${monthName}, index: ${currentMonthIndex}`);
                     return true;
                 }
+                console.log(`Could not find month: ${monthName} in available months:`, months.map(m => m.textContent));
                 return false;
             };
             
@@ -1767,21 +1943,37 @@ class Navigation {
                     currentYearIndex--;
                     currentYear = years[currentYearIndex];
                     yearText.textContent = currentYear.textContent;
+                    console.log(`Changed to previous year: ${currentYear.textContent}`);
                     return true;
                 } else if (direction === 'next' && currentYearIndex < years.length - 1) {
                     currentYearIndex++;
                     currentYear = years[currentYearIndex];
                     yearText.textContent = currentYear.textContent;
+                    console.log(`Changed to next year: ${currentYear.textContent}`);
                     return true;
                 }
+                console.log(`Cannot change year ${direction}, current index: ${currentYearIndex}, total years: ${years.length}`);
                 return false;
+            };
+            
+            // Helper function to find month index in the expected order
+            const getMonthIndex = (monthName) => {
+                return monthPattern.findIndex(month => month.toUpperCase() === monthName.toUpperCase());
+            };
+            
+            // Helper function to get month name by pattern index
+            const getMonthByIndex = (index) => {
+                if (index >= 0 && index < monthPattern.length) {
+                    return monthPattern[index];
+                }
+                return null;
             };
             
             // Year navigation with intelligent month defaults
             yearLeft.onclick = () => {
                 if (changeYear('previous')) {
                     // When going to previous year, default to December
-                    updateToMonth('DIC');
+                    updateToMonth(decemberName);
                     // Click year first, then month
                     currentYear.click();
                     setTimeout(() => currentMonth.click(), 100);
@@ -1791,7 +1983,7 @@ class Navigation {
             yearRight.onclick = () => {
                 if (changeYear('next')) {
                     // When going to next year, default to January
-                    updateToMonth('ENE');
+                    updateToMonth(januaryName);
                     // Click year first, then month
                     currentYear.click();
                     setTimeout(() => currentMonth.click(), 100);
@@ -1800,42 +1992,69 @@ class Navigation {
             
             // Intelligent month navigation with automatic year adjustment
             monthLeft.onclick = () => {
-                // If we're at January (ENE), go to December of previous year
-                if (currentMonth.textContent.toUpperCase() === 'ENE') {
+                const currentMonthName = currentMonth.textContent.toUpperCase();
+                console.log(`Month left clicked, current month: ${currentMonthName}`);
+                
+                // If we're at January, go to December of previous year
+                if (currentMonthName === januaryName.toUpperCase()) {
                     if (changeYear('previous')) {
-                        updateToMonth('DIC');
+                        updateToMonth(decemberName);
                         // Click year first, then month
                         currentYear.click();
                         setTimeout(() => currentMonth.click(), 100);
                     }
                 } else {
-                    // Normal previous month navigation
-                    currentMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
-                    currentMonth = months[currentMonthIndex];
-                    monthText.textContent = currentMonth.textContent;
-                    currentMonth.click();
+                    // Normal previous month navigation using pattern-based approach
+                    const currentPatternIndex = getMonthIndex(currentMonthName);
+                    if (currentPatternIndex > 0) {
+                        const previousMonthName = getMonthByIndex(currentPatternIndex - 1);
+                        if (previousMonthName && updateToMonth(previousMonthName)) {
+                            currentMonth.click();
+                        }
+                    } else {
+                        // Fallback to array-based navigation
+                        currentMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
+                        currentMonth = months[currentMonthIndex];
+                        monthText.textContent = currentMonth.textContent;
+                        currentMonth.click();
+                    }
                 }
             };
             
             monthRight.onclick = () => {
-                // If we're at December (DIC), go to January of next year
-                if (currentMonth.textContent.toUpperCase() === 'DIC') {
+                const currentMonthName = currentMonth.textContent.toUpperCase();
+                console.log(`Month right clicked, current month: ${currentMonthName}`);
+                
+                // If we're at December, go to January of next year
+                if (currentMonthName === decemberName.toUpperCase()) {
                     if (changeYear('next')) {
-                        updateToMonth('ENE');
+                        updateToMonth(januaryName);
                         // Click year first, then month
                         currentYear.click();
                         setTimeout(() => currentMonth.click(), 100);
                     }
                 } else {
-                    // Normal next month navigation
-                    currentMonthIndex = currentMonthIndex < months.length - 1 ? currentMonthIndex + 1 : 0;
-                    currentMonth = months[currentMonthIndex];
-                    monthText.textContent = currentMonth.textContent;
-                    currentMonth.click();
+                    // Normal next month navigation using pattern-based approach
+                    const currentPatternIndex = getMonthIndex(currentMonthName);
+                    if (currentPatternIndex >= 0 && currentPatternIndex < monthPattern.length - 1) {
+                        const nextMonthName = getMonthByIndex(currentPatternIndex + 1);
+                        if (nextMonthName && updateToMonth(nextMonthName)) {
+                            currentMonth.click();
+                        }
+                    } else {
+                        // Fallback to array-based navigation
+                        currentMonthIndex = currentMonthIndex < months.length - 1 ? currentMonthIndex + 1 : 0;
+                        currentMonth = months[currentMonthIndex];
+                        monthText.textContent = currentMonth.textContent;
+                        currentMonth.click();
+                    }
                 }
             };
             
             console.log('Compact calendar navigation created successfully');
+            console.log('Language detected:', isEnglish ? 'English' : 'Spanish');
+            console.log('January name:', januaryName, 'December name:', decemberName);
+            console.log('Month pattern:', monthPattern);
             
             // Ensure the OnMouseOverDetailAdder processes the new carets
             if (window.onMouseOverDetailAdder) {
@@ -1926,6 +2145,8 @@ class Navigation {
         console.log('Landscape warning overlay created');
     }
     
+    // Broad mobile/tablet detection - use for UI adaptations that should apply to tablets too
+    // (menu behavior, calendar navigation, etc.)
     isMobileDevice() {
         return (window.innerWidth <= 768 || 
                window.innerHeight <= 768 ||
@@ -1938,21 +2159,78 @@ class Navigation {
                (navigator.userAgent.toLowerCase().indexOf('ipad') !== -1));
     }
     
+    // Precise mobile phone detection that excludes tablets - use for phone-specific features
+    // like landscape orientation warnings that shouldn't apply to tablets
+    isMobilePhone() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const hasTouch = navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0 || ('ontouchstart' in window);
+        
+        // Screen size thresholds - mobile phones typically have both dimensions smaller
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const maxDimension = Math.max(screenWidth, screenHeight);
+        const minDimension = Math.min(screenWidth, screenHeight);
+        
+        // Mobile phone characteristics:
+        // - Maximum dimension typically < 900px (excludes most tablets)
+        // - Minimum dimension typically < 500px (excludes tablets in portrait)
+        // - Aspect ratio typically > 1.3 (taller than wide when in portrait)
+        const aspectRatio = maxDimension / minDimension;
+        
+        // Explicit tablet exclusions
+        const isTablet = (
+            userAgent.indexOf('ipad') !== -1 ||
+            userAgent.indexOf('tablet') !== -1 ||
+            (userAgent.indexOf('android') !== -1 && userAgent.indexOf('mobile') === -1) ||
+            userAgent.indexOf('kindle') !== -1 ||
+            userAgent.indexOf('silk') !== -1 ||
+            userAgent.indexOf('playbook') !== -1 ||
+            userAgent.indexOf('bb10') !== -1 ||
+            userAgent.indexOf('rim') !== -1
+        );
+        
+        // Desktop/laptop exclusions
+        const isDesktop = (
+            userAgent.indexOf('windows nt') !== -1 ||
+            userAgent.indexOf('macintosh') !== -1 ||
+            userAgent.indexOf('linux') !== -1
+        ) && !hasTouch;
+        
+        // Positive mobile phone indicators
+        const mobileIndicators = (
+            userAgent.indexOf('mobile') !== -1 ||
+            userAgent.indexOf('iphone') !== -1 ||
+            userAgent.indexOf('ipod') !== -1 ||
+            userAgent.indexOf('blackberry') !== -1 ||
+            userAgent.indexOf('windows phone') !== -1
+        );
+        
+        // Final determination: must meet size criteria AND not be a tablet/desktop
+        const meetsPhoneSize = (
+            maxDimension < 900 && 
+            minDimension < 500 && 
+            aspectRatio > 1.3
+        );
+        
+        return (meetsPhoneSize && hasTouch && !isTablet && !isDesktop) || 
+               (mobileIndicators && !isTablet && !isDesktop);
+    }
+    
     checkMobileLandscapeOrientation() {
         if (!this.landscapeOverlay) {
             console.log('Landscape overlay not found, skipping orientation check');
             return;
         }
         
-        const isMobile = this.isMobileDevice();
+        const isMobilePhone = this.isMobilePhone();
         const isLandscape = window.innerWidth > window.innerHeight;
         
-        // Show warning if mobile device is in landscape mode
-        if (isMobile && isLandscape) {
-            console.log('Mobile device in landscape detected - showing warning');
+        // Show warning ONLY if actual mobile phone (not tablet) is in landscape mode
+        if (isMobilePhone && isLandscape) {
+            console.log('Mobile phone in landscape detected - showing warning');
             this.showLandscapeWarning();
         } else {
-            console.log('Portrait mode or desktop detected - hiding warning');
+            console.log('Portrait mode, tablet, or desktop detected - hiding warning');
             this.hideLandscapeWarning();
         }
     }
@@ -1981,6 +2259,26 @@ class Navigation {
             
             console.log('Landscape warning overlay hidden');
         }
+    }
+    initOrganizadorxsTitleUpdater() {
+        // Update organizadorxs card header title on page load
+        const cardHeader = document.querySelector('#organizadorxs .card-header h2');
+        if (cardHeader) {
+            // Function to detect mobile device
+            const isMobileDevice = () => {
+                return (window.innerWidth <= 768 || 
+                       navigator.maxTouchPoints > 0 || 
+                       navigator.msMaxTouchPoints > 0 ||
+                       ('ontouchstart' in window) || 
+                       (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                       (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+            };
+            
+            const newTitle = isMobileDevice() ? 'ORGANIZADXR' : 'ORGANIZADORXS';
+            cardHeader.textContent = newTitle;
+        }
+        
+        console.log('Organizadorxs title updater initialized');
     }
 }
 document.addEventListener('DOMContentLoaded', () => {

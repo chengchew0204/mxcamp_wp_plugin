@@ -1,9 +1,8 @@
-/* Force grid display for events in Chrome with responsive columns */
+/* Force grid display for events in Chrome */
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-    /* Desktop ≥ 1025px: 6 columns */
     .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
       display: grid !important;
-      grid-template-columns: repeat(6, 1fr) !important;
+      grid-template-columns: repeat(4, 1fr) !important;
     }
     
     /* Additional fix for event content */
@@ -13,23 +12,8 @@
       opacity: 1 !important;
     }
   }
-
-  /* Chrome-specific responsive grid rules */
-  @media screen and (-webkit-min-device-pixel-ratio:0) and (max-width: 600px) {
-    /* Phone ≤ 600px: 4 columns */
-    .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
-      grid-template-columns: repeat(4, 1fr) !important;
-    }
-  }
-
-  @media screen and (-webkit-min-device-pixel-ratio:0) and (min-width: 601px) and (max-width: 1024px) {
-    /* Tablet 601-1024px: 5 columns */
-    .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
-      grid-template-columns: repeat(5, 1fr) !important;
-    }
-  }
   
-  /* Clear Sans Webfonts */
+  /* Clear Sans Webfonts */
   @font-face {
     font-family: 'ClearSans';
     font-weight: 300;
@@ -257,7 +241,7 @@
           width:26px; height:26px;
           
       }
-      [class*=ct-toggle] {
+      .[class*=ct-toggle] {
           display:block
       }
   button.ct-toggle svg.ct-icon{
@@ -266,7 +250,7 @@
   transition:0.5s;
       }
       button.ct-toggle:hover svg.ct-icon{
-          /*opacity:0.6*/
+          /*opacity:0.6*/;
           fill:white;
       }
       button.ct-toggle-close svg.ct-icon{
@@ -471,8 +455,32 @@
   
   
   body.ajde_events-template-default div#main-container{
-      background-color: rgba(32,16,16,0.6)!important
-  }
+    background-image: url(https://camp.mx/wp-content/uploads/eventos_bkgd.jpg)!important;
+    background-size: cover!important;
+    background-position: center center!important;
+    background-repeat: no-repeat!important;
+    background-attachment: fixed!important;
+    position: relative!important;
+}
+
+/* Add overlay using pseudo-element */
+body.ajde_events-template-default div#main-container::before {
+    content: ""!important;
+    position: absolute!important;
+    top: 0!important;
+    left: 0!important;
+    right: 0!important;
+    bottom: 0!important;
+    background-color: rgba(32,16,16,0.6)!important;
+    pointer-events: none!important; /* Allows clicking through the overlay */
+    z-index: 1!important;
+}
+
+/* Ensure content appears above the overlay */
+body.ajde_events-template-default div#main-container > * {
+    position: relative!important;
+    z-index: 2!important;
+}
   body.ajde_events-template-default span.evcal_event_title, body.ajde_events-template-default .evose_repeat_header{display:none!important}
   body.ajde_events-template-default p.desc_trig_outter{border-radius:0!important}
   body.ajde_events-template-default p.desc_trig_outter a{background:#FFFFFF!important}
@@ -726,27 +734,7 @@
               margin-top:19px;
               margin-left:-4px;
               border: 0px solid transparent;
-              cursor: default; /* Default cursor for the container */
           }
-
-/* Immediate pointer cursor for clickable elements in hover content (fallback while JS processes) */
-.hover-content a,
-.hover-content button,
-.hover-content [onclick],
-.hover-content [role="button"],
-.hover-content input[type="submit"],
-.hover-content input[type="button"],
-.hover-content [data-href],
-.hover-content [data-url],
-.hover-content [data-link],
-.hover-content .clickable,
-.hover-content .link,
-.hover-content .btn,
-.hover-content .button,
-.hover-content [tabindex]:not([tabindex="-1"]),
-.hover-content a img {
-    cursor: pointer !important;
-}
   .hover:hover .hover-content.bottom{
               bottom:0
           }
