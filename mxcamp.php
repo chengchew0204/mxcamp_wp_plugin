@@ -194,4 +194,273 @@ function mxcamp_get_posts_cb_v3($atts) {
 
     return $output;
 }
+
+/**
+ * Inject background click redirect on single event pages
+ */
+function mxcamp_inject_background_redirect() {
+    if (is_singular('ajde_events')) {
+        ?>
+        <script type="text/javascript">
+        (function() {
+            'use strict';
+            
+            function initBackgroundRedirect() {
+                console.log('Initializing single event background redirect...');
+                
+                // Detect language from multiple sources
+                let languagePage = document.documentElement.lang;
+                
+                if (!languagePage || languagePage === '') {
+                    if (window.location.href.includes('/en/')) {
+                        languagePage = 'en-US';
+                    } else if (document.querySelector('a[href*="/en/#"]')) {
+                        languagePage = 'en-US';
+                    } else if (document.querySelector('#menu-main-menu-en')) {
+                        languagePage = 'en-US';
+                    } else {
+                        languagePage = 'es-ES';
+                    }
+                }
+                
+                const isEnglish = languagePage.includes('en');
+                const redirectUrl = isEnglish ? 'https://camp.mx/calendar' : 'https://camp.mx/calendario';
+                const eventsUrl = isEnglish ? 'https://camp.mx/events' : 'https://camp.mx/eventos';
+                
+                console.log('Language detected:', languagePage);
+                console.log('Redirect URL will be:', redirectUrl);
+                console.log('Events URL will be:', eventsUrl);
+                console.log('Starting burger menu override process...');
+                
+                // Override burger menu behavior on single event pages
+                function overrideBurgerMenu() {
+                    console.log('overrideBurgerMenu function called...');
+                    const burgerMenu = document.querySelector('button.ct-header-trigger.ct-toggle');
+                    console.log('Burger menu element found:', burgerMenu);
+                    if (burgerMenu) {
+                        console.log('Found burger menu, overriding behavior...');
+                        
+                        // Remove data-toggle-panel attribute to prevent default panel behavior
+                        burgerMenu.removeAttribute('data-toggle-panel');
+                        burgerMenu.removeAttribute('aria-expanded');
+                        
+                        // Remove any existing click event listeners by cloning the element
+                        const newBurgerMenu = burgerMenu.cloneNode(true);
+                        newBurgerMenu.removeAttribute('data-toggle-panel');
+                        newBurgerMenu.removeAttribute('aria-expanded');
+                        burgerMenu.parentNode.replaceChild(newBurgerMenu, burgerMenu);
+                        
+                        // Add new click event that redirects to events page
+                        newBurgerMenu.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Burger menu clicked on single event page, redirecting to:', eventsUrl);
+                            
+                            // Close the panel if it's open
+                            const offcanvas = document.getElementById('offcanvas');
+                            if (offcanvas) {
+                                offcanvas.classList.remove('active');
+                            }
+                            
+                            // Add transition effect
+                            document.body.style.transition = 'opacity 0.2s ease';
+                            document.body.style.opacity = '0.9';
+                            
+                            setTimeout(function() {
+                                window.location.href = eventsUrl;
+                            }, 150);
+                        });
+                        
+                        console.log('Burger menu behavior overridden for single event page');
+                        
+                        // Also override any future script attempts to modify the burger menu
+                        setTimeout(function() {
+                            const checkBurger = document.querySelector('button.ct-header-trigger.ct-toggle');
+                            if (checkBurger && checkBurger !== newBurgerMenu) {
+                                console.log('Burger menu was replaced by another script, re-overriding...');
+                                overrideBurgerMenu();
+                            }
+                        }, 2000);
+                        
+                    } else {
+                        console.log('Burger menu not found, retrying in 500ms...');
+                        setTimeout(overrideBurgerMenu, 500);
+                    }
+                }
+                
+                // Call the override function multiple times to ensure it works
+                overrideBurgerMenu();
+                setTimeout(overrideBurgerMenu, 1000);
+                setTimeout(overrideBurgerMenu, 3000);
+                
+                // Backup approach - direct document click listener for burger menu
+                document.addEventListener('click', function(e) {
+                    const burgerButton = e.target.closest('button.ct-header-trigger.ct-toggle');
+                    if (burgerButton) {
+                        console.log('Direct burger menu click intercepted!');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        // Close the panel if it's open
+                        const offcanvas = document.getElementById('offcanvas');
+                        if (offcanvas) {
+                            offcanvas.classList.remove('active');
+                        }
+                        
+                        console.log('Redirecting to events page from direct listener:', eventsUrl);
+                        
+                        // Add transition effect
+                        document.body.style.transition = 'opacity 0.2s ease';
+                        document.body.style.opacity = '0.9';
+                        
+                        setTimeout(function() {
+                            window.location.href = eventsUrl;
+                        }, 150);
+                    }
+                }, true); // Use capture phase to intercept early
+                
+                document.body.addEventListener('click', function(event) {
+                    // Check if this is a burger menu click first
+                    if (event.target.closest('button.ct-header-trigger.ct-toggle') || 
+                        event.target.closest('.ct-header-trigger')) {
+                        console.log('Burger menu click detected, letting it handle the redirect');
+                        return;
+                    }
+                    
+                    if (event.target.tagName === 'A' || 
+                        event.target.tagName === 'BUTTON' || 
+                        event.target.tagName === 'INPUT' || 
+                        event.target.tagName === 'TEXTAREA' || 
+                        event.target.tagName === 'SELECT' ||
+                        event.target.tagName === 'VIDEO' ||
+                        event.target.tagName === 'IMG' ||
+                        event.target.closest('a') ||
+                        event.target.closest('button') ||
+                        event.target.closest('form') ||
+                        event.target.closest('video') ||
+                        event.target.closest('.video-events-grid') ||
+                        event.target.closest('.fullscreen.video') ||
+                        event.target.closest('nav') ||
+                        event.target.closest('header') ||
+                        event.target.closest('footer') ||
+                        event.target.closest('#offcanvas') ||
+                        event.target.closest('.ct-panel') ||
+                        event.target.closest('.evolbclose') ||
+                        event.target.closest('.ct-social-box') ||
+                        event.target.closest('.evcal_evdata_row') ||
+                        event.target.closest('.comment-form') ||
+                        event.target.closest('.cta') ||
+                        event.target.closest('.playbut') ||
+                        event.target.closest('.pausebut')) {
+                        console.log('Click on interactive element, not redirecting');
+                        return;
+                    }
+                    
+                    const main = document.getElementById('main');
+                    const mainContainer = document.getElementById('main-container');
+                    
+                    if ((main && main.contains(event.target)) || 
+                        (mainContainer && mainContainer.contains(event.target))) {
+                        
+                        console.log('Background clicked, redirecting to:', redirectUrl);
+                        
+                        document.body.style.transition = 'opacity 0.2s ease';
+                        document.body.style.opacity = '0.9';
+                        
+                        setTimeout(function() {
+                            window.location.href = redirectUrl;
+                        }, 150);
+                    }
+                });
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    body.single-ajde_events {
+                        cursor: pointer;
+                    }
+                    body.single-ajde_events a,
+                    body.single-ajde_events button,
+                    body.single-ajde_events input,
+                    body.single-ajde_events textarea,
+                    body.single-ajde_events select,
+                    body.single-ajde_events video,
+                    body.single-ajde_events nav,
+                    body.single-ajde_events header,
+                    body.single-ajde_events footer,
+                    body.single-ajde_events .cta,
+                    body.single-ajde_events .fullscreen.video,
+                    body.single-ajde_events .comment-form {
+                        cursor: auto !important;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                console.log('Background redirect initialized successfully');
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initBackgroundRedirect);
+            } else {
+                initBackgroundRedirect();
+            }
+            
+            setTimeout(initBackgroundRedirect, 1000);
+            
+        })();
+        </script>
+        <?php
+    }
+}
+add_action('wp_footer', 'mxcamp_inject_background_redirect');
+
+/**
+ * Inject hash-based URL redirects for events/eventos to calendar pages
+ */
+function mxcamp_inject_hash_redirects() {
+    ?>
+    <script type="text/javascript">
+    (function() {
+        'use strict';
+        
+        function checkHashRedirects() {
+            const urlHash = window.location.hash;
+            const currentPath = window.location.pathname;
+            
+            if (urlHash) {
+                const cleanHash = urlHash.substring(1);
+                
+                // Redirect #events to calendar (English)
+                if (cleanHash === 'events' && (currentPath.includes('/en') || document.documentElement.lang === 'en-US')) {
+                    console.log('Redirecting #events to calendar');
+                    window.location.href = 'https://camp.mx/calendar';
+                    return;
+                }
+                
+                // Redirect #eventos to calendario (Spanish)
+                if (cleanHash === 'eventos' && (!currentPath.includes('/en') || document.documentElement.lang === 'es-ES')) {
+                    console.log('Redirecting #eventos to calendario');
+                    window.location.href = 'https://camp.mx/calendario';
+                    return;
+                }
+            }
+        }
+        
+        // Run immediately if DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkHashRedirects);
+        } else {
+            checkHashRedirects();
+        }
+        
+        // Also check on hash change events
+        window.addEventListener('hashchange', checkHashRedirects);
+        
+    })();
+    </script>
+    <?php
+}
+add_action('wp_footer', 'mxcamp_inject_hash_redirects');
+
+
 ?>

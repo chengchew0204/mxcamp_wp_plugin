@@ -227,9 +227,9 @@ class Hovers {
 	        triggerRect.left + (triggerRect.width / 2) - (contentRect.width / 2)));
 	    }
 	    
-	    // Handle scrolling for mobile devices
-	    // Maximum height is 50% of viewport for consistent sizing
-	    const maxContentHeight = Math.floor(viewportHeight * 0.5); 
+	        // Handle scrolling for mobile devices
+    // Maximum height is 80% of viewport to allow more content visibility
+    const maxContentHeight = Math.floor(viewportHeight * 0.8); 
 	    
 	    // Check if we should position above or below the trigger
 	    const positionAbove = triggerRect.top > viewportHeight / 2; // Position above if in bottom half of screen

@@ -241,16 +241,16 @@
           width:26px; height:26px;
           
       }
-      .[class*=ct-toggle] {
+      [class*=ct-toggle] {
           display:block
       }
   button.ct-toggle svg.ct-icon{
           opacity:0.9;
           fill:white;
-  transition:0.5s;
+          transition:0.5s;
       }
       button.ct-toggle:hover svg.ct-icon{
-          /*opacity:0.6*/;
+          /* opacity:0.6; */
           fill:white;
       }
       button.ct-toggle-close svg.ct-icon{
@@ -587,10 +587,10 @@ body.ajde_events-template-default div#main-container > * {
           flex-basis: unset
       }
   .ajde_evcal_calendar.boxy .eventon_events_list .eventon_list_event .evoet_cx{
-  margin-right:2px;
+  margin-right:0.8px;
   margin-top: 2px;
   padding-left:2px; padding-right:2px;
-  transform:scale(1.33);
+  transform:scale(1.1);
   transform-origin: top right;
   }
   @media screen and (max-width:1200px){
@@ -713,38 +713,9 @@ body.ajde_events-template-default div#main-container > * {
               cursor:pointer;
               z-index:2;
           }
-          .hover:hover .hover-content{
-              display:block
-          }
-          .hover-content{
-              background:rgba(245,245,245,0.85);
-              padding:10px;
-              display: none;
-              box-shadow: 0 4px 60px #404040c0, 0 4px 60px #404040c0;
-              box-sizing: border-box;
-              color: #282828;
-              font-size: 19px;
-              font-weight: normal;
-              line-height: 1.3em;
-              max-width: 80vw;
-              padding: 10px;
-              position:absolute;
-              width: 300px;
-              z-index: 9;
-              margin-top:19px;
-              margin-left:-4px;
-              border: 0px solid transparent;
-          }
-  .hover:hover .hover-content.bottom{
-              bottom:0
-          }
-  
-   .hover-content{
-              display:none
-          }
-  .hover-content:hover{
-              display:block
-          }
+          
+          /* Hover content styles moved to main CSS file to avoid conflicts */
+          
   h4 {
               font-size: 23px;
               letter-spacing: 0.22px;

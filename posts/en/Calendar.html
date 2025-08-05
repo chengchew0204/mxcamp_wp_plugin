@@ -1,358 +1,358 @@
 <!-- wp:html -->
 <div class="calendar-post">
 
-<!-- /wp:html -->
-[add_eventon tiles="yes" jumper="yes" exp_jumper="yes" tile_count="5" tile_bg="1"]
-<!--
-
-
-
-
-
-<p style="text-align: center;"><a style="text-decoration: none; color: #f5f5f5;" href="https://instagram.com/zipolitecamp" target="_blank" rel="noopener"><img style="width: 100%;" data-src="https://camp.mx/wp-content/uploads/2022/12/en-instag.png" alt="instagram" /></a></p>
-
-
-
-
-
---></div>
-<!-- /wp:html -->
-
-
-
-<!-- wp:html -->
-<style>
-    .fullscreen img.playbut{
-    left: -10px;
-    bottom: -7px;
-    width: 100px;
-    cursor: pointer;
-    }
-@media screen and (max-width:600px){
-    .fullscreen img.playbut{
-            left: 0;
-	    bottom: 0;
-	    width: 50px;
-    }
-}
-	.videoplaying .playbut {
-		display: none;
-	}
-    .fullscreen .pausebut {
-        position: absolute;
-		left: 5px;
-		bottom: 5px;
-		width: 30px;
-		cursor: pointer;
-		display: none;
-		background: rgba(0, 0, 0, 0.6);
-		border-radius: 50%;
-		padding: 7px;
-    }
-	
-	.videoplaying.fullscreen:hover .pausebut {
-		display: block;
-	}
-
- .evocard_row .fullscreen .timevideo {
-    margin-top: 5px !important;
-    position: absolute !important;
-    bottom: 0 !important;
-    top: unset !important;
-    right: 0 !important;
-    font-size: 15px !important;
-    z-index: 10 !important;
-    display: none;
-}
-	.fullscreen .timevideo  {
-		color: #F5f5f5 !important;
-	}
-    .videoplaying:hover .timevideo {
-	    display: block;
-	}
-	
-
-</style>
-<script>
-
-function setOnClickOutside(ele, cb) {
-    document.addEventListener('click', callback = (event) => {
-        event.stopPropagation()
-        let parent = document.getElementsByClassName("eventcard eventon_events_list show")[0]
-            if (parent) {
-                let el = parent.getElementsByClassName(ele)[0]
-              //  console.log("el",el)
-                if (el && !el.contains(event.target)) {
-                    cb();
-                 // event.source.removeEventListener('click', callback);
-                 }
-            }
-
-    });
-};
-
-setOnClickOutside(
-    'evolb_content evo_lightbox_body eventon_list_event',
-    () => {
-        let active_card = document.getElementsByClassName('eventcard eventon_events_list show')[0];
-        if (active_card) {
-            let closeButton = active_card.getElementsByClassName('evolb_close_btn')[0]
-            console.log("ActiveCardCloseButton", closeButton)
-            closeButton.click()
+    <!-- /wp:html -->
+    [add_eventon tiles="yes" jumper="yes" exp_jumper="yes" tile_count="5" tile_bg="1"]
+    <!--
+    
+    
+    
+    
+    
+    <p style="text-align: center;"><a style="text-decoration: none; color: #f5f5f5;" href="https://instagram.com/zipolitecamp" target="_blank" rel="noopener"><img style="width: 100%;" data-src="https://camp.mx/wp-content/uploads/2022/12/en-instag.png" alt="instagram" /></a></p>
+    
+    
+    
+    
+    
+    --></div>
+    <!-- /wp:html -->
+    
+    
+    
+    <!-- wp:html -->
+    <style>
+        .fullscreen img.playbut{
+        left: -10px;
+        bottom: -7px;
+        width: 100px;
+        cursor: pointer;
+        }
+    @media screen and (max-width:600px){
+        .fullscreen img.playbut{
+                left: 0;
+            bottom: 0;
+            width: 50px;
         }
     }
-);
-
-function goToJan() {
-    let janEl = document.querySelector(`.legend.evo_jumper_months a`)
-    janEl.click()
-}
-
-const yearEls = document.querySelectorAll(".evo_j_years .legend a")
-yearEls.forEach((yearEl) => yearEl.addEventListener("click", () => setTimeout(goToJan,500)))
-
-
-
-
-function replaceByVideo(){
-    let checkIfCalendarExist = setInterval(lookForIt, 100);
-    
-
-    function lookForIt(){
-        let eventLightBox = document.getElementById('evo_lightboxes');
+        .videoplaying .playbut {
+            display: none;
+        }
+        .fullscreen .pausebut {
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+            width: 30px;
+            cursor: pointer;
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            padding: 7px;
+        }
         
-        if(eventLightBox){
-            //Interval pour chercher l'élément
-            clearInterval(checkIfCalendarExist);
-            replaceNow();
-        }else{
-            console.log('searching evo_lightboxes');
+        .videoplaying.fullscreen:hover .pausebut {
+            display: block;
         }
-    }
-
-
     
-    function replaceNow(){
-        function searchAndReplace(){
-gtag('event', 'click', {
-        'event_category': 'Event Card',
-        'event_label': 'Event Card opened',
-        'value': 1
-      });
-
-
-            let eventLightBox = document.getElementById('evo_lightboxes');
-            let thisvideo = eventLightBox.querySelector('.eventon_full_description video.video-events-grid');
-            if(thisvideo && thisvideo!=''){
-
-                //initialisation du spiner
-                let spinnerContainer =  document.createElement('div');
-                let spinner = `<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">`;
-                spinnerContainer.innerHTML=spinner;
-                spinnerContainer.classList.add('card-video-loader');
-                
-                thisvideo.removeAttribute("controls");
-
-                //thisvideo.controls = "controls";
-
-                //thisvideo.classList.remove('video-events-grid');
-                //onprepare son parent fullscreen
-              //  thisvideo.controls = false;
-                let fullScreenDiv = document.createElement('div');
-                fullScreenDiv.classList.add('fullscreen', 'videoplaying');
-
-                //oncherche son futur emplacement
-                let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div');
-                fullScreenDiv.appendChild(thisvideo);
-                fullScreenDiv.appendChild(spinnerContainer);
-                thisvideo.volume = 0.5;
-                thisvideo.muted = false;
-                setTimeout(() => {
-		    thisvideo.play();
-		}, 1000);
-                var controlsVisible = false;
-                thisvideo.addEventListener('timeupdate', function () {
-                    if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
-                        controlsVisible = false;
-                        spinnerContainer.style.display="none";
-                      }
-                });
-                thisHeader.appendChild(fullScreenDiv);
-
- //a add preview image to the poster
-     if(thisvideo.poster.length<20)
-{
-       thisvideo.poster=thisHeader.childNodes[0].src;
-       console.log("replacing empty poster with "+thisvideo.poster);
- }
-  // replacing main image with poster image so that video take fullscreen view
-     if(thisvideo.poster.length>20)
-       {
-           setTimeout(() => {
-              thisHeader.childNodes[0].style.display='none'; //hide image
-	}, 1000);
-          fullScreenDiv.style.position='relative';
-          console.log("hiding image, displaying poster:"+thisvideo.poster);
-       } 
-                let playbut = document.createElement('img');
-            	playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
-            	playbut.classList.add('playbut');
-            	playbut.style.position = 'absolute';
-			   
-	        let pausebut= document.createElement('img');
-            	pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
-            	pausebut.classList.add('pausebut');
-			   
-	        function playVideo() {
-		    let divplaying = document.querySelectorAll('.videoplaying');
-                    // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
-                    divplaying.forEach(div => {
-                        div.classList.remove('videoplaying');
-                    });
-                    thisvideo.play();
-                    thisvideo.closest(".fullscreen").classList.add('videoplaying');
-		}
-
-	        function pauseVideo(){
-                    thisvideo.pause();
-                    let divplaying = document.querySelectorAll('.videoplaying');
-                    // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
-                    divplaying.forEach(div => {
-                        div.classList.remove('videoplaying');
-                    });
+     .evocard_row .fullscreen .timevideo {
+        margin-top: 5px !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        top: unset !important;
+        right: 0 !important;
+        font-size: 15px !important;
+        z-index: 10 !important;
+        display: none;
+    }
+        .fullscreen .timevideo  {
+            color: #F5f5f5 !important;
+        }
+        .videoplaying:hover .timevideo {
+            display: block;
+        }
+        
+    
+    </style>
+    <script>
+    
+    function setOnClickOutside(ele, cb) {
+        document.addEventListener('click', callback = (event) => {
+            event.stopPropagation()
+            let parent = document.getElementsByClassName("eventcard eventon_events_list show")[0]
+                if (parent) {
+                    let el = parent.getElementsByClassName(ele)[0]
+                  //  console.log("el",el)
+                    if (el && !el.contains(event.target)) {
+                        cb();
+                     // event.source.removeEventListener('click', callback);
+                     }
                 }
-			   
-	        playbut.addEventListener('click',  (event)=>{
-                    event.preventDefault();
-                    playVideo();
-           	});
-		pausebut.addEventListener('click', (event)=> {
-		    event.preventDefault();
-		    pauseVideo();
-		});
-	
-           // Crée l'affichage du temps
-            const timeDisplay = document.createElement('p');
-            timeDisplay.classList.add('timevideo');
-
-            fullScreenDiv.appendChild(timeDisplay);
-            fullScreenDiv.appendChild(playbut);
-            fullScreenDiv.appendChild(pausebut);
-
-            // Affiche la durée totale lorsque les métadonnées de la vidéo sont chargées
-            thisvideo.addEventListener('loadedmetadata', function() {
-                const durationMinutes = Math.floor(thisvideo.duration / 60);
-                const durationSeconds = Math.floor(thisvideo.duration % 60);
-
-                timeDisplay.textContent = `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
-               console.log("Video duration:"+thisvideo.duration);
-               //add video controls for large videos
-                        if(thisvideo.duration>120) // min duration to activate controls
-                         {
-                           thisvideo.controls = "controls";
-                           controlsVisible=true;
-                           //hide our video controls
-                           document.querySelector('.timevideo').style.display='none'
-                           document.querySelector('.pausebut').style.display='none';
-                           console.log("Activating Video controls");
-                         }
-            });
-
-            // Ajoute un écouteur d'événement pour mettre à jour la barre de progression et le temps restant
-            thisvideo.addEventListener('timeupdate', function () {
-                // Calcul du pourcentage de progression en fonction du temps écoulé
-                const elapsedTime = thisvideo.currentTime; // Temps écoulé
-                const totalTime = thisvideo.duration; // Durée totale
-
-
-                // Calcule le temps restant
-                const remainingTime = totalTime - elapsedTime;
-                const remainingMinutes = Math.floor(remainingTime / 60);
-                const remainingSeconds = Math.floor(remainingTime % 60);
-
-                // Affiche le temps restant
-                timeDisplay.textContent = `${remainingMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-            });     
-            }else{
-             //   console.log('pas delement video trouve');
+    
+        });
+    };
+    
+    setOnClickOutside(
+        'evolb_content evo_lightbox_body eventon_list_event',
+        () => {
+            let active_card = document.getElementsByClassName('eventcard eventon_events_list show')[0];
+            if (active_card) {
+                let closeButton = active_card.getElementsByClassName('evolb_close_btn')[0]
+                console.log("ActiveCardCloseButton", closeButton)
+                closeButton.click()
             }
-
         }
-        let targetNode = document.getElementById('evo_lightboxes');
-        //element trouver, on lui attribut un event
-        const config = { attributes: true, childList: true, subtree: true };
-
-        // Callback function to execute when mutations are observed
-        const callback = (mutationList, observer) => {
-          for (const mutation of mutationList) {
-            if (mutation.type === "childList") {
-              searchAndReplace();
-            } else if (mutation.type === "attributes") {
-             // console.log(`The ${mutation.attributeName} attribute was modified.`);
-            }
-          }
-        };
-        
-        // Create an observer instance linked to the callback function
-        const observer = new MutationObserver(callback);
-
-        
-        // Start observing the target node for configured mutations
-        try {
-            observer.observe(targetNode, config);
-        } catch (e) {
-            console.log("Observer can't OBSERVE:", e)
-        }
-        
-        // Later, you can stop observing
-//        observer.disconnect();
-
-        
+    );
+    
+    function goToJan() {
+        let janEl = document.querySelector(`.legend.evo_jumper_months a`)
+        janEl.click()
     }
-}
-replaceByVideo();
-
-function removeMonthTitles() {
-    const monthElements = document.querySelectorAll(".evo_jumper_months a")
-    monthElements.forEach((el) => el.removeAttribute("title"))
-}
-removeMonthTitles()
-
-</script>
-<style>
-.ajde_evcal_calendar.boxy .eventon_list_event.event {
-    aspect-ratio:4/5 !important;
-    width:auto!important;
-    min-height:unset !important;
-    background-repeat: no-repeat;
-}
-.evo_metarow_directimg.evcal_evdata_row {
-    padding: 0!important;
-    height: auto;
-}
-.desc_trig_outter{
-    background-repeat: no-repeat;
-    background-size: cover !important;
-    background-position-x: center;
-}
-.evcal_evdata_img, .ftimage {
-    aspect-ratio:auto !important;
-}
-div.fullscreen {
-    aspect-ratio:auto !important;
-    height: 100%;
-}
-.fullscreen video {
-    height: auto !important;
-    left: 0;
-    object-fit: cover;
-    top: 0;
-    position: relative;
-    transform: none;
-    transition: none;
-    width: 100%;
-    z-index: 0;
-}
-</style>
-<div class="tap-bottom" style="height:400px;width:120%; margin-left:-10%; margin-right:-10%; position:relative"></div>
-<!-- /wp:html -->
+    
+    const yearEls = document.querySelectorAll(".evo_j_years .legend a")
+    yearEls.forEach((yearEl) => yearEl.addEventListener("click", () => setTimeout(goToJan,500)))
+    
+    
+    
+    
+    function replaceByVideo(){
+        let checkIfCalendarExist = setInterval(lookForIt, 100);
+        
+    
+        function lookForIt(){
+            let eventLightBox = document.getElementById('evo_lightboxes');
+            
+            if(eventLightBox){
+                //Interval pour chercher l'élément
+                clearInterval(checkIfCalendarExist);
+                replaceNow();
+            }else{
+                console.log('searching evo_lightboxes');
+            }
+        }
+    
+    
+        
+        function replaceNow(){
+            function searchAndReplace(){
+    gtag('event', 'click', {
+            'event_category': 'Event Card',
+            'event_label': 'Event Card opened',
+            'value': 1
+          });
+    
+    
+                let eventLightBox = document.getElementById('evo_lightboxes');
+                let thisvideo = eventLightBox.querySelector('.eventon_full_description video.video-events-grid');
+                if(thisvideo && thisvideo!=''){
+    
+                    //initialisation du spiner
+                    let spinnerContainer =  document.createElement('div');
+                    let spinner = `<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">`;
+                    spinnerContainer.innerHTML=spinner;
+                    spinnerContainer.classList.add('card-video-loader');
+                    
+                    thisvideo.removeAttribute("controls");
+    
+                    //thisvideo.controls = "controls";
+    
+                    //thisvideo.classList.remove('video-events-grid');
+                    //onprepare son parent fullscreen
+                  //  thisvideo.controls = false;
+                    let fullScreenDiv = document.createElement('div');
+                    fullScreenDiv.classList.add('fullscreen', 'videoplaying');
+    
+                    //oncherche son futur emplacement
+                    let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div');
+                    fullScreenDiv.appendChild(thisvideo);
+                    fullScreenDiv.appendChild(spinnerContainer);
+                    thisvideo.volume = 0.5;
+                    thisvideo.muted = false;
+                    setTimeout(() => {
+                thisvideo.play();
+            }, 1000);
+                    var controlsVisible = false;
+                    thisvideo.addEventListener('timeupdate', function () {
+                        if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
+                            controlsVisible = false;
+                            spinnerContainer.style.display="none";
+                          }
+                    });
+                    thisHeader.appendChild(fullScreenDiv);
+    
+     //a add preview image to the poster
+         if(thisvideo.poster.length<20)
+    {
+           thisvideo.poster=thisHeader.childNodes[0].src;
+           console.log("replacing empty poster with "+thisvideo.poster);
+     }
+      // replacing main image with poster image so that video take fullscreen view
+         if(thisvideo.poster.length>20)
+           {
+               setTimeout(() => {
+                  thisHeader.childNodes[0].style.display='none'; //hide image
+        }, 1000);
+              fullScreenDiv.style.position='relative';
+              console.log("hiding image, displaying poster:"+thisvideo.poster);
+           } 
+                    let playbut = document.createElement('img');
+                    playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
+                    playbut.classList.add('playbut');
+                    playbut.style.position = 'absolute';
+                   
+                let pausebut= document.createElement('img');
+                    pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
+                    pausebut.classList.add('pausebut');
+                   
+                function playVideo() {
+                let divplaying = document.querySelectorAll('.videoplaying');
+                        // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
+                        divplaying.forEach(div => {
+                            div.classList.remove('videoplaying');
+                        });
+                        thisvideo.play();
+                        thisvideo.closest(".fullscreen").classList.add('videoplaying');
+            }
+    
+                function pauseVideo(){
+                        thisvideo.pause();
+                        let divplaying = document.querySelectorAll('.videoplaying');
+                        // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
+                        divplaying.forEach(div => {
+                            div.classList.remove('videoplaying');
+                        });
+                    }
+                   
+                playbut.addEventListener('click',  (event)=>{
+                        event.preventDefault();
+                        playVideo();
+                   });
+            pausebut.addEventListener('click', (event)=> {
+                event.preventDefault();
+                pauseVideo();
+            });
+        
+               // Crée l'affichage du temps
+                const timeDisplay = document.createElement('p');
+                timeDisplay.classList.add('timevideo');
+    
+                fullScreenDiv.appendChild(timeDisplay);
+                fullScreenDiv.appendChild(playbut);
+                fullScreenDiv.appendChild(pausebut);
+    
+                // Affiche la durée totale lorsque les métadonnées de la vidéo sont chargées
+                thisvideo.addEventListener('loadedmetadata', function() {
+                    const durationMinutes = Math.floor(thisvideo.duration / 60);
+                    const durationSeconds = Math.floor(thisvideo.duration % 60);
+    
+                    timeDisplay.textContent = `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+                   console.log("Video duration:"+thisvideo.duration);
+                   //add video controls for large videos
+                            if(thisvideo.duration>120) // min duration to activate controls
+                             {
+                               thisvideo.controls = "controls";
+                               controlsVisible=true;
+                               //hide our video controls
+                               document.querySelector('.timevideo').style.display='none'
+                               document.querySelector('.pausebut').style.display='none';
+                               console.log("Activating Video controls");
+                             }
+                });
+    
+                // Ajoute un écouteur d'événement pour mettre à jour la barre de progression et le temps restant
+                thisvideo.addEventListener('timeupdate', function () {
+                    // Calcul du pourcentage de progression en fonction du temps écoulé
+                    const elapsedTime = thisvideo.currentTime; // Temps écoulé
+                    const totalTime = thisvideo.duration; // Durée totale
+    
+    
+                    // Calcule le temps restant
+                    const remainingTime = totalTime - elapsedTime;
+                    const remainingMinutes = Math.floor(remainingTime / 60);
+                    const remainingSeconds = Math.floor(remainingTime % 60);
+    
+                    // Affiche le temps restant
+                    timeDisplay.textContent = `${remainingMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+                });     
+                }else{
+                 //   console.log('pas delement video trouve');
+                }
+    
+            }
+            let targetNode = document.getElementById('evo_lightboxes');
+            //element trouver, on lui attribut un event
+            const config = { attributes: true, childList: true, subtree: true };
+    
+            // Callback function to execute when mutations are observed
+            const callback = (mutationList, observer) => {
+              for (const mutation of mutationList) {
+                if (mutation.type === "childList") {
+                  searchAndReplace();
+                } else if (mutation.type === "attributes") {
+                 // console.log(`The ${mutation.attributeName} attribute was modified.`);
+                }
+              }
+            };
+            
+            // Create an observer instance linked to the callback function
+            const observer = new MutationObserver(callback);
+    
+            
+            // Start observing the target node for configured mutations
+            try {
+                observer.observe(targetNode, config);
+            } catch (e) {
+                console.log("Observer can't OBSERVE:", e)
+            }
+            
+            // Later, you can stop observing
+    //        observer.disconnect();
+    
+            
+        }
+    }
+    replaceByVideo();
+    
+    function removeMonthTitles() {
+        const monthElements = document.querySelectorAll(".evo_jumper_months a")
+        monthElements.forEach((el) => el.removeAttribute("title"))
+    }
+    removeMonthTitles()
+    
+    </script>
+    <style>
+    .ajde_evcal_calendar.boxy .eventon_list_event.event {
+        aspect-ratio:4/5 !important;
+        width:auto!important;
+        min-height:unset !important;
+        background-repeat: no-repeat;
+    }
+    .evo_metarow_directimg.evcal_evdata_row {
+        padding: 0!important;
+        height: auto;
+    }
+    .desc_trig_outter{
+        background-repeat: no-repeat;
+        background-size: cover !important;
+        background-position-x: center;
+    }
+    .evcal_evdata_img, .ftimage {
+        aspect-ratio:auto !important;
+    }
+    div.fullscreen {
+        aspect-ratio:auto !important;
+        height: 100%;
+    }
+    .fullscreen video {
+        height: auto !important;
+        left: 0;
+        object-fit: cover;
+        top: 0;
+        position: relative;
+        transform: none;
+        transition: none;
+        width: 100%;
+        z-index: 0;
+    }
+    </style>
+    <div class="tap-bottom" style="height:400px;width:120%; margin-left:-10%; margin-right:-10%; position:relative"></div>
+    <!-- /wp:html -->

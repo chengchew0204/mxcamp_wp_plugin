@@ -260,6 +260,27 @@ class Navigation {
     }
     //navigation depuis  un url avec ashtag
     UrlVerif() {
+        // Check for specific hash redirects first
+        var urlHash = window.location.hash;
+        var currentPath = window.location.pathname;
+        
+        // Handle specific redirect cases for events/eventos
+        if (urlHash) {
+            const cleanHash = urlHash.substring(1);
+            
+            // Redirect #events to calendar (English)
+            if (cleanHash === 'events' && (currentPath.includes('/en') || document.documentElement.lang === 'en-US')) {
+                window.location.href = 'https://camp.mx/calendar';
+                return;
+            }
+            
+            // Redirect #eventos to calendario (Spanish)
+            if (cleanHash === 'eventos' && (!currentPath.includes('/en') || document.documentElement.lang === 'es-ES')) {
+                window.location.href = 'https://camp.mx/calendario';
+                return;
+            }
+        }
+        
         // URL path to slide ID mapping
         const urlToSlideMap = {
             '/about': 'contexto',
