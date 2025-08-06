@@ -109,6 +109,9 @@ class Navigation {
             this.initMobileLandscapeWarning();
             this.initOrganizadorxsTitleUpdater();
             
+            // Initialize scroll-based cursor hints
+            this.initScrollHints();
+            
             // Final overlay hide attempt
             setTimeout(() => this.hideLoadingOverlay(), 100);
             
@@ -166,7 +169,7 @@ class Navigation {
 			if (window.onMouseOverDetailAdder) {
 				window.onMouseOverDetailAdder.addToElements([gifDetail]);
 			}
-			
+			/*
 			// Add debugging event listeners to help identify issues
 			gifDetail.addEventListener('mouseenter', (e) => {
 				console.log('gif-detail mouseenter event triggered');
@@ -176,7 +179,7 @@ class Navigation {
 			
 			gifDetail.addEventListener('mouseleave', (e) => {
 				console.log('gif-detail mouseleave event triggered');
-			});
+			});*/
 			
 			// Add click handler to gif-detail to open the mapa card
 			gifDetail.addEventListener('click', (e) => {
@@ -300,7 +303,7 @@ class Navigation {
             '/familiacamp': 'familiacamp',
             '/galeria': 'galeria',
             '/gallery': 'galeria',
-            '/guests': 'huespedes',
+            '/guests': 'guests',
             '/guia': 'guia',
             '/guide': 'guia',
             '/huespedes': 'huespedes',
@@ -974,16 +977,32 @@ class Navigation {
      let linksToOpenCard = document.querySelectorAll('.openthecard');
      linksToOpenCard.forEach(item => {
         var url = item.getAttribute('href');
-        var parsedUrl = new URL(url);
-        var hash = parsedUrl.hash;
-        var hashWithoutHash = hash.substring(1);
-        const slideData = {
-            post: url,
-            divId: hashWithoutHash,
-            openTheCard: true
-        };
-        item.addEventListener('click', (e)=>{e.preventDefault(); this.gotoSlide(slideData)});
-        item.style.behavior='smooth';
+        try {
+            // Handle both relative and absolute URLs
+            var parsedUrl = url.startsWith('http') ? new URL(url) : new URL(url, window.location.origin);
+            var hash = parsedUrl.hash;
+            var hashWithoutHash = hash.substring(1);
+            const slideData = {
+                post: url,
+                divId: hashWithoutHash,
+                openTheCard: true
+            };
+            item.addEventListener('click', (e)=>{e.preventDefault(); this.gotoSlide(slideData)});
+            item.style.behavior='smooth';
+        } catch (error) {
+            console.warn('Failed to parse URL:', url, error);
+            // Fallback: if URL parsing fails, try to extract hash directly
+            if (url.includes('#')) {
+                var hashWithoutHash = url.split('#')[1];
+                const slideData = {
+                    post: url,
+                    divId: hashWithoutHash,
+                    openTheCard: true
+                };
+                item.addEventListener('click', (e)=>{e.preventDefault(); this.gotoSlide(slideData)});
+                item.style.behavior='smooth';
+            }
+        }
      });
 
      // Handle ALL internal anchor links on the page (hash links)
@@ -1209,10 +1228,11 @@ class Navigation {
            // Initialize compact calendar navigation for events section
            this.initializeCompactCalendarNav();
           }
-          this.theFrontVideo.forEach(function(el) {
-       //     console.log(el);
-            el.pause();
-        });
+          // Don't pause videos here - let BgVideoSound.js handle video management
+          // this.theFrontVideo.forEach(function(el) {
+          //     console.log(el);
+          //     el.pause();
+          // });
         //this.cardopened ?? this.closeCards();
         this.desActivateMenu();
         this.targetSlide = slideId;
@@ -1272,6 +1292,97 @@ class Navigation {
         this.cardopened = true;
         console.log('END opening card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
     }
+    
+    showCursorHint(slideElement) {
+        // Check if this slide already has a cursor hint active
+        if (slideElement.querySelector('.cursor-hint')) {
+            return;
+        }
+
+        // Create cursor hint element
+        const cursorHint = document.createElement('div');
+        cursorHint.className = 'cursor-hint';
+        
+        // Add to slide
+        slideElement.appendChild(cursorHint);
+        
+        // Remove the hint after animation completes
+        setTimeout(() => {
+            if (cursorHint && cursorHint.parentNode) {
+                cursorHint.parentNode.removeChild(cursorHint);
+            }
+        }, 2500);
+    }
+    
+    // Show cursor hint when slide comes into view during scrolling
+    initScrollHints() {
+        // Use a slight delay to ensure DOM is fully ready
+        setTimeout(() => {
+            const slides = document.querySelectorAll('.slide_10');
+            
+            // Track which slides have already shown the hint
+            const slidesWithHintShown = new Set();
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                        const slideId = entry.target.id;
+                        
+                        // Only show hint once per slide and not for map slides
+                        if (!slidesWithHintShown.has(slideId) && 
+                            !entry.target.classList.contains('opened') &&
+                            slideId !== 'mapa' && slideId !== 'map') {
+                            
+                            this.showCursorHint(entry.target);
+                            slidesWithHintShown.add(slideId);
+                        }
+                    }
+                });
+            }, { 
+                threshold: 0.6,
+                rootMargin: '-10% 0px -10% 0px' // Only trigger when slide is well within viewport
+            });
+            
+            slides.forEach(slide => {
+                observer.observe(slide);
+            });
+        }, 1000); // 1 second delay to ensure everything is loaded
+    }
+    
+    // Debug function to test cursor hints manually
+    testCursorHintDebug() {
+        console.log('=== Cursor Hint Debug ===');
+        const slides = document.querySelectorAll('.slide_10');
+        console.log('Found slides:', slides.length);
+        
+        slides.forEach((slide, index) => {
+            console.log(`Slide ${index}: ID="${slide.id}", Classes="${slide.className}"`);
+        });
+        
+        if (slides.length > 0) {
+            console.log('Testing cursor hint on first slide:', slides[0].id);
+            this.showCursorHint(slides[0]);
+        } else {
+            console.log('No slides found! Checking for alternative selectors...');
+            const altSlides = document.querySelectorAll('[class*="slide"]');
+            console.log('Alternative slides found:', altSlides.length);
+            altSlides.forEach((slide, index) => {
+                console.log(`Alt slide ${index}: ID="${slide.id}", Classes="${slide.className}"`);
+            });
+        }
+        
+        // Also check current page info
+        console.log('Current URL:', window.location.href);
+        console.log('Document language:', document.documentElement.lang);
+        console.log('Page path:', window.location.pathname);
+    }
+    
+    // Force reinitialize scroll hints (for debugging)
+    reinitScrollHints() {
+        console.log('Force reinitializing scroll hints...');
+        this.initScrollHints();
+    }
+    
     closeCardsE(event) {
         event.stopPropagation();
         this.closeCards();
@@ -1314,10 +1425,11 @@ class Navigation {
             }
             this.targetSlide = 'none';
             this.cardopened = false;
-            this.theFrontVideo.forEach(function(el) {
-           //     console.log(el);
-                el.play();
-            });
+            // Don't force play all videos here - let BgVideoSound.js handle video management
+            // this.theFrontVideo.forEach(function(el) {
+            //     console.log(el);
+            //     el.play();
+            // });
             //this.theFrontVideo.play();
             console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
         }, 250); // Wait 250ms for fade-out animation to complete
@@ -2303,5 +2415,6 @@ class Navigation {
     }
 }
 document.addEventListener('DOMContentLoaded', () => {
-    var navigation = new Navigation();
+    // Create Navigation instance and make it globally accessible for debugging
+    window.navigation = new Navigation();
 });

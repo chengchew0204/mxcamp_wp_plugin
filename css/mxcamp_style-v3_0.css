@@ -1200,14 +1200,13 @@ body.galeria footer {
 	pointer-events: auto !important;
 }
 
-/* Emphatic cursor for gif-detail - High specificity to override any conflicting rules */
+/* Ensure gif-detail has proper pointer events but inherits cursor from parent */
 div.slide_10 #gif-detail.onmouseover-detail,
 div.slide_10 #gif-detail:hover,
 div.slide_10 #gif-detail,
 #gif-detail.onmouseover-detail,
 #gif-detail:hover,
 #gif-detail {
-	cursor: pointer !important;
 	pointer-events: auto !important;
 }
 
@@ -1452,6 +1451,98 @@ input[type="button"],
 body.bodycardopened.mapa #gif-detail,
 body.bodycardopened.map #gif-detail {
 	display: none !important;
+}
+
+/* Cursor Hint Animation for Slide Backgrounds */
+.cursor-hint {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: url('https://camp.mx/wp-content/uploads/pointer.png') no-repeat center;
+    background-size: contain;
+    z-index: 150;
+    pointer-events: none;
+    opacity: 0;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: hintBounceGlow 2.5s ease-out forwards;
+    
+    /* Fallback cursor icon using CSS 
+    border: 2px solid rgba(100, 200, 255, 0.8);
+    border-radius: 20% 0 50% 50%;
+	*/
+}
+
+/* Alternative CSS-only cursor version */
+.cursor-hint.css-cursor {
+    background: none;
+    border: none;
+    width: 30px;
+    height: 40px;
+}
+
+.cursor-hint.css-cursor::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 15px solid rgba(100, 200, 255, 0.9);
+    border-right: 15px solid transparent;
+    border-bottom: 20px solid transparent;
+    border-top: 20px solid rgba(100, 200, 255, 0.9);
+    transform: rotate(-45deg);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+@keyframes hintBounceGlow {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) translateY(15px) scale(0.8); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+    }
+    10% { 
+        opacity: 0.7; 
+        transform: translate(-50%, -50%) translateY(0) scale(1); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+    }
+    20% { 
+        transform: translate(-50%, -50%) translateY(-8px) scale(1.05); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.7));
+    }
+    30% { 
+        transform: translate(-50%, -50%) translateY(2px) scale(0.98); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+    }
+    40% { 
+        transform: translate(-50%, -50%) translateY(0) scale(1); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+    }
+    60% { 
+        opacity: 1; 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    }
+    100% { 
+        opacity: 0.7; 
+        transform: translate(-50%, -50%) translateY(15px) scale(0.8); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+    }
+}
+
+/* Hide cursor hint when card is opened */
+.slide_10.opened .cursor-hint {
+    display: none !important;
+}
+
+/* Mobile adjustments for cursor hint */
+@media screen and (max-width: 768px) {
+    .cursor-hint {
+        width: 40px;
+        height: 40px;
+        top: 58%;
+    }
 }
 
 /* CSS additions to make video frames clickable for play/pause */
