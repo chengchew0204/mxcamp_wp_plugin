@@ -82,7 +82,7 @@ function mxcamp_get_posts_cb_v3($atts) {
             $caret = ($i == $j) ? '' : '<div class="caretdiviphone"><a style="scroll-behavior:smooth"><img decoding="async" src="https://camp.mx/img/caret3.svg" style="width:60px; margin:20px"></a></div>';
             
             if ($i != 1) {
-                $output .= '<div class="caretdiv"><a href="#' . esc_attr($slide_id) . '" style="scroll-behavior:smooth"><img src="https://camp.mx/img/caret3.svg" style="width:60px; margin:20px" /></a></div></div>';
+                $output .= '<div class="caretdiv"><a data-target-slide="' . esc_attr($slide_id) . '" style="scroll-behavior:smooth"><img src="https://camp.mx/img/caret3.svg" style="width:60px; margin:20px" /></a></div></div>';
             }
             $output .= '
             <div class="slide_10 closed" id="' . esc_attr($slide_id) . '" data-title="' . esc_attr($title) . '" data-post="' . esc_attr($id) . '" style="background-image:url(' . esc_url($large_image_url) . ')">
@@ -114,7 +114,7 @@ function mxcamp_get_posts_cb_v3($atts) {
 		<script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/hovers.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/assets.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/BgVideoSound.js"></script>
-        <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/add-onmouseover-detail.js"></script>
+        <!-- <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/add-onmouseover-detail.js"></script> -->
         <script src="https://player.vimeo.com/api/player.js"></script>
 		<script>
 			document.addEventListener(\'DOMContentLoaded\', () => {

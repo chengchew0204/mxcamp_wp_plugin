@@ -160,7 +160,7 @@ class Navigation {
 			gifDetail.id = "gif-detail";
 			
 			// Add the onmouseover-detail class for emphatic cursor
-			gifDetail.classList.add('onmouseover-detail');
+			//gifDetail.classList.add('onmouseover-detail');
 			
 			// Append to the slide container, not inside slide_10_scroll to avoid event interception
 			mapa.append(gifDetail);
@@ -425,13 +425,24 @@ class Navigation {
                 this.gotoSlide(slideData);
                 e.stopPropagation();
             });
+            
+            // Add enhanced hover effects for better user feedback
+            NewParagraph.addEventListener('mouseenter', (e) => {
+                e.target.style.transition = 'all 0.2s ease-out';
+                e.target.style.opacity = '1';
+            });
+            
+            NewParagraph.addEventListener('mouseleave', (e) => {
+                e.target.style.opacity = '';
+                e.target.style.transition = '0.3s';
+            });
     
             NewMenuItem.appendChild(NewParagraph);
             list.appendChild(NewMenuItem);
     
             let thiscaretdiv = item.querySelector('.caretdiv a');
             if (thiscaretdiv) {
-                var cleanHash = thiscaretdiv.getAttribute('href').substring(1);
+                var cleanHash = thiscaretdiv.getAttribute('data-target-slide');
                 console.log('caretdiv go to ' + cleanHash);
                 const slideData2 = {
                     post: 'dontknow',
@@ -714,6 +725,18 @@ class Navigation {
         NewParagraph.textContent = title + ' ';
         NewParagraph.appendChild(arrowImg);
         NewParagraph.appendChild(hoverDiv);
+        
+        // Add enhanced hover effects for volunteer menu item
+        NewParagraph.addEventListener('mouseenter', (e) => {
+            e.target.style.transition = 'all 0.2s ease-out';
+            e.target.style.opacity = '1';
+        });
+        
+        NewParagraph.addEventListener('mouseleave', (e) => {
+            e.target.style.opacity = '';
+            e.target.style.transition = '0.3s';
+        });
+        
         NewMenuItem.appendChild(NewParagraph);
         
         const artistMenuItem = list.querySelectorAll("li")[3];
@@ -1294,9 +1317,10 @@ class Navigation {
     }
     
     showCursorHint(slideElement) {
-        // Check if this slide already has a cursor hint active
-        if (slideElement.querySelector('.cursor-hint')) {
-            return;
+        // Remove any existing cursor hint to allow fresh animation
+        const existingHint = slideElement.querySelector('.cursor-hint');
+        if (existingHint) {
+            existingHint.parentNode.removeChild(existingHint);
         }
 
         // Create cursor hint element
@@ -1311,7 +1335,7 @@ class Navigation {
             if (cursorHint && cursorHint.parentNode) {
                 cursorHint.parentNode.removeChild(cursorHint);
             }
-        }, 2500);
+        }, 3000);
     }
     
     // Show cursor hint when slide comes into view during scrolling
@@ -1320,21 +1344,14 @@ class Navigation {
         setTimeout(() => {
             const slides = document.querySelectorAll('.slide_10');
             
-            // Track which slides have already shown the hint
-            const slidesWithHintShown = new Set();
-            
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
                         const slideId = entry.target.id;
                         
-                        // Only show hint once per slide and not for map slides
-                        if (!slidesWithHintShown.has(slideId) && 
-                            !entry.target.classList.contains('opened') &&
-                            slideId !== 'mapa' && slideId !== 'map') {
-                            
+                        // Show hint every time user navigates to a slide
+                        if (!entry.target.classList.contains('opened')) {
                             this.showCursorHint(entry.target);
-                            slidesWithHintShown.add(slideId);
                         }
                     }
                 });

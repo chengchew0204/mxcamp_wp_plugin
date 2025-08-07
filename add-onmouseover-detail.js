@@ -19,8 +19,8 @@ class OnMouseOverDetailAdder {
             '.mobile-menu p',       // Mobile menu items
             '.mobile-menu a',
             '.menu-arrow',          // Menu arrows
-            '.slide_10_bg',
-            '.slide_10_scroll',     // Slide scroll areas
+            //'.slide_10_bg',
+            //'.slide_10_scroll',     // Slide scroll areas
             '.card-header',         // Card headers
             '#playbutton',          // Play button
             '#gif-detail',          // GIF detail element
