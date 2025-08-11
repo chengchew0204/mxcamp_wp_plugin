@@ -485,11 +485,11 @@ body.ajde_events-template-default div#main-container > * {
   body.ajde_events-template-default p.desc_trig_outter{border-radius:0!important}
   body.ajde_events-template-default p.desc_trig_outter a{background:#FFFFFF!important}
   body.ajde_events-template-default  .eventon_main_section{
-      margin-top:20px
+      margin-top:-20px
   }
   @media screen and (max-width:600px){
       body.ajde_events-template-default  .eventon_main_section{
-      margin-top:106px
+      margin-top:60px
   }
   }
   body.ajde_events-template-default .evoet_dayblock span em{color:#000000!important; font-weight:400!important}
@@ -527,7 +527,10 @@ body.ajde_events-template-default div#main-container > * {
   #evcal_list .eventon_list_event .evcal_eventcard p, .ajde_evcal_calendar .eventon_events_list .eventon_desc_in ul, .evo_lightboxes .evo_pop_body .evcal_evdata_row .evcal_evdata_cell p, .evo_lightboxes .evcal_evdata_cell p a {
       color:black!important
   }
-  
+  .evolbclose {
+    top: 20px !important;
+    right: 20px !important;
+}
   
   
   
@@ -587,11 +590,12 @@ body.ajde_events-template-default div#main-container > * {
           flex-basis: unset
       }
   .ajde_evcal_calendar.boxy .eventon_events_list .eventon_list_event .evoet_cx{
-  margin-right:0.8px;
-  margin-top: 2px;
-  padding-left:2px; padding-right:2px;
-  transform:scale(1.1);
-  transform-origin: top right;
+    margin-right: 2.3px;
+    margin-top: 11px;
+    padding-left: 2px;
+    padding-right: 1px;
+    transform: scale(1.05);
+    transform-origin: top right;
   }
   @media screen and (max-width:1200px){
       .ajde_evcal_calendar.boxy .eventon_events_list .eventon_list_event .evoet_cx{
@@ -995,3 +999,29 @@ body.ajde_events-template-default div#main-container > * {
   .menu-item .hover-content a {
       margin: 0px;
   }
+/*
+  /* Date box adjustments - move date number higher and make box shorter */
+  .ajde_evcal_calendar.boxy .evoet_dayblock.evcal_cblock {
+      height: auto !important;
+      min-height: 26px !important; /* Make the date box shorter */
+  }
+  
+  .ajde_evcal_calendar.boxy .evo_start {
+      position: relative !important;
+      top: -8px !important; /* Move the date content higher */
+      margin-bottom: -8px !important; /* Compensate for the moved content */
+  }
+  
+  .ajde_evcal_calendar.boxy .evo_start em.date {
+      margin-top: -5px !important; /* Move the date number specifically higher */
+      margin-bottom: -8px !important;
+  }
+  
+  .ajde_evcal_calendar.boxy .evo_start em.month {
+      margin-bottom: 0px !important;
+  }
+  
+  .ajde_evcal_calendar.boxy .evo_end {
+      top: -4px !important; /* Also adjust end time position */
+  }
+*/

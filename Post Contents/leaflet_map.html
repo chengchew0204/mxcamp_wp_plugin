@@ -1,0 +1,593 @@
+<!-- wp:html -->
+<style>
+/* Essential map-specific styles for WordPress compatibility */
+.map-container {
+  position: relative;
+  height: 70vh;
+          width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.interactive-map {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  background: transparent;
+}     
+
+          .detail {
+            overflow: hidden;
+            z-index: 20;
+            position: absolute;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            -moz-user-select: -moz-none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+}
+
+          .onmouseover-detail:hover{
+             cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
+          }
+
+/* Responsive adjustments for different aspect ratios */
+@media (min-aspect-ratio: 5550/1600) {
+  .map-container {
+     width: 100%;
+     height: 50vh;
+    margin: 0 auto;
+          }
+   .interactive-map {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+}
+
+@media (min-aspect-ratio: 2570/1600) {
+  .map-container {
+       width: 100%;
+     height: 60vh;
+     margin: 0 auto;
+        }
+   .interactive-map {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .map-container {
+  height: 50vh;
+       width: 100%;
+        }
+   .interactive-map {
+  height: 100%;
+  width: 100%;
+}
+}
+
+/* Leaflet-specific styles */
+#leaflet-map {
+  height: 100% !important;
+  width: 100% !important;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  background: transparent !important;
+}
+
+.leaflet-image-layer.contour-img {
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.leaflet-image-layer {
+  background: transparent !important;
+}
+
+.leaflet-image-layer img {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-control-container {
+  display: none !important;
+}
+
+/* mapExit styles */
+.mapExit {
+  position: absolute;
+  z-index: 500;
+  cursor: pointer;
+}
+</style>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div class="interactive-map" ID="imap">
+<div class="map-container">
+  <!-- Leaflet map container -->
+  <div id="leaflet-map"></div>
+  
+  <!-- Map exit areas for WordPress compatibility -->
+  <div id="mapExit1" class="mapExit" style="position: absolute; top: 10px; left: 10px; height: 50px; width: 50px; z-index: 500;"></div>
+  <div id="mapExit2" class="mapExit" style="position: absolute; top: 10px; right: 10px; height: 50px; width: 50px; z-index: 500;"></div>
+  <div id="mapExit3" class="mapExit" style="position: absolute; bottom: 10px; left: 10px; height: 50px; width: 50px; z-index: 500;"></div>
+  <div id="mapExit4" class="mapExit" style="position: absolute; bottom: 10px; right: 10px; height: 50px; width: 50px; z-index: 500;"></div>
+  
+  <!-- Virtual detail elements for CSS compatibility -->
+  <div id="central-detail" class="detail onmouseover-detail" style="display:none;"> </div>
+  <div id="casita-detail" class="detail onmouseover-detail" style="display:none;"> </div>
+  <div id="chozas-detail" class="detail onmouseover-detail" style="display:none;"> </div>
+  <div id="calle-detail" class="detail onmouseover-detail" style="display:none;"> </div>
+  <div id="jardin-detail" class="detail onmouseover-detail" style="display:none;"> </div>
+  <div id="focus-point" class="detail" style="display:none;"> </div>
+</div></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+  /* ---------- 0. Base map (static image) ---------- */
+  const imgW=1920,imgH=1080;
+  const bounds=[[0,0],[imgH,imgW]];
+  const map=L.map('leaflet-map',{
+    crs:L.CRS.Simple,
+    minZoom:0,          // lock zoom level
+    maxZoom:0,
+    zoomControl:false,
+    attributionControl:false,
+    dragging:false,     // disable pan
+    scrollWheelZoom:false,
+    doubleClickZoom:false,
+    touchZoom:false,
+    boxZoom:false,
+    keyboard:false
+  });
+  L.imageOverlay('https://camp.mx/wp-content/uploads/01-start-palapas.jpg',bounds).addTo(map);
+  map.fitBounds(bounds); // center & fit once
+
+  /* ---------- 1. Polygon coordinate definitions ---------- */
+  // Define polygon coordinates for accurate building shapes (inverted Y-axis)
+  const pct2Coord = (top, left) => [(1 - top) * imgH, left * imgW];
+  
+  const areas={
+    // Updated with user-refined 12-point polygon coordinates
+    central:{
+      polygon: [
+        pct2Coord(0.616, 0.383), pct2Coord(0.452, 0.400), pct2Coord(0.418, 0.412), 
+        pct2Coord(0.416, 0.488), pct2Coord(0.419, 0.526), pct2Coord(0.482, 0.539), 
+        pct2Coord(0.599, 0.550), pct2Coord(0.701, 0.532), pct2Coord(0.782, 0.519), 
+        pct2Coord(0.794, 0.417), pct2Coord(0.776, 0.320), pct2Coord(0.624, 0.314)
+      ],
+      layers:['https://camp.mx/wp-content/uploads/02-central-down-1.jpg','https://camp.mx/wp-content/uploads/03-central-down-2.jpg','https://camp.mx/wp-content/uploads/04-central-down-3.jpg'],
+      contour:'https://camp.mx/wp-content/uploads/palapa-hover-central.png'
+    },
+    casita:{
+      polygon: [
+        pct2Coord(0.313, 0.005), pct2Coord(0.293, 0.014), pct2Coord(0.297, 0.083), 
+        pct2Coord(0.306, 0.126), pct2Coord(0.303, 0.154), pct2Coord(0.352, 0.173), 
+        pct2Coord(0.446, 0.168), pct2Coord(0.527, 0.159), pct2Coord(0.566, 0.123), 
+        pct2Coord(0.587, 0.089), pct2Coord(0.469, 0.057), pct2Coord(0.374, 0.033)
+      ],
+      layers:['https://camp.mx/wp-content/uploads/06-casa-down-1.jpg','https://camp.mx/wp-content/uploads/07-casa-down-2.jpg'],
+      contour:'https://camp.mx/wp-content/uploads/palapa-hover-casa.png'
+    },
+    chozas:{
+      polygon: [
+        pct2Coord(0.308, 0.223), pct2Coord(0.294, 0.341), pct2Coord(0.303, 0.370), 
+        pct2Coord(0.424, 0.369), pct2Coord(0.449, 0.292), pct2Coord(0.525, 0.274), 
+        pct2Coord(0.628, 0.256), pct2Coord(0.681, 0.264), pct2Coord(0.717, 0.272), 
+        pct2Coord(0.769, 0.261), pct2Coord(0.774, 0.188), pct2Coord(0.640, 0.174)
+      ],
+      layers:['https://camp.mx/wp-content/uploads/05-chozas-down-1.jpg'],
+      contour:'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png'
+    },
+    calle:{
+      polygon: [
+        pct2Coord(0.659, 0.606), pct2Coord(0.544, 0.632), pct2Coord(0.559, 0.704), 
+        pct2Coord(0.585, 0.755), pct2Coord(0.581, 0.834), pct2Coord(0.615, 0.873), 
+        pct2Coord(0.653, 0.886), pct2Coord(0.762, 0.859), pct2Coord(0.865, 0.834), 
+        pct2Coord(0.854, 0.732), pct2Coord(0.808, 0.670), pct2Coord(0.780, 0.591)
+      ],
+      layers:['https://camp.mx/wp-content/uploads/08-calle-down-1.jpg','https://camp.mx/wp-content/uploads/09-calle-down-2.jpg','https://camp.mx/wp-content/uploads/10-calle-down-3.jpg'],
+      contour:'https://camp.mx/wp-content/uploads/palapa-hover-calle.png'
+    },
+    jardin:{
+      polygon: [
+        pct2Coord(0.257, 0.676), pct2Coord(0.176, 0.710), pct2Coord(0.078, 0.742), 
+        pct2Coord(0.128, 0.906), pct2Coord(0.172, 0.993), pct2Coord(0.369, 0.958), 
+        pct2Coord(0.451, 0.933), pct2Coord(0.390, 0.870), pct2Coord(0.286, 0.852), 
+        pct2Coord(0.274, 0.776), pct2Coord(0.326, 0.736), pct2Coord(0.325, 0.686)
+      ],
+      layers:['https://camp.mx/wp-content/uploads/11-foro-down-1.jpg','https://camp.mx/wp-content/uploads/12-foro-down-2.jpg','https://camp.mx/wp-content/uploads/13-foro-down-3.jpg','https://camp.mx/wp-content/uploads/14-foro-down-4.jpg'],
+      contour:'https://camp.mx/wp-content/uploads/palapa-hover-foro.png'
+    }
+  };
+
+  /* ---------- 2. Preload and test images ---------- */
+  Object.entries(areas).forEach(([k,a])=>{
+    // Test contour image
+    const contourImg = new Image();
+    contourImg.onload = () => console.log(`✓ Contour loaded: ${k} - ${a.contour}`);
+    contourImg.onerror = () => console.error(`✗ Contour FAILED: ${k} - ${a.contour}`);
+    contourImg.src = a.contour;
+    
+    // Test layer images
+    a.layers.forEach((src, index) => {
+      const img = new Image();
+      img.onload = () => console.log(`✓ Layer loaded: ${k}[${index}] - ${src}`);
+      img.onerror = () => console.error(`✗ Layer FAILED: ${k}[${index}] - ${src}`);
+      img.src = src;
+    });
+  });
+
+  /* ---------- 3. Overlay pools ---------- */
+  Object.entries(areas).forEach(([k,a])=>{
+    // Use full image bounds for overlays, not area-specific bounds
+    a._overlays=a.layers.map((src, index)=>{
+      const overlay = L.imageOverlay(src, bounds, {opacity:0}).addTo(map);
+      
+      // Add error handling for failed image loads
+      setTimeout(() => {
+        const imgElement = overlay.getElement();
+        if (imgElement) {
+          imgElement.onload = function() {
+            console.log(`✓ Loaded: ${k}[${index}] - ${src}`);
+          };
+          imgElement.onerror = function() {
+            console.error(`✗ FAILED: ${k}[${index}] - ${src}`);
+            // Hide the overlay if image fails to load
+            overlay.setOpacity(0);
+            overlay.remove();
+          };
+        }
+      }, 100);
+      
+      return overlay;
+    });
+  });
+
+  /* ---------- 4. Contour display functions ---------- */
+  const contourCache={};
+  const showContour=k=>{
+    console.log(`🔍 Showing contour for ${k}: ${areas[k].contour}`);
+    if(contourCache[k]){
+      contourCache[k].setOpacity(1);
+      contourCache[k].bringToFront();
+      console.log(`✓ Contour ${k} shown from cache`);
+      return;
+    } 
+    // Create contour overlay for the area
+    contourCache[k]=L.imageOverlay(areas[k].contour, bounds, {
+      className:'contour-img',
+      opacity:1,
+      zIndex: 2000 // Higher z-index to ensure it's on top
+    }).addTo(map);
+    contourCache[k].bringToFront();
+    console.log(`✓ New contour ${k} created and displayed`);
+  };
+  const hideContour=k=>{
+    if(contourCache[k]) {
+      contourCache[k].setOpacity(0);
+      console.log(`🔍 Contour ${k} hidden`);
+    }
+  };
+  // Track current active area
+  let currentActiveArea = null;
+  
+  const hideAllOtherLayers=k=>{
+    // Hide all layers from other areas to avoid interference
+    Object.entries(areas).forEach(([areaKey, area]) => {
+      if(areaKey !== k && area._overlays) {
+        area._overlays.forEach(ov => ov.setOpacity(0));
+        console.log(`🚫 Hidden all layers from ${areaKey}`);
+      }
+    });
+  };
+
+  const cycleLayer=k=>{
+    const list=areas[k]._overlays; 
+    if(!list)return; 
+    
+    console.log(`🔄 Cycling layer for ${k}`);
+    
+    // If switching to a different building, reset index to start from first image
+    if(currentActiveArea !== k) {
+      // Hide all overlays from previous area
+      if(currentActiveArea && areas[currentActiveArea]._overlays) {
+        areas[currentActiveArea]._overlays.forEach(ov => ov.setOpacity(0));
+        console.log(`🚫 Hidden all layers from previous area: ${currentActiveArea}`);
+      }
+      
+      // Hide all other areas as well
+      hideAllOtherLayers(k);
+      
+      currentActiveArea = k;
+      areas[k]._idx = 1; // Start with first image (index 1)
+      
+      // Immediately show first image of new building
+      list.forEach((ov,i) => ov.setOpacity(i === 0 ? 1 : 0));
+      console.log(`🎯 Switched to ${k}, showing first image`);
+      return; // Exit early for new building
+    } else {
+      // Same building, continue cycling
+      const totalStates = list.length + 1; // +1 for base image state
+      areas[k]._idx = ((areas[k]._idx ?? 0) + 1) % totalStates;
+      console.log(`🔄 ${k} cycling to state ${areas[k]._idx}/${totalStates-1}`);
+    }
+    
+    if(areas[k]._idx === 0) {
+      // State 0: show base image (hide all overlays)
+      list.forEach((ov, i) => {
+        ov.setOpacity(0);
+        console.log(`   Hidden layer ${i}: ${areas[k].layers[i]}`);
+      });
+      console.log(`${k}: ✅ Showing base image (all ${list.length} overlays hidden)`);
+    } else {
+      // State 1,2,3...: show corresponding overlay
+      const overlayIdx = areas[k]._idx - 1;
+      list.forEach((ov,i) => {
+        const opacity = i === overlayIdx ? 1 : 0;
+        ov.setOpacity(opacity);
+        if (opacity === 1) {
+          console.log(`   ✅ Showing layer ${i}: ${areas[k].layers[i]}`);
+        } else {
+          console.log(`   ❌ Hidden layer ${i}: ${areas[k].layers[i]}`);
+        }
+      });
+      const currentImageUrl = areas[k].layers[overlayIdx];
+      console.log(`${k}: Showing layer ${overlayIdx + 1}/${list.length} - ${currentImageUrl}`);
+      console.log(`🔗 Click to view image: ${currentImageUrl}`);
+    }
+  };
+
+    /* ---------- 5. Interactive polygons ---------- */
+  let polygons = {};
+  // let editMode = true; // Commented out editing mode
+  // let vertexMarkers = {};
+  // let coordDisplay = {};
+  
+  // Create polygons with hover functionality
+  Object.entries(areas).forEach(([k,a])=>{
+    // Create polygon (hidden borders)
+    const poly=L.polygon(a.polygon,{
+      color:'transparent',     // Hidden border
+      weight:0,               // No border weight
+      fillOpacity:0,          // No fill
+      fillColor:'transparent' // Transparent fill
+    }).addTo(map);
+    
+    polygons[k] = poly;
+    
+    // Enhanced event handlers for contour display and interaction
+    poly.on('mouseenter',(e)=>{
+      console.log(`🖱️ Mouse entered ${k} area`);
+      showContour(k); // Show contour
+      // Add slight highlight to polygon
+      e.target.setStyle({fillOpacity: 0.15});
+    }); 
+    poly.on('mouseleave',(e)=>{
+      console.log(`🖱️ Mouse left ${k} area`);
+      hideContour(k); // Hide contour
+      // Reset polygon highlight
+      e.target.setStyle({fillOpacity: 0.1});
+    }); 
+    poly.on('click',()=>{
+      console.log(`🖱️ Clicked ${k} area`);
+      cycleLayer(k);
+    });
+    
+    // Additional mouse events for better detection
+    poly.on('mouseover',(e)=>{
+      showContour(k);
+    });
+    poly.on('mouseout',(e)=>{
+      hideContour(k);
+    });
+    
+    /* Commented out editing mode features
+    // Create draggable markers for each vertex
+    if(editMode) {
+      a.polygon.forEach((coord, index) => {
+        // Create draggable marker
+        const marker = L.marker(coord, {
+          draggable: true,
+          icon: L.divIcon({
+            className: 'vertex-marker',
+            html: `<div style="
+              width: 16px; 
+              height: 16px; 
+              background: #0000ff; 
+              border: 2px solid white; 
+              border-radius: 50%; 
+              margin: -8px 0 0 -8px;
+            "></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+          })
+        }).addTo(map);
+        
+        // Add coordinate display
+        const coordLabel = L.tooltip({
+          permanent: true,
+          className: 'coord-tooltip',
+          offset: [15, -15]
+        }).setContent(`${k}[${index}]: ${coord[0].toFixed(1)}, ${coord[1].toFixed(1)}`);
+        marker.bindTooltip(coordLabel);
+        
+        // Handle dragging to update polygon
+        marker.on('drag', (e) => {
+          const latLng = e.target.getLatLng();
+          
+          // Update polygon coordinates
+          const newCoords = [...a.polygon];
+          newCoords[index] = [latLng.lat, latLng.lng];
+          poly.setLatLngs(newCoords);
+          a.polygon = newCoords;
+          
+          // Update coordinate display
+          marker.getTooltip().setContent(`${k}[${index}]: ${latLng.lat.toFixed(1)}, ${latLng.lng.toFixed(1)}`);
+        });
+        
+        marker.on('dragstart', () => {
+          map.dragging.disable();
+        });
+        
+        marker.on('dragend', () => {
+          map.dragging.enable();
+          
+          // Output current coordinates to console
+          console.log(`${k} polygon coordinates:`);
+          console.log(a.polygon.map((coord, i) => `  [${i}]: [${coord[0].toFixed(3)}, ${coord[1].toFixed(3)}]`).join('\n'));
+        });
+        
+        vertexMarkers[k].push(marker);
+      });
+    }
+    */
+  });
+  
+    /* Commented out editing mode controls
+  // Add toggle button for edit mode
+  const editToggle = L.control({position: 'topright'});
+  editToggle.onAdd = function() {
+    const div = L.DomUtil.create('div', 'edit-toggle');
+    div.innerHTML = `
+      <button onclick="toggleEditMode()" style="
+        background: ${editMode ? '#ff4444' : '#44ff44'}; 
+        color: white; 
+        border: none; 
+        padding: 10px; 
+        border-radius: 5px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+        width: 100%;
+      ">
+        ${editMode ? 'Exit Edit' : 'Edit Mode'}
+      </button>
+      ${editMode ? `
+      <button onclick="outputAllCoords()" style="
+        background: #4444ff; 
+        color: white; 
+        border: none; 
+        padding: 8px; 
+        border-radius: 5px;
+        font-size: 12px;
+        width: 100%;
+        margin-bottom: 5px;
+      ">
+        Copy All Coordinates
+      </button>` : ''}
+      <div style="background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px; font-size: 12px;">
+        ${editMode ? 'Drag blue dots to adjust polygons<br>Check console for coordinates' : 'Click to enable editing'}
+      </div>
+    `;
+    return div;
+  };
+  editToggle.addTo(map);
+  
+  // Toggle function
+  window.toggleEditMode = function() {
+    editMode = !editMode;
+    location.reload(); // Simple reload to switch modes
+  };
+  
+  // Output all coordinates function
+  window.outputAllCoords = function() {
+    let output = 'Updated polygon coordinates:\n\nconst areas = {\n';
+    
+    Object.entries(areas).forEach(([k, a]) => {
+      output += `  ${k}: {\n    polygon: [\n`;
+      a.polygon.forEach((coord, index) => {
+        const pctTop = (1 - coord[0] / imgH).toFixed(3);
+        const pctLeft = (coord[1] / imgW).toFixed(3);
+        output += `      pct2Coord(${pctTop}, ${pctLeft})`;
+        if(index < a.polygon.length - 1) output += ',';
+        output += '\n';
+      });
+      output += '    ],\n';
+      output += `    layers: ${JSON.stringify(a.layers)},\n`;
+      output += `    contour: '${a.contour}'\n`;
+      output += '  }';
+      if(Object.keys(areas).indexOf(k) < Object.keys(areas).length - 1) output += ',';
+      output += '\n';
+    });
+    
+    output += '};\n\n';
+    output += '// Copy this to replace the areas definition in your code';
+    
+    console.log(output);
+    
+    // Try to copy to clipboard
+    navigator.clipboard.writeText(output).then(() => {
+      alert('Coordinates copied to clipboard and console!');
+    }).catch(() => {
+      alert('Coordinates logged to console! Please copy from there.');
+    });
+  };
+  */
+  
+  // Force map to invalidate size and recalculate dimensions
+  setTimeout(() => {
+    map.invalidateSize();
+    console.log('🔄 Map size invalidated and recalculated');
+  }, 100);
+  
+  // Additional resize handling for WordPress environment
+  window.addEventListener('resize', () => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  });
+  
+  // Ensure map is visible and properly sized
+  const mapContainer = document.getElementById('leaflet-map');
+  if (mapContainer) {
+    mapContainer.style.height = '100%';
+    mapContainer.style.width = '100%';
+    mapContainer.style.position = 'relative';
+    mapContainer.style.zIndex = '1';
+    console.log('📏 Map container dimensions enforced');
+  }
+  
+  console.log('✅ WordPress-Compatible Leaflet Map Initialized');
+  
+  // WordPress compatibility: Auto-open map if window.onload is set
+  if (typeof window.onload === 'function') {
+    window.onload();
+  }
+  
+  // WordPress compatibility: closeMap function for exit areas
+  window.closeMap = function() {
+    const mapCard = document.getElementById('map');
+    if (mapCard && mapCard.parentElement) {
+      mapCard.parentElement.style.display = 'none';
+    }
+  };
+  
+  // Attach exit listeners to mapExit divs
+  document.querySelectorAll('.mapExit').forEach(exitDiv => {
+    exitDiv.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.closeMap === 'function') {
+        window.closeMap();
+      }
+    });
+  });
+  </script>
+  <!-- /wp:html -->

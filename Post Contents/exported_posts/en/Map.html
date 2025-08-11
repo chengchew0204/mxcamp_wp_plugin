@@ -28,11 +28,19 @@ height: 100%;
 object-fit: cover;
 display: none;
 z-index: -1;
+transition: opacity 0.15s ease-in-out;
 }
 
 .layer.active {
 display: block;
+opacity: 1;
 z-index: 0;
+}
+
+.layer.transitioning {
+display: block;
+opacity: 0;
+z-index: 1;
 }
       .outline {
         display: none;
@@ -137,7 +145,7 @@ max-width:none;
           .desktop-background-video {
                display: block;
           }
-      .@media (max-width: 568px) {
+      @media (max-width: 568px) {
           .mobile-background-video {
                display: block;
           }
@@ -186,25 +194,136 @@ img {
   vertical-align:middle;
   max-width: 100%;
   } 
+}
+
+/* Mobile-specific optimizations to prevent blank space */
+@media (max-width: 768px) {
+  .interactive-map {
+    height: 100vh !important;
+    max-height: 100vh;
+    overflow-y: hidden;
+  }
+  
+  .map-container {
+    height: 100vh !important;
+    max-height: 100vh;
+  }
+  
+  /* Ensure map fills the container properly on mobile */
+  .map {
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 568px) {
+  .interactive-map {
+    height: 100vh !important;
+    max-height: 100vh;
+    overflow-y: hidden;
+  }
+  
+  .map-container {
+    height: 100vh !important;
+    max-height: 100vh;
+  }
+}
+
+/* Demo Cursor Styles */
+.demo-cursor {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  background: url('https://camp.mx/wp-content/uploads/pointer.png') no-repeat center;
+  background-size: contain;
+  z-index: 99999 !important;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Show clickable cursor during demo to encourage user interaction */
+.demo-active {
+  cursor: pointer !important;
+}
+
+.demo-active * {
+  cursor: pointer !important;
+}
+
+.demo-cursor.visible {
+  opacity: 1;
+}
+
+.demo-cursor.fade-in {
+  animation: smoothFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes smoothFadeIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.demo-cursor.click-animation {
+  animation: smoothClick 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes smoothClick {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.demo-cursor.fade-out {
+  animation: smoothFadeOut 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+@keyframes smoothFadeOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
 } 
 </style>
 <div class="interactive-map" ID="imap">
 <div class="map-container">
-<img id="central-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/02-central-down-1.jpg" alt="Map" />
-<img id="central-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/03-central-down-2.jpg" alt="Map" />
-<img id="central-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/04-central-down-3.jpg" alt="Map" />
-<img id="chozas-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/05-chozas-down-1.jpg" alt="Map" />
-<img id="chozas-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/01-start-palapas.jpg" alt="Map" />
-<img id="casita-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/06-casa-down-1.jpg" alt="Map" />
-<img id="casita-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/07-casa-down-2.jpg" alt="Map" />
-<img id="calle-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/08-calle-down-1.jpg" alt="Map" />
-<img id="calle-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/09-calle-down-2.jpg" alt="Map" />
-<img id="calle-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/10-calle-down-3.jpg" alt="Map" />
-<img id="jardin-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/11-foro-down-1.jpg" alt="Map" />
-<img id="jardin-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/12-foro-down-2.jpg" alt="Map" />
-<img id="jardin-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/13-foro-down-3.jpg" alt="Map" />
-<img id="jardin-down-4" class="map layer" src="https://camp.mx/wp-content/uploads/14-foro-down-4.jpg" alt="Map" />
-<img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.jpg" alt="Map" /> 
+<img id="central-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
+<img id="central-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
+<img id="central-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
+<img id="chozas-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
+<img id="casita-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
+<img id="casita-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
+<img id="calle-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
+<img id="calle-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
+<img id="calle-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
+<img id="jardin-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
+<img id="jardin-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
+<img id="jardin-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
+<img id="jardin-down-4" class="map layer" src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
+<img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" /> 
 <div id="central-detail" class="detail onmouseover-detail"> </div>
 <div id="casita-detail" class="detail onmouseover-detail"> </div>
 <div id="chozas-detail" class="detail onmouseover-detail"> </div>
@@ -217,53 +336,122 @@ img {
 <div id="focus-point" class="detail"> </div>
 <div id="mapExit1" class="detail mapExit onmouseover-detail" style="top:10%;left:0%;width:68%;height:20%;opacity:0.1;xbackground:blue;"></div>
 <div id="mapExit2" class="detail mapExit onmouseover-detail" style="bottom:0;left:0%;width:74%;height:20%;opacity:0.1;xbackground:blue;"></div>
-<div id="mapExit3" class="detail mapExit onmouseover-detail" style="top:30%;left:0%;width:7%;height:55%;opacity:0.1;xbackground:blue;"></div>
+<div id="mapExit3" class="detail mapExit onmouseover-detail" style="top:55%;left:0%;width:7%;height:55%;opacity:0.1;xbackground:blue;"></div>
 <div id="mapExit4" class="detail mapExit onmouseover-detail" style="top:33%;right:0%;width:7%;height:60%;opacity:0.1;xbackground:blue;"></div>
+<div id="demo-cursor" class="demo-cursor"></div>
 </div></div>
 <script>
-  
-window.onload = function () {
-  const mapTitle = document.querySelector("#mapa .card-header h2");
-  const mapOpen = document.querySelector(".slide_10 .opened");
-  console.log("Trying to open MAP card");
-  if (!mapOpen) {
-      console.log("map is NOT open, clicking to OPEN");
-      mapTitle.click();
-  }
-};
+   let hasOpenedMap = false;
+   let currentActiveBuilding = null; // Track which building is currently being navigated
+   
+   // Auto-opening disabled - user must click manually
+   // document.addEventListener("DOMContentLoaded", function () {
+   // const mapSection = document.querySelector("#mapa");
+   // const mapTitle = document.querySelector("#mapa .card-header h2");
+   // 
+   // if (!mapSection || !mapTitle) return;
+   // 
+   // const observer = new IntersectionObserver((entries) => {
+   //   entries.forEach((entry) => {
+   //     if (entry.isIntersecting && !hasOpenedMap) {
+   //       mapTitle.click();
+   //       observer.unobserve(mapSection); 
+   //     }
+   //   });
+   // }, {
+   //   threshold: 0.5
+   // });
+   // 
+   // observer.observe(mapSection);
+   // });
   let currentLayer = undefined
 
-  function closeMap(e)
-   {
+  function resetMapToInitialState() {
+    console.log('Resetting map to initial state...');
+    
+    // Reset currentLayer to undefined
+    currentLayer = undefined;
+    
+    // Reset building tracker to ensure fresh state
+    currentActiveBuilding = null;
+    
+    // Hide all layers and reset their states
+    const allLayers = document.querySelectorAll('.layer');
+    allLayers.forEach(layer => {
+      layer.classList.remove('active', 'transitioning');
+      layer.style.zIndex = -1;
+      layer.style.display = 'none';
+      layer.style.opacity = '';
+    });
+    
+    // Show only the base map (initial state)
+    const baseMap = document.querySelector("#map");
+    if (baseMap) {
+      baseMap.style.display = 'block';
+      baseMap.classList.add('active');
+      baseMap.style.zIndex = 0;
+      baseMap.style.opacity = '1';
+    }
+    
+    // Clear all event listeners and reset click handlers
+    removeAllClickListeners();
+    
+    // Remove any hanging event listeners
+    try {
+      document.removeEventListener('click', handleClickOutside);
+    } catch (e) {
+      console.log('No handleClickOutside to remove');
+    }
+    
+    // Reset contours from the contour engine
+    if (typeof contourEngine !== 'undefined' && contourEngine && contourEngine.resetToInitialState) {
+      contourEngine.resetToInitialState();
+    }
+    
+    // Reset click listeners to initial state
+    setTimeout(() => {
+      setAllClickListeners();
+    }, 100);
+    
+    console.log('Map reset complete - ready for fresh interaction');
+  }
+
+  function closeMap(e) {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Closing map:');
-    //document.querySelector("#map .card-header h2").click();
-    document.querySelector("#map .card-header").click();
+    console.log('Closing map...');
+    
+    // Reset map state before closing
+    resetMapToInitialState();
+    
+    // Close the map card
+    const mapHeader = document.querySelector("#map .card-header") || document.querySelector("#mapa .card-header");
+    if (mapHeader) {
+      mapHeader.click();
+    } else {
+      console.warn('Map header not found for closing');
+    }
   }
 
-  for (let i = 1; i < 9; i++) {
-  const mapExit = document.getElementById("mapExit"+i);
-   if(mapExit) {
-         console.log("-----Adding mapExit",i);
-         mapExit.addEventListener('click', closeMap);
-               }
 
-  }
-  function addExitListeners() {
-const mapExit1 = document.getElementById("mapExit1");
-const mapExit2 = document.getElementById("mapExit2");
+function addExitListeners() {
+const mapExits = document.querySelectorAll(".mapExit");
 
-mapExit1.addEventListener('click', closeMap);
-mapExit2.addEventListener('click', closeMap);
-console.log("closing map.....")
+mapExits.forEach((map) => {
+   map.addEventListener('click', closeMap); 
+})
+console.log("maps...")
 }
-  function clickOutside(event, ele, cb) {
+function clickOutside(event, ele, cb) {
+// Si el click fue en un elemento .mapExit, no hacemos nada
+if (event.target.classList.contains('mapExit')) return;
+
 if (!ele.contains(event.target)) {
       if (currentLayer) {
         currentLayer.style.zIndex = -1
       }
       currentLayer = undefined
+      currentActiveBuilding = null; // Reset building tracker on click outside
       event.preventDefault();
       removeAllClickListeners()
       setAllClickListeners()
@@ -271,66 +459,180 @@ if (!ele.contains(event.target)) {
       document.removeEventListener('click', handleClickOutside);
     }
   }
+  let handleClickOutside;
+  
   function onClickOutside(event, ele, cb) {
      console.log('clicked outside event:'+event+ ' ele:'+ele +' cb:'+cb);
-      document.addEventListener('click', handleClickOutside = (event) => clickOutside(event, ele, cb));
+      handleClickOutside = (event) => clickOutside(event, ele, cb);
+      document.addEventListener('click', handleClickOutside);
     };
   function openDetail(event, element, mapIds, prevMapId) {
-    let currentMapIndex = 0
-    let nextMapId = mapIds[currentMapIndex]
-    let nextNextMapId = mapIds[currentMapIndex + 1]
-    let nextNextNextMapId = mapIds[currentMapIndex + 2]
-    let map = document.querySelector("#map")
-    let nextLayer = document.querySelector("#" + nextMapId)
-    // if(!nextLayer){closeCards();return;}
-nextLayer.style.zIndex = 0
-nextLayer.classList.add("active");
-  if (currentLayer) {
-      currentLayer.classList.remove("active");
-      currentLayer.style.zIndex = -1
-  }
-  currentLayer = nextLayer;
-    if (prevMapId) {
-      let prevLayer = document.querySelector("#" + prevMapId)
-      prevLayer.style.zIndex = -1
-      document.removeEventListener("click", handleClickOutside)
-    } else {
-      try {
-        document.removeEventListener("click", handleClickOutside)
-      } catch {
-        console.log("handleClickOutside is not defined")
-      }
+    // Check if we're switching to a different building
+    if (currentActiveBuilding && currentActiveBuilding !== element) {
+      // Reset the previous building to layer 1 by restoring its original listener
+      resetBuildingToLayer1(currentActiveBuilding);
     }
-    if (nextNextMapId) {   // this means there are more layers to go
-      let prevLayerId = mapIds.shift() // remove and save the current map in order to change its z-index back to -1
-      setClickListeners(element, mapIds, prevLayerId)
-      onClickOutside(event, element, function(){
-        nextLayer.style.zIndex = -1
-      })
-    } else {
-      // this means we are in the final layer
-      try {
-          element.addEventListener("click", function() {
-            if (currentLayer) {
-              currentLayer.style.zIndex = -1
-            }
-            removeAllClickListeners()
-            document.removeEventListener("click", handleClickOutside)
-            setAllClickListeners()
-          })
+    
+    // Set the current active building
+    currentActiveBuilding = element;
+    
+    // Hide the contour for the newly active building
+    if (typeof contourEngine !== 'undefined' && contourEngine && contourEngine.hideActiveBuilding) {
+      contourEngine.hideActiveBuilding(element);
+    }
+    
+    // Create a copy of mapIds to avoid modifying the original array
+    let mapIdsCopy = [...mapIds];
+    let currentMapIndex = 0;
+    let nextMapId = mapIdsCopy[currentMapIndex];
+    let nextNextMapId = mapIdsCopy[currentMapIndex + 1];
+         let map = document.querySelector("#mapa");
+    let nextLayer = document.querySelector("#" + nextMapId);
+    
+    if (!nextLayer) {
+      console.warn(`Layer ${nextMapId} not found`);
+      return;
+    }
 
-      } catch {
-        console.log("handleClickOutside is not defined")
+    // Capture the old layer before updating currentLayer
+    const oldLayer = currentLayer;
+
+        // Function to perform smooth layer transition
+    const performTransition = () => {
+      console.log(`Switching to layer: ${nextMapId}`);
+      
+      // Ensure image is ready and start transition
+      if (nextLayer.complete && nextLayer.naturalWidth > 0) {
+                        // Hide ALL layers first to prevent any bleed-through
+        const allLayers = document.querySelectorAll('.layer');
+        allLayers.forEach(layer => {
+          layer.classList.remove('active');
+          layer.style.zIndex = -1;
+          layer.style.display = 'none';
+        });
+        
+        // Ensure only old and new layers are visible during transition
+        if (oldLayer) {
+          oldLayer.style.display = 'block';
+          oldLayer.classList.add('active');
+          oldLayer.style.zIndex = 0;
+        }
+        
+        // Make new layer visible but transparent for smooth transition
+        nextLayer.style.display = 'block';
+        nextLayer.classList.add("transitioning");
+        nextLayer.style.zIndex = 2; // Higher than old layer
+        
+        // Force reflow
+        nextLayer.offsetHeight;
+        
+        // Fade in new layer
+        requestAnimationFrame(() => {
+          nextLayer.classList.remove("transitioning");
+          nextLayer.classList.add("active");
+          
+          // Hide old layer after transition starts
+          setTimeout(() => {
+            if (oldLayer && oldLayer !== nextLayer) {
+          oldLayer.classList.remove("active");
+          oldLayer.style.zIndex = -1;
+              oldLayer.style.display = 'none';
+        }
+        currentLayer = nextLayer;
+            nextLayer.style.zIndex = 0;
+            handleSequence();
+          }, 160); // Slightly longer than CSS transition (150ms)
+        });
+      } else {
+        // Wait for image to load
+        const onLoad = () => {
+          nextLayer.removeEventListener("load", onLoad);
+          performTransition();
+        };
+        nextLayer.addEventListener("load", onLoad, { once: true });
       }
-      onClickOutside(event, element, function(){
-        nextLayer.style.zIndex = -1
-      })
-    }
+    };
+
+            const handleSequence = () => {
+      // Handle previous layer cleanup
+        if (prevMapId) {
+          let prevLayer = document.querySelector("#" + prevMapId);
+        if (prevLayer) {
+          prevLayer.classList.remove("active");
+          prevLayer.style.zIndex = -1;
+        }
+          document.removeEventListener("click", handleClickOutside);
+        } else {
+          try {
+            document.removeEventListener("click", handleClickOutside);
+          } catch {
+            console.log("handleClickOutside is not defined");
+          }
+        }
+
+        if (nextNextMapId) {
+          // There are more layers to go
+        let prevLayerId = mapIdsCopy.shift();
+          setClickListeners(element, mapIdsCopy, prevLayerId);
+        onClickOutside(event, element, function() {
+          nextLayer.classList.remove("active");
+            nextLayer.style.zIndex = -1;
+          });
+        } else {
+          // Final layer logic - reset currentActiveBuilding when reaching the end
+          try {
+          element.addEventListener("click", function() {
+              if (currentLayer) {
+              currentLayer.classList.remove("active");
+                currentLayer.style.zIndex = -1;
+              }
+              currentLayer = undefined;
+              currentActiveBuilding = null; // Clear active building tracker
+              removeAllClickListeners();
+              document.removeEventListener("click", handleClickOutside);
+              setTimeout(() => {
+                setAllClickListeners();
+              }, 0);
+            });
+          } catch {
+            console.log("handleClickOutside is not defined");
+          }
+        onClickOutside(event, element, function() {
+          nextLayer.classList.remove("active");
+            nextLayer.style.zIndex = -1;
+        });
+      }
+    };
+
+    // Start the transition
+    performTransition();
   }
   function setClickListeners(element, mapIds, prevMapId=undefined) {
     element.addEventListener("click", handleOpenDetail = (event) => openDetail(event, element, mapIds, prevMapId),{once: true})
   }
-  const map = document.querySelector("#map")
+     const map = document.querySelector("#mapa")
+  
+  function resetBuildingToLayer1(buildingElement) {
+    // Remove any existing listeners from this building element
+    let newElement = buildingElement.cloneNode(true);
+    buildingElement.parentNode.replaceChild(newElement, buildingElement);
+    
+    // Restore the original layer 1 listener based on building ID
+    const buildingId = newElement.id;
+    const originalMaps = {
+      'casita-detail': ["casita-down-1", "casita-down-2"],
+      'central-detail': ["central-down-1", "central-down-2", "central-down-3"],
+      'chozas-detail': ["chozas-down-1"],
+      'calle-detail': ["calle-down-1", "calle-down-2", "calle-down-3"],
+      'jardin-detail': ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"],
+      'cosina-detail': ["central-down-1", "central-down-2", "central-down-3"]
+    };
+    
+    if (originalMaps[buildingId]) {
+      setClickListeners(newElement, originalMaps[buildingId]);
+    }
+  }
+  
   function setAllClickListeners() {
     const casitaDetail = document.querySelector("#casita-detail")
     const centralDetail = document.querySelector("#central-detail")
@@ -341,23 +643,901 @@ nextLayer.classList.add("active");
 
     setClickListeners(casitaDetail, ["casita-down-1", "casita-down-2"])
     setClickListeners(centralDetail, ["central-down-1", "central-down-2", "central-down-3"])
-    setClickListeners(chozasDetail, ["chozas-down-1", "chozas-down-2"])
+    setClickListeners(chozasDetail, ["chozas-down-1"])
     setClickListeners(calleDetail, ["calle-down-1", "calle-down-2", "calle-down-3"])
     setClickListeners(jardinDetail, ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"])
     setClickListeners(cosinaDetail, ["central-down-1", "central-down-2", "central-down-3"])
-    setClickListeners(document.querySelector("#mapExit1"), [])    
     addExitListeners() 
 }
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
     for (let element of clickableElements) {
+      // Don't remove listeners from mapExit elements
+      if (element.classList.contains('mapExit')) continue;
+      
       // copy and replacing element in order to remove listeners with certainty
       let newElement = element.cloneNode(true)
       element.parentNode.replaceChild(newElement, element)
     }
-    document.removeEventListener("click", handleClickOutside)
+    try {
+      document.removeEventListener("click", handleClickOutside)
+    } catch (e) {
+      console.log('No handleClickOutside to remove');
+    }
   }
 
   setAllClickListeners()
+
+  // IMAGE PRELOADER for smooth layer transitions
+  class ImagePreloader {
+    constructor() {
+      this.preloadedImages = new Map();
+      this.isPreloading = false;
+    }
+
+    async preloadAllMapLayers() {
+      if (this.isPreloading) return;
+      this.isPreloading = true;
+
+      console.log('Starting map layer preloading...');
+
+      const mapLayerUrls = [
+        'https://camp.mx/wp-content/uploads/02-central-down-1.webp',
+        'https://camp.mx/wp-content/uploads/03-central-down-2.webp', 
+        'https://camp.mx/wp-content/uploads/04-central-down-3.webp',
+        'https://camp.mx/wp-content/uploads/05-chozas-down-1.webp',
+        'https://camp.mx/wp-content/uploads/06-casa-down-1.webp',
+        'https://camp.mx/wp-content/uploads/07-casa-down-2.webp',
+        'https://camp.mx/wp-content/uploads/08-calle-down-1.webp',
+        'https://camp.mx/wp-content/uploads/09-calle-down-2.webp',
+        'https://camp.mx/wp-content/uploads/10-calle-down-3.webp',
+        'https://camp.mx/wp-content/uploads/11-foro-down-1.webp',
+        'https://camp.mx/wp-content/uploads/12-foro-down-2.webp',
+        'https://camp.mx/wp-content/uploads/13-foro-down-3.webp',
+        'https://camp.mx/wp-content/uploads/14-foro-down-4.webp'
+      ];
+
+      const preloadPromises = mapLayerUrls.map(url => this.preloadImage(url));
+
+      try {
+        await Promise.all(preloadPromises);
+        console.log('All map layers preloaded successfully!');
+      } catch (error) {
+        console.warn('Some images failed to preload:', error);
+      }
+
+      this.isPreloading = false;
+    }
+
+    preloadImage(url) {
+      return new Promise((resolve, reject) => {
+        if (this.preloadedImages.has(url)) {
+          resolve(url);
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          this.preloadedImages.set(url, img);
+          console.log(`Preloaded: ${url.split('/').pop()}`);
+          resolve(url);
+        };
+        img.onerror = () => reject(new Error(`Failed to preload: ${url}`));
+        img.src = url;
+      });
+    }
+
+    isImagePreloaded(url) {
+      return this.preloadedImages.has(url);
+    }
+  }
+
+  // SIMPLIFIED CONTOUR SYSTEM v3.0
+  // Hover to show, click to hide workflow
+  class SimpleContourEngine {
+    constructor() {
+      // Contour configuration mapping
+      this.contourConfig = {
+        'central-detail': 'https://camp.mx/wp-content/uploads/palapa-hover-central.png',
+        'casita-detail': 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png',
+        'chozas-detail': 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png',
+        'calle-detail': 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png',
+        'jardin-detail': 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png',
+        'cosina-detail': 'https://camp.mx/wp-content/uploads/palapa-hover-central.png'
+      };
+
+      this.activeContours = new Set(); // Track multiple active contours
+      this.contourElements = new Map(); // Store created contour elements
+      this.overlay = null;
+      
+      this.init();
+    }
+
+    // Create overlay container for contours
+    createOverlay() {
+      if (document.getElementById('contour-overlay')) {
+        this.overlay = document.getElementById('contour-overlay');
+        return;
+      }
+
+      const mapContainer = document.querySelector('.map-container');
+      this.overlay = document.createElement('div');
+      this.overlay.id = 'contour-overlay';
+      this.overlay.style.cssText = `
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: 15;
+      `;
+      mapContainer.appendChild(this.overlay);
+    }
+
+    // Create contour element for an area
+    createContourElement(areaId) {
+      const contour = document.createElement('img');
+      contour.src = this.contourConfig[areaId];
+      contour.style.cssText = `
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: none;
+      `;
+      contour.dataset.area = areaId;
+      this.overlay.appendChild(contour);
+      this.contourElements.set(areaId, contour);
+      return contour;
+    }
+
+    // Show contour for specific area
+    showContour(areaId) {
+      if (!this.contourConfig[areaId]) return;
+      
+      // Don't show contour if this building is currently being navigated
+      const targetElement = document.querySelector(`#${areaId}`);
+      if (currentActiveBuilding === targetElement) {
+        console.log(`Skipping contour for active building: ${areaId}`);
+        return;
+      }
+      
+      let contour = this.contourElements.get(areaId);
+      if (!contour) {
+        contour = this.createContourElement(areaId);
+      }
+
+      // Show this contour
+      contour.style.display = 'block';
+      requestAnimationFrame(() => {
+        contour.style.opacity = '0.8';
+      });
+      
+      this.activeContours.add(areaId);
+      console.log(`Showing contour for: ${areaId}`);
+    }
+
+    // Hide specific contour
+    hideContour(areaId) {
+      const contour = this.contourElements.get(areaId);
+      if (!contour) return;
+
+      contour.style.opacity = '0';
+      setTimeout(() => {
+        contour.style.display = 'none';
+      }, 300);
+      
+      this.activeContours.delete(areaId);
+      console.log(`Hiding contour for: ${areaId}`);
+    }
+
+    // Hide all active contours
+    hideAllContours() {
+      this.activeContours.forEach(areaId => this.hideContour(areaId));
+      console.log(`Hiding all contours`);
+    }
+
+    // Hide contour for active building (called when building becomes active)
+    hideActiveBuilding(buildingElement) {
+      if (!buildingElement || !buildingElement.id) return;
+      
+      const areaId = buildingElement.id;
+      if (this.contourConfig[areaId]) {
+        this.hideContour(areaId);
+        console.log(`Hiding contour for newly active building: ${areaId}`);
+      }
+    }
+
+    // Reset the contour engine to initial state
+    resetToInitialState() {
+      console.log('Resetting contour engine...');
+      
+      // Hide all active contours
+      this.hideAllContours();
+      
+      // Clear the active contours set
+      this.activeContours.clear();
+      
+      // Reset all contour elements
+      this.contourElements.forEach((contour, areaId) => {
+        contour.style.opacity = '0';
+        contour.style.display = 'none';
+      });
+      
+      console.log('Contour engine reset complete');
+    }
+
+            // Setup event listeners
+    setupEventListeners() {
+      const mapContainer = document.getElementById('imap');
+      if (!mapContainer) return;
+
+      let isClickAction = false;
+
+      // Handle hover events on detail areas
+      mapContainer.addEventListener('mouseover', (event) => {
+        if (isClickAction) return; // Ignore hover during click processing
+        
+      const detail = event.target.closest('.detail.onmouseover-detail');
+        if (!detail || !this.contourConfig[detail.id]) return;
+        
+        // Hide all other contours when hovering a new area
+        this.hideAllContours();
+        // Show the contour for this area
+        this.showContour(detail.id);
+      });
+
+      // Handle click events
+      mapContainer.addEventListener('click', (event) => {
+        isClickAction = true;
+        
+        const detail = event.target.closest('.detail.onmouseover-detail');
+        
+        if (detail && this.contourConfig[detail.id]) {
+          // Clicking on a building area - hide its contour
+          this.hideContour(detail.id);
+        } else {
+          // Clicking outside building areas - hide all contours
+          this.hideAllContours();
+        }
+        
+        // Reset click flag after processing
+        setTimeout(() => { isClickAction = false; }, 50);
+        
+        event.stopPropagation();
+      });
+    }
+
+    // Initialize the system
+    init() {
+      console.log('Initializing Simple Contour Engine...');
+      
+      this.createOverlay();
+      this.setupEventListeners();
+      
+      console.log('Simple Contour Engine Ready - Hover to show, click to hide');
+    }
+
+    // Cleanup method
+    destroy() {
+      this.contourElements.forEach(contour => contour.remove());
+      this.contourElements.clear();
+      this.activeContours.clear();
+      if (this.overlay) {
+        this.overlay.remove();
+      }
+    }
+  }
+
+  // Initialize the Image Preloader and Contour Engine
+  const imagePreloader = new ImagePreloader();
+  const contourEngine = new SimpleContourEngine();
+  
+  // Start preloading images immediately for smooth transitions
+  imagePreloader.preloadAllMapLayers();
+
+  // DEMO CURSOR SYSTEM
+  class MapDemo {
+    constructor() {
+      this.demoCursor = null;
+      this.isRunning = false;
+      this.userInteractionDisabled = false;
+      this.hasRunDemo = false; // Prevent demo from running multiple times
+      this.demoInterrupted = false; // Flag to track if demo was interrupted
+      this.init();
+    }
+
+    init() {
+      this.demoCursor = document.getElementById('demo-cursor');
+      
+      // Wait for the map card to be opened instead of auto-starting
+      this.waitForMapCardOpen();
+    }
+
+    waitForMapCardOpen() {
+      // Check if the map card is already open
+      if (this.isMapCardOpen()) {
+        console.log('Map card is already open...');
+        if (!this.hasRunDemo) {
+          if (this.isMobileDevice()) {
+            console.log('Mobile device detected - waiting for map positioning to complete');
+            this.waitForMobileMapPositioning();
+          } else {
+            console.log('Desktop device - starting demo immediately');
+            setTimeout(() => {
+              this.startDemo();
+            }, 500); // Short delay after card opens
+          }
+        }
+        return;
+      }
+
+      // If not open, start monitoring for when it opens
+      this.startMonitoring();
+    }
+
+    isMobileDevice() {
+      // Check for mobile user agents
+      const userAgent = navigator.userAgent.toLowerCase();
+      const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
+      const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+      
+      // Check for touch screen
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
+      // Check screen size (mobile-like dimensions)
+      const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 768;
+      
+      // Combine checks - if any indicate mobile, consider it mobile
+      const isMobile = isMobileUA || (hasTouch && isSmallScreen);
+      
+      console.log('Mobile detection:', {
+        userAgent: isMobileUA,
+        hasTouch,
+        isSmallScreen,
+        screenSize: `${window.innerWidth}x${window.innerHeight}`,
+        finalResult: isMobile
+      });
+      
+      return isMobile;
+    }
+
+    isMapCardOpen() {
+      const mapContainer = document.getElementById('imap');
+      if (!mapContainer) return false;
+      
+      // Check if the parent slide has the 'opened' class
+      // Navigate up the DOM tree to find the slide element
+      let currentElement = mapContainer;
+      for (let i = 0; i < 10; i++) { // Max 10 levels up
+        if (!currentElement || !currentElement.parentNode) break;
+        currentElement = currentElement.parentNode;
+        
+        if (currentElement.classList && 
+            currentElement.classList.contains('slide_10') && 
+            currentElement.classList.contains('opened')) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    startMonitoring() {
+      console.log('Monitoring for map card opening...');
+      
+      // Use MutationObserver to watch for class changes on the body
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const body = mutation.target;
+            // Check if map card was opened (body gets 'map' or 'mapa' class)
+            if ((body.classList.contains('map') || body.classList.contains('mapa')) && 
+                body.classList.contains('bodycardopened')) {
+              console.log('Map card opened! Checking if demo should start...');
+              
+              if (!this.hasRunDemo) {
+                if (this.isMobileDevice()) {
+                  console.log('Mobile device detected during monitoring - waiting for map positioning');
+                  this.waitForMobileMapPositioning();
+                } else {
+                  console.log('Desktop device - starting demo after positioning');
+                  setTimeout(() => {
+                    this.startDemo();
+                  }, 800); // Wait for card animation and scroll positioning
+                }
+              }
+              
+              // Stop monitoring after first trigger
+              observer.disconnect();
+            }
+          }
+        });
+      });
+
+      // Start observing the body element for class changes
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
+
+    waitForMobileMapPositioning() {
+      console.log('Waiting for mobile map positioning to complete...');
+      
+      // Check if map positioning is already complete (mapscroll = 0)
+      if (typeof window.mapscroll !== 'undefined' && window.mapscroll === 0) {
+        console.log('Map positioning already complete - starting mobile demo');
+        setTimeout(() => {
+          this.startDemo();
+        }, 1000); // Extra delay for mobile to ensure positioning is settled
+        return;
+      }
+      
+      // Monitor the mapscroll variable until positioning is complete
+      const checkPositioning = setInterval(() => {
+        if (typeof window.mapscroll !== 'undefined' && window.mapscroll === 0) {
+          console.log('Mobile map positioning complete - starting demo');
+          clearInterval(checkPositioning);
+          setTimeout(() => {
+            this.startDemo();
+          }, 1000); // Extra delay for mobile to ensure positioning is settled
+        }
+      }, 100); // Check every 100ms
+      
+      // Safety timeout - start demo after max 10 seconds even if positioning doesn't complete
+      setTimeout(() => {
+        if (typeof window.mapscroll === 'undefined' || window.mapscroll !== 0) {
+          console.log('Mobile map positioning timeout - starting demo anyway');
+          clearInterval(checkPositioning);
+          this.startDemo();
+        }
+      }, 10000); // 10 second timeout
+    }
+
+    disableUserInteraction() {
+      this.userInteractionDisabled = true;
+      
+      // Add demo-active class to hide user cursor
+      const mapContainer = document.getElementById('imap');
+      if (mapContainer) {
+        mapContainer.classList.add('demo-active');
+        
+        // Disable scrolling on mobile during demo
+        this.originalOverflow = mapContainer.style.overflow;
+        this.originalOverflowX = mapContainer.style.overflowX;
+        this.originalOverflowY = mapContainer.style.overflowY;
+        mapContainer.style.overflow = 'hidden';
+        mapContainer.style.overflowX = 'hidden';
+        mapContainer.style.overflowY = 'hidden';
+      }
+      
+      // Disable all click events on the entire document during demo
+      this.originalClickHandler = this.handleDocumentClick.bind(this);
+      document.addEventListener('click', this.originalClickHandler, true);
+      document.addEventListener('touchstart', this.originalClickHandler, true);
+      document.addEventListener('touchend', this.originalClickHandler, true);
+      
+      // Also prevent scroll events during demo
+      this.preventScrollHandler = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      document.addEventListener('scroll', this.preventScrollHandler, true);
+      document.addEventListener('touchmove', this.preventScrollHandler, true);
+      if (mapContainer) {
+        mapContainer.addEventListener('scroll', this.preventScrollHandler, true);
+        mapContainer.addEventListener('touchmove', this.preventScrollHandler, true);
+      }
+      
+      // Store original pointer events state for detail elements (except mapExit)
+      this.originalPointerEvents = new Map();
+      const detailElements = document.querySelectorAll('.detail');
+      detailElements.forEach(detail => {
+        // Don't disable mapExit elements - they should always work
+        if (!detail.classList.contains('mapExit')) {
+          this.originalPointerEvents.set(detail, detail.style.pointerEvents || 'auto');
+          detail.style.pointerEvents = 'none';
+        }
+      });
+      
+      console.log('User interaction disabled for demo (demo clicks will still work, scrolling disabled)');
+    }
+
+    enableUserInteraction() {
+      this.userInteractionDisabled = false;
+      
+      // Remove demo-active class and restore scrolling
+      const mapContainer = document.getElementById('imap');
+      if (mapContainer) {
+        mapContainer.classList.remove('demo-active');
+        
+        // Restore original overflow properties
+        mapContainer.style.overflow = this.originalOverflow || '';
+        mapContainer.style.overflowX = this.originalOverflowX || '';
+        mapContainer.style.overflowY = this.originalOverflowY || '';
+      }
+      
+      // Remove document-level click blocking
+      if (this.originalClickHandler) {
+        document.removeEventListener('click', this.originalClickHandler, true);
+        document.removeEventListener('touchstart', this.originalClickHandler, true);
+        document.removeEventListener('touchend', this.originalClickHandler, true);
+        this.originalClickHandler = null;
+      }
+      
+      // Remove scroll prevention handlers
+      if (this.preventScrollHandler) {
+        document.removeEventListener('scroll', this.preventScrollHandler, true);
+        document.removeEventListener('touchmove', this.preventScrollHandler, true);
+        if (mapContainer) {
+          mapContainer.removeEventListener('scroll', this.preventScrollHandler, true);
+          mapContainer.removeEventListener('touchmove', this.preventScrollHandler, true);
+        }
+        this.preventScrollHandler = null;
+      }
+      
+      // Restore original pointer events state for all detail elements
+      if (this.originalPointerEvents) {
+        this.originalPointerEvents.forEach((originalValue, element) => {
+          element.style.pointerEvents = originalValue;
+          console.log(`Restored ${element.id}: ${originalValue}`);
+        });
+        this.originalPointerEvents.clear();
+      }
+      
+      // Ensure ALL interactive detail elements are clickable (not just mapExit)
+      const allDetailElements = document.querySelectorAll('.detail');
+      allDetailElements.forEach(detailElement => {
+        // Set pointer events to auto for all detail elements
+        detailElement.style.pointerEvents = 'auto';
+        console.log(`Force enabled: ${detailElement.id}`);
+      });
+      
+      // Force re-enable map container pointer events  
+      if (mapContainer) {
+        mapContainer.style.pointerEvents = 'auto';
+      }
+      
+      console.log('User interaction enabled - all elements should be clickable');
+    }
+
+    handleDocumentClick(event) {
+      // Allow demo-generated clicks to pass through
+      if (this.userInteractionDisabled && event.isTrusted === false && event.demoGenerated) {
+        console.log('Demo click allowed through');
+        return true;
+      }
+      
+      // Detect real user clicks during demo and interrupt it
+      if (this.userInteractionDisabled && event.isTrusted && this.isRunning) {
+        console.log('User click detected during demo - interrupting...');
+        this.interruptDemo(event);
+        return false;
+      }
+      
+      // Block other interactions during demo
+      if (this.userInteractionDisabled) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        console.log('User interaction blocked during demo');
+        return false;
+      }
+    }
+
+    async interruptDemo(userEvent) {
+      console.log('Demo interrupted by user interaction');
+      
+      // Set interrupt flag to stop ongoing demo sequence
+      this.demoInterrupted = true;
+      
+      // Immediately fade out the demo cursor
+      await this.fadeOutCursor();
+      
+      // Re-enable user interactions
+      this.enableUserInteraction();
+      
+      // Reset demo state
+      this.isRunning = false;
+      this.demoInterrupted = false;
+      
+      // Reset map to initial state if needed
+      resetMapToInitialState();
+      
+      // Re-dispatch the user's original click event to the appropriate element
+      setTimeout(() => {
+        console.log('Processing user click after demo interrupt...');
+        
+        // Find the element the user actually wanted to click
+        const clickedElement = document.elementFromPoint(userEvent.clientX, userEvent.clientY);
+        if (clickedElement) {
+          // Create a new event and dispatch it
+          const newEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            clientX: userEvent.clientX,
+            clientY: userEvent.clientY
+          });
+          clickedElement.dispatchEvent(newEvent);
+        }
+      }, 200); // Small delay to ensure cleanup is complete
+      
+      console.log('Demo interrupt complete - user interaction restored');
+    }
+
+    async startDemo() {
+      if (this.isRunning || this.hasRunDemo) return;
+      
+      this.isRunning = true;
+      this.hasRunDemo = true;
+      this.demoInterrupted = false; // Reset interrupt flag
+      console.log('Starting map demo...');
+      
+      // Disable user interactions
+      this.disableUserInteraction();
+      
+      // Show cursor at central building with fade-in
+      await this.showCursorAtCentral();
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Wait a moment at the central building
+      await this.wait(300);
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Perform the click sequence through all central layers (now includes return to base)
+      await this.performCentralClickSequence();
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Wait before fading out
+      await this.wait(400);
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Re-enable user interactions when fade-out starts (not when it completes)
+      this.enableUserInteraction();
+      
+      // Ensure click listeners are properly set after interaction is restored
+      setTimeout(() => {
+        console.log('Ensuring click listeners are active...');
+        // Force reset of all click listeners to ensure they work
+        removeAllClickListeners();
+        setAllClickListeners();
+      }, 100);
+      
+      // Fade out cursor 
+      await this.fadeOutCursor();
+      
+      this.isRunning = false;
+      console.log('Demo complete!');
+    }
+
+    async showCursorAtCentral() {
+      return new Promise((resolve) => {
+        // Ensure cursor is properly set up
+        this.ensureCursorVisibility();
+        
+        // Position cursor directly at central building (no movement)
+        this.demoCursor.style.top = '59.5%';
+        this.demoCursor.style.left = '46.5%';
+        this.demoCursor.style.opacity = '0';
+        this.demoCursor.style.transform = 'translate(-50%, -50%) scale(0.7)';
+        
+        // Add fade-in animation class
+        this.demoCursor.classList.add('fade-in');
+        
+        // Maintain visibility during animation
+        const animationInterval = setInterval(() => {
+          this.ensureCursorVisibility();
+        }, 100);
+        
+        // Wait for fade-in animation to complete
+        setTimeout(() => {
+          clearInterval(animationInterval);
+          this.demoCursor.classList.remove('fade-in');
+          this.demoCursor.style.opacity = '1';
+          this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+          this.ensureCursorVisibility(); // Final visibility check
+          resolve();
+        }, 1500); // Match fade-in animation duration
+      });
+    }
+
+    async performCentralClickSequence() {
+      const centralDetail = document.querySelector('#central-detail');
+      if (!centralDetail) {
+        console.warn('Central detail element not found');
+        return;
+      }
+
+      console.log('Starting central click sequence...');
+      
+      // Click to start the sequence (from base to central-down-1)
+      await this.performClick(centralDetail, 'Click 1: Base -> Central Down 1');
+      if (this.demoInterrupted) return; // Check for interrupt
+      await this.wait(1000);
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Click to go to central-down-2  
+      await this.performClick(centralDetail, 'Click 2: Central Down 1 -> Central Down 2');
+      if (this.demoInterrupted) return; // Check for interrupt
+      await this.wait(1000);
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Click to go to central-down-3
+      await this.performClick(centralDetail, 'Click 3: Central Down 2 -> Central Down 3');
+      if (this.demoInterrupted) return; // Check for interrupt
+      await this.wait(1000);
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Click to return to base (fourth click)
+      await this.performFinalClick(centralDetail, 'Click 4: Central Down 3 -> Base');
+    }
+
+    async performClick(element, logMessage) {
+      console.log(logMessage);
+      
+      // Ensure cursor is visible and properly positioned before click
+      this.ensureCursorVisibility();
+      
+      // Add click animation to cursor
+      this.demoCursor.classList.add('click-animation');
+      
+      // Wait for click animation to start
+      await this.wait(300);
+      
+      // Create a synthetic click event marked as demo-generated
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        clientX: element.offsetLeft + element.offsetWidth / 2,
+        clientY: element.offsetTop + element.offsetHeight / 2
+      });
+      
+      // Mark this event as demo-generated so it passes through our blocker
+      clickEvent.demoGenerated = true;
+      
+      // Temporarily enable pointer events for this element during demo click
+      const originalPointerEvents = element.style.pointerEvents;
+      element.style.pointerEvents = 'auto';
+      
+      // Dispatch the event
+      element.dispatchEvent(clickEvent);
+      
+      // Restore original pointer events state
+      element.style.pointerEvents = originalPointerEvents;
+      
+      // Ensure cursor stays visible during layer transition
+      this.maintainCursorDuringTransition();
+      
+      // Remove click animation but keep cursor visible
+      setTimeout(() => {
+        this.demoCursor.classList.remove('click-animation');
+        // Reset to stable state after click animation
+        this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        this.demoCursor.style.opacity = '1';
+        // Re-ensure visibility after transition
+        this.ensureCursorVisibility();
+      }, 800); // Match click animation duration
+    }
+
+    async performFinalClick(element, logMessage) {
+      console.log(logMessage);
+      
+      // Ensure cursor is visible and properly positioned before click
+      this.ensureCursorVisibility();
+      
+      // Add click animation to cursor
+      this.demoCursor.classList.add('click-animation');
+      
+      // Wait for click animation to start
+      await this.wait(300);
+      
+      // Reset to base map by calling reset function directly (no need for event)
+      resetMapToInitialState();
+      
+      // Maintain cursor during reset transition
+      this.maintainCursorDuringTransition();
+      
+      // Remove click animation and ensure smooth state
+      setTimeout(() => {
+        this.demoCursor.classList.remove('click-animation');
+        // Reset to stable state after animation
+        this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        this.demoCursor.style.opacity = '1';
+        this.ensureCursorVisibility();
+      }, 800); // Match click animation duration
+    }
+
+    ensureCursorVisibility() {
+      if (!this.demoCursor) return;
+      
+      // Force cursor to highest z-index and ensure it's visible
+      this.demoCursor.style.zIndex = '99999';
+      this.demoCursor.style.display = 'block';
+      this.demoCursor.style.visibility = 'visible';
+      this.demoCursor.style.pointerEvents = 'none';
+      
+      console.log('Cursor visibility ensured');
+    }
+
+    maintainCursorDuringTransition() {
+      // Set up an interval to maintain cursor visibility during transitions
+      const maintainInterval = setInterval(() => {
+        this.ensureCursorVisibility();
+      }, 50); // Check every 50ms
+      
+      // Stop maintaining after transition completes (200ms should cover the 160ms transition)
+      setTimeout(() => {
+        clearInterval(maintainInterval);
+        this.ensureCursorVisibility(); // Final check
+      }, 200);
+    }
+
+    async returnToBaseMap() {
+      console.log('Returning to base map...');
+      
+      // Ensure cursor is visible before final click
+      this.ensureCursorVisibility();
+      
+      // Add click animation to cursor
+      this.demoCursor.classList.add('click-animation');
+      
+      // Wait for click animation to start
+      await this.wait(300);
+      
+      // Reset to base map by simulating a click outside or calling reset function
+      resetMapToInitialState();
+      
+      // Maintain cursor during reset transition
+      this.maintainCursorDuringTransition();
+      
+      // Remove click animation and ensure smooth state
+      setTimeout(() => {
+        this.demoCursor.classList.remove('click-animation');
+        // Reset to stable state after animation
+        this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        this.demoCursor.style.opacity = '1';
+        this.ensureCursorVisibility();
+      }, 800); // Match click animation duration
+    }
+
+    async fadeOutCursor() {
+      return new Promise((resolve) => {
+        // Ensure all other animations are cleaned up first
+        this.demoCursor.classList.remove('click-animation', 'fade-in');
+        
+        // Reset to stable state before fade-out
+        this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        this.demoCursor.style.opacity = '1';
+        
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          this.demoCursor.classList.add('fade-out');
+          
+          setTimeout(() => {
+            this.demoCursor.classList.remove('fade-out');
+            this.demoCursor.style.opacity = '0';
+            resolve();
+          }, 1200); // Match fade-out animation duration
+        }, 100); // Brief pause for smooth transition
+      });
+    }
+
+    wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Method to restart demo (for testing)
+    restartDemo() {
+      if (this.isRunning) return;
+      this.hasRunDemo = false;
+      this.startDemo();
+    }
+  }
+
+  // Initialize the demo system
+  const mapDemo = new MapDemo();
 </script>
 <!-- /wp:html -->

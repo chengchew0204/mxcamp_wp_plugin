@@ -28,7 +28,7 @@
 
 body {
 	font-family: 'ClearSans', helvetica, sans-serif;
-	font-weight: 450;
+	font-weight: 500;
 	font-stretch: 80%;
 	letter-spacing: -0.2px;
 }
@@ -266,7 +266,7 @@ button.ct-toggle svg.ct-icon {
 }
 
 .slide_10.opened .slide_10_bg {
-	background: rgba(32, 16, 16, 0.70)
+	background: rgba(32, 16, 16, 0.50);
 }
 
 .slide_10.opened .slide_10_scroll {
@@ -288,9 +288,9 @@ button.ct-toggle svg.ct-icon {
 	-webkit-overflow-scrolling: touch;
 }
 
-.slides.menuactive .card {
-	/* opacity: 0 */
-}
+/* .slides.menuactive .card {
+	opacity: 0
+} */
 
 #thefrontvideo,
 .thefrontvideo,
@@ -333,6 +333,7 @@ button.ct-toggle svg.ct-icon {
 	color: rgba(245, 245, 245, 0.9);
 	padding-top: 50px;
 	z-index: 3;
+	font-weight: 500;
 }
 
 
@@ -486,6 +487,18 @@ h2:after {
     display: block;
 }
 
+/* Wider hover content for better image visibility */
+.hover.wider-hover .hover-content {
+    width: 600px;
+    max-width: 90vw;
+}
+
+.hover.wider-hover .hover-content img {
+    width: 100%;
+    height: auto;
+    max-width: none;
+}
+
 /* Special override for menu item hover content */
 .mobile-menu .menu-item .hover-content {
     display: none;
@@ -589,6 +602,11 @@ h2 br {
 #mapa.opened .slide_10_bg,
 #map.opened .slide_10_bg {
 	background: rgba(32, 16, 16, 0.70);
+}
+
+#calendar.opened .slide_10_bg,
+#calendario.opened .slide_10_bg {
+	background: rgba(32, 16, 16, 0.50);
 }
 
 .card h4 {
@@ -752,8 +770,9 @@ h2 br {
 }
 
 .card-content a {
-	color: #F5F5F5;
-	font-weight: bold;
+	color: rgba(245, 245, 245, 0.9);
+	font-weight: 500;
+	/* font-weight: bold; */
 }
 
 .ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(1),
@@ -1041,27 +1060,27 @@ body.hoveron .tap-top {
 	cursor: pointer;
 }
 
-/* Larger tap areas for events section on desktop */
+/* Larger tap areas for events section on desktop - adjusted for 120% calendar width */
 @media screen and (min-width: 1000px) {
 	#eventos .tap-left,
 	#events .tap-left {
-		width: calc((100vw - 800px)/2);
+		width: calc((100vw - 960px)/2);
 	}
 	
 	#eventos .tap-right,
 	#events .tap-right {
-		width: calc((100vw - 800px)/2);
+		width: calc((100vw - 960px)/2);
 	}
 }
 
 @media screen and (min-width: 1400px) {
 	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
-		width: calc((100vw - 1200px)/2);
+		width: calc((100vw - 1440px)/2);
 	}
 }
 @media screen and (min-width: 1800px) {
 	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
-		width: calc((100vw - 1400px)/2);
+		width: calc((100vw - 1680px)/2);
 	}
 }
 
@@ -1074,7 +1093,7 @@ body.hoveron .tap-top {
 .ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 	display: grid !important;
 	font-family: 'ClearSans', helvetica, sans-serif !important;
-	grid-template-columns: repeat(6, 1fr) !important;
+	grid-template-columns: repeat(5, 1fr) !important;
 }
 
 /* Mobile ≤ 600px: 3-column grid */
@@ -1105,12 +1124,12 @@ body.hoveron .tap-top {
 	}
 }
 
-/* Desktop ≥ 1201px: 6 columns */
+/* Desktop ≥ 1201px: 5 columns */
 @media screen and (min-width: 1201px) {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		font-family: 'ClearSans', helvetica, sans-serif !important;
-		grid-template-columns: repeat(6, 1fr) !important;
+		grid-template-columns: repeat(5, 1fr) !important;
 	}
 }
 
@@ -1124,7 +1143,7 @@ body.hoveron .tap-top {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		font-family: 'ClearSans', helvetica, sans-serif !important;
-		grid-template-columns: repeat(6, 1fr) !important;
+		grid-template-columns: repeat(5, 1fr) !important;
 	}
 }
 
@@ -1138,7 +1157,7 @@ body.hoveron .tap-top {
 	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
 		display: grid !important;
 		font-family: 'ClearSans', helvetica, sans-serif !important;
-		grid-template-columns: repeat(6, 1fr) !important;
+		grid-template-columns: repeat(5, 1fr) !important;
 	}
 }
 
@@ -1167,6 +1186,15 @@ body.hoveron .tap-top {
 	}
 }
 
+/* Desktop-only: 120% width for calendar */
+@media screen and (min-width: 1000px) {
+	.calendar-post {
+		width: 120%;
+		margin-left: -8%;
+		margin-right: -12%;
+	}
+}
+
 
 
 body.gallery header .site-branding,
@@ -1177,6 +1205,28 @@ body.galeria header .site-branding {
 body.gallery footer,
 body.galeria footer {
 	display: none
+}
+
+/* Ensure gallery logo remains visible during video playback */
+.gallery-logo {
+	position: absolute;
+	z-index: 15 !important;
+	padding: 0;
+	max-width: 55px;
+	top: 0;
+	right: 0;
+	margin-right: 14px;
+	margin-top: 15px;
+	filter: drop-shadow(0 0 60px rgba(0, 0, 0, 1)) drop-shadow(0 0 40px rgba(0, 0, 0, 1));
+	display: block !important;
+}
+
+/* Override any rules that might hide the logo during video playback */
+.slider.play .gallery-logo,
+.slide.videoplaying .gallery-logo,
+.videoplaying .gallery-logo {
+	display: block !important;
+	z-index: 15 !important;
 }
 .time i{
 	display:none
@@ -1219,7 +1269,7 @@ div.slide_10 #gif-detail,
 }
 
 .slide_10#mapa, .slide_10#map {
-		background-image: url(https://camp.mx/wp-content/uploads/mapa_escrit.jpg) !important;
+		background-image: url(https://camp.mx/wp-content/uploads/mapa_escrit.webp) !important;
 	}
 @media screen and (max-width: 1200px) {
    	#gif-detail {
@@ -1469,15 +1519,28 @@ body.bodycardopened.map #gif-detail {
     position: absolute;
     width: 68px;
     height: 68px;
-    background: url('https://camp.mx/wp-content/uploads/pointer.png') no-repeat center;
+    background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
     background-size: contain;
     z-index: 2000;
-    pointer-events: none;
+    pointer-events: none !important;
     opacity: 0;
-    top: 9.7%;
-    left: 10%;
+    top: 59px;
+    left: 153px;
     transform: translate(-50%, -50%);
     animation: hintBounceGlow 3s ease-out forwards;
+    
+    /* Smooth transition when being hidden */
+    transition: opacity 0.1s ease-out;
+    
+    /* Ensure hint never blocks interactions */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    
+    /* Make sure it's never clickable or touchable */
+    touch-action: none;
+    -webkit-touch-callout: none;
     
     /* Fallback cursor icon using CSS 
     border: 2px solid rgba(100, 200, 255, 0.8);
@@ -1509,7 +1572,26 @@ body.bodycardopened.map #gif-detail {
 }
 
 @keyframes hintBounceGlow {
-    0% { 
+	/*
+		0% {
+			transform: translate(-50%, -50%) scale(1);
+			opacity: 1;
+		}
+		30% {
+			transform: translate(-50%, -50%) scale(0.85);
+			opacity: 0.9;
+		}
+		60% {
+			transform: translate(-50%, -50%) scale(1.1);
+			opacity: 1;
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1);
+			opacity: 1;
+		}
+	*/
+	
+	0% { 
         opacity: 0; 
         transform: translate(-50%, -50%) translateY(15px) scale(0.8); 
         filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
@@ -1540,11 +1622,26 @@ body.bodycardopened.map #gif-detail {
         transform: translate(-50%, -50%) translateY(15px) scale(0.8); 
         filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
+	
 }
 
 /* Hide cursor hint when card is opened */
 .slide_10.opened .cursor-hint {
     display: none !important;
+}
+
+/* Hide cursor hint only on click/active, not on hover */
+.slide_10:active .cursor-hint,
+.slide_10:focus .cursor-hint {
+    display: none !important;
+    animation: none !important;
+}
+
+/* Ensure cursor hint is hidden during any state transitions */
+.slide_10.closing .cursor-hint,
+.slide_10.loading .cursor-hint {
+    display: none !important;
+    animation: none !important;
 }
 
 /* Mobile adjustments for cursor hint */

@@ -19,11 +19,15 @@ setInterval(function () {
 }, 50);
 }
 let mapscroll = 1;
+// Expose mapscroll globally for demo system
+window.mapscroll = mapscroll;
 
 function mapScroll() {
   const mapContainer = document.getElementById('imap');
   const mapScrollWidth = mapContainer.scrollWidth; 
   const mapWidth = mapContainer.offsetWidth;
+  const centerPosition = (mapScrollWidth - mapWidth) / 2; // Calculate center position
+  const targetPosition = centerPosition - 80; // 80px more to the left of center
 
   const isOpen = mapContainer?.parentNode?.parentNode?.parentNode?.parentNode?.className === 'slide_10 opened';
 
@@ -34,24 +38,47 @@ function mapScroll() {
       if (!stillOpen) return; // Si ya no está abierto, no hacer nada
 
       if (mapscroll > 0) {
+        // State 1: Initial setup - prepare to scroll right
         if (mapscroll === 1 && mapContainer.scrollLeft === 0) {
-          mapscroll = 2;
+          mapscroll = 2; // Move to scrolling right state
+          window.mapscroll = mapscroll; // Update global reference
+          console.log('Map scroll: Starting rightward scroll');
           return;
         }
 
+        // State 2: Scrolling right until end
         if (mapscroll === 2) {
           const nearEnd = mapContainer.scrollLeft >= mapScrollWidth - mapWidth - 1;
 
           if (!nearEnd) {
             mapContainer.scrollLeft += 35;
           } else {
-            mapscroll = 0;
+            mapscroll = 3; // Move to scrolling left state
+            window.mapscroll = mapscroll; // Update global reference
+            console.log('Map scroll: Reached right end, starting leftward scroll');
+          }
+        }
+
+        // State 3: Scrolling left back toward target position (80px left of center)
+        if (mapscroll === 3) {
+          const currentPos = mapContainer.scrollLeft;
+          
+          // Check if we've reached or passed the target position
+          if (currentPos > targetPosition + 35) {
+            mapContainer.scrollLeft -= 35;
+          } else {
+            // We're close to target position, snap to exact position and stop
+            mapContainer.scrollLeft = Math.max(0, targetPosition); // Ensure we don't go negative
+            mapscroll = 0; // Stop the scrolling sequence
+            window.mapscroll = mapscroll; // Update global reference
+            console.log('Map scroll: Positioned 80px left of center and stopped at position', targetPosition);
           }
         }
       }
     }, 500);
   } else {
-    mapscroll = 1;
+    mapscroll = 1; // Reset when map closes
+    window.mapscroll = mapscroll; // Update global reference
   }
 }
 

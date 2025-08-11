@@ -196,17 +196,177 @@ function mxcamp_get_posts_cb_v3($atts) {
 }
 
 /**
- * Inject background click redirect on single event pages
+ * Inject close button and background click redirect on single event pages
  */
 function mxcamp_inject_background_redirect() {
     if (is_singular('ajde_events')) {
         ?>
+        <style type="text/css">
+        /* Evo lightbox close buttons (circle with an "X") */
+        .evo_lightboxes .evopopclose,
+        .evo_lightboxes .evolbclose,
+        .event-close-button {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 90001;
+
+          display: block;
+          width: 28px;
+          height: 28px;
+          padding: 5px;
+          margin: 0;
+
+          background-color: #000;         /* button circle */
+          border-radius: 50%;
+          color: #666;                     /* irrelevant once text is hidden */
+          text-indent: -9999px;            /* hide any text/icon font */
+
+          cursor: pointer;
+          box-sizing: content-box;
+          font: 300 28px/1 var(--evo_font_2);
+          border: none;
+        }
+
+        /* The "X" lines */
+        .evo_lightboxes .evolbclose::before,
+        .evo_lightboxes .evolbclose::after,
+        .event-close-button::before,
+        .event-close-button::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 2px;
+          height: 50%;
+          background-color: #F5F5F5;       /* light cross; change to #666 if you want darker */
+          transform-origin: center;
+        }
+
+        .evo_lightboxes .evolbclose::before,
+        .event-close-button::before {
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .evo_lightboxes .evolbclose::after,
+        .event-close-button::after {
+          transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        
+        /* Position close button on single event pages */
+        body.single-ajde_events .event-close-button,
+        body.single-ajde_events .event-close-button.evolbclose {
+            position: absolute !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 90001 !important;
+            left: auto !important;
+            bottom: auto !important;
+        }
+        
+        /* Ensure the event container has relative positioning */
+        body.single-ajde_events .eventon_main_section,
+        body.single-ajde_events .ajde_evcal_calendar.eventon_single_event,
+        body.single-ajde_events .eventon_single_event {
+            position: relative !important;
+        }
+        
+        @media screen and (max-width: 600px) {
+            body.single-ajde_events .event-close-button,
+            body.single-ajde_events .event-close-button.evolbclose {
+                top: 5px !important;
+                right: 5px !important;
+                width: 32px !important;
+                height: 32px !important;
+            }
+        }
+        </style>
         <script type="text/javascript">
         (function() {
             'use strict';
             
             function initBackgroundRedirect() {
                 console.log('Initializing single event background redirect...');
+                
+                // Add close button to single event pages
+                function addCloseButton() {
+                    // Check if close button already exists
+                    if (document.querySelector('.event-close-button')) {
+                        console.log('Close button already exists, skipping');
+                        return;
+                    }
+                    
+                    // Check if we're on a single event page
+                    const isSingleEventPage = document.body.classList.contains('single-ajde_events') ||
+                                            document.querySelector('.ajde_evcal_calendar.eventon_single_event') ||
+                                            document.querySelector('.eventon_single_event') ||
+                                            document.querySelector('.evo_sin_page');
+                    
+                    if (!isSingleEventPage) {
+                        console.log('Not a single event page, skipping close button');
+                        return;
+                    }
+                    
+                    console.log('Adding close button to single event page');
+                    
+                    // Find the best container for the close button
+                    const eventContainer = document.querySelector('.eventon_main_section') || 
+                                         document.querySelector('.ajde_evcal_calendar.eventon_single_event') ||
+                                         document.querySelector('.eventon_single_event') ||
+                                         document.querySelector('.evo_sin_page');
+                    
+                    if (!eventContainer) {
+                        console.log('No suitable event container found for close button positioning');
+                        return;
+                    }
+                    
+                    const closeButton = document.createElement('button');
+                    closeButton.className = 'event-close-button evolbclose';
+                    closeButton.setAttribute('aria-label', 'Close event');
+                    closeButton.textContent = 'Close'; // Hidden by CSS text-indent
+                    
+                    // Add close button click handler
+                    closeButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Detect language and redirect to appropriate calendar
+                        const isEnglish = document.documentElement.lang.includes('en') || 
+                                        window.location.href.includes('/en/') ||
+                                        document.querySelector('#menu-main-menu-en') ||
+                                        document.querySelector('#menu-main-menu-en-1');
+                        const redirectUrl = isEnglish ? 'https://camp.mx/calendar' : 'https://camp.mx/calendario';
+                        
+                        console.log('Close button clicked, redirecting to:', redirectUrl);
+                        
+                        // Add transition effect
+                        document.body.style.transition = 'opacity 0.2s ease';
+                        document.body.style.opacity = '0.9';
+                        
+                        setTimeout(function() {
+                            window.location.href = redirectUrl;
+                        }, 150);
+                    });
+                    
+                    // Append close button to the event container for relative positioning
+                    eventContainer.appendChild(closeButton);
+                    console.log('Close button successfully added to event container:', eventContainer.className);
+                }
+                
+                // Add close button immediately and also after delays to ensure it loads
+                addCloseButton();
+                setTimeout(addCloseButton, 100);
+                setTimeout(addCloseButton, 500);
+                setTimeout(addCloseButton, 1000);
+                setTimeout(addCloseButton, 2000);
+                
+                // Also try when DOM content loads
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', addCloseButton);
+                }
+                
+                // And when window loads
+                window.addEventListener('load', addCloseButton);
                 
                 // Detect language from multiple sources
                 let languagePage = document.documentElement.lang;
@@ -347,6 +507,7 @@ function mxcamp_inject_background_redirect() {
                         event.target.closest('#offcanvas') ||
                         event.target.closest('.ct-panel') ||
                         event.target.closest('.evolbclose') ||
+                        event.target.closest('.event-close-button') ||
                         event.target.closest('.ct-social-box') ||
                         event.target.closest('.evcal_evdata_row') ||
                         event.target.closest('.comment-form') ||

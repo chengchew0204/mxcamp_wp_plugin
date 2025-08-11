@@ -1,5 +1,5 @@
- <!-- wp:html -->
- <style>
+<!-- wp:html -->
+<style>
   body.map {margin: 0;}
   @media screen and (max-width: 1050px) {
       body.bodycardopened.map header#header .ct-container-fluid>div:first-child {opacity: 1;}
@@ -59,6 +59,7 @@ z-index: 1;
           overflow: hidden;
           z-index: 20;
           position: absolute;
+          cursor: pointer;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent;
           -moz-user-select: -moz-none;
@@ -97,14 +98,14 @@ z-index: 1;
           width: 28%;
           height: 36%;
         }
-        .onmouseover-detail:hover{
-           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
-        }
         #focus-point {
           top:0;
           right: 0;
           height:1px;
           width:0;
+        }
+        .onmouseover-detail:hover{
+           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
         }
 .map-container {
   position: relative;
@@ -184,7 +185,7 @@ img {
       }
  .interactive-map {
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y:scroll;
   height: auto;
   width: 100dvw;
   }
@@ -241,13 +242,13 @@ img {
   transition: opacity 0.5s ease-in-out;
 }
 
-/* Show clickable cursor during demo to encourage user interaction */
+/* Hide user cursor during demo */
 .demo-active {
-  cursor: pointer !important;
+  cursor: none !important;
 }
 
 .demo-active * {
-  cursor: pointer !important;
+  cursor: none !important;
 }
 
 .demo-cursor.visible {
@@ -335,13 +336,12 @@ img {
 <div id="focus-point" class="detail"> </div>
 <div id="mapExit1" class="detail mapExit onmouseover-detail" style="top:10%;left:0%;width:68%;height:20%;opacity:0.1;xbackground:blue;"></div>
 <div id="mapExit2" class="detail mapExit onmouseover-detail" style="bottom:0;left:0%;width:74%;height:20%;opacity:0.1;xbackground:blue;"></div>
-<div id="mapExit3" class="detail mapExit onmouseover-detail" style="top:55%;left:0%;width:7%;height:55%;opacity:0.1;xbackground:blue;"></div>
+<div id="mapExit3" class="detail mapExit onmouseover-detail" style="top:30%;left:0%;width:7%;height:55%;opacity:0.1;xbackground:blue;"></div>
 <div id="mapExit4" class="detail mapExit onmouseover-detail" style="top:33%;right:0%;width:7%;height:60%;opacity:0.1;xbackground:blue;"></div>
 <div id="demo-cursor" class="demo-cursor"></div>
 </div></div>
 <script>
    let hasOpenedMap = false;
-   let currentActiveBuilding = null; // Track which building is currently being navigated
    
    // Auto-opening disabled - user must click manually
    // document.addEventListener("DOMContentLoaded", function () {
@@ -370,9 +370,6 @@ img {
     
     // Reset currentLayer to undefined
     currentLayer = undefined;
-    
-    // Reset building tracker to ensure fresh state
-    currentActiveBuilding = null;
     
     // Hide all layers and reset their states
     const allLayers = document.querySelectorAll('.layer');
@@ -424,7 +421,7 @@ img {
     resetMapToInitialState();
     
     // Close the map card
-    const mapHeader = document.querySelector("#mapa .card-header") || document.querySelector("#map .card-header");
+    const mapHeader = document.querySelector("#map .card-header") || document.querySelector("#mapa .card-header");
     if (mapHeader) {
       mapHeader.click();
     } else {
@@ -446,47 +443,29 @@ function clickOutside(event, ele, cb) {
 if (event.target.classList.contains('mapExit')) return;
 
 if (!ele.contains(event.target)) {
-  if (currentLayer) {
-    currentLayer.style.zIndex = -1;
+      if (currentLayer) {
+        currentLayer.style.zIndex = -1
+      }
+      currentLayer = undefined
+      event.preventDefault();
+      removeAllClickListeners()
+      setAllClickListeners()
+      cb();
+      document.removeEventListener('click', handleClickOutside);
+    }
   }
-  currentLayer = undefined;
-  currentActiveBuilding = null; // Reset building tracker on click outside
-  event.preventDefault();
-  removeAllClickListeners();
-  setAllClickListeners();
-  cb();
-  document.removeEventListener('click', handleClickOutside);
-}
-}
-
   let handleClickOutside;
   
   function onClickOutside(event, ele, cb) {
-    handleClickOutside = (event) => clickOutside(event, ele, cb);
-    document.addEventListener('click', handleClickOutside);
-  }
-
+     console.log('clicked outside event:'+event+ ' ele:'+ele +' cb:'+cb);
+      handleClickOutside = (event) => clickOutside(event, ele, cb);
+      document.addEventListener('click', handleClickOutside);
+    };
   function openDetail(event, element, mapIds, prevMapId) {
-    // Check if we're switching to a different building
-    if (currentActiveBuilding && currentActiveBuilding !== element) {
-      // Reset the previous building to layer 1 by restoring its original listener
-      resetBuildingToLayer1(currentActiveBuilding);
-    }
-    
-    // Set the current active building
-    currentActiveBuilding = element;
-    
-    // Hide the contour for the newly active building
-    if (typeof contourEngine !== 'undefined' && contourEngine && contourEngine.hideActiveBuilding) {
-      contourEngine.hideActiveBuilding(element);
-    }
-    
-    // Create a copy of mapIds to avoid modifying the original array
-    let mapIdsCopy = [...mapIds];
     let currentMapIndex = 0;
-    let nextMapId = mapIdsCopy[currentMapIndex];
-    let nextNextMapId = mapIdsCopy[currentMapIndex + 1];
-    let map = document.querySelector("#mapa");
+    let nextMapId = mapIds[currentMapIndex];
+    let nextNextMapId = mapIds[currentMapIndex + 1];
+         let map = document.querySelector("#mapa");
     let nextLayer = document.querySelector("#" + nextMapId);
     
     if (!nextLayer) {
@@ -503,7 +482,7 @@ if (!ele.contains(event.target)) {
       
       // Ensure image is ready and start transition
       if (nextLayer.complete && nextLayer.naturalWidth > 0) {
-                // Hide ALL layers first to prevent any bleed-through
+                        // Hide ALL layers first to prevent any bleed-through
         const allLayers = document.querySelectorAll('.layer');
         allLayers.forEach(layer => {
           layer.classList.remove('active');
@@ -553,7 +532,7 @@ if (!ele.contains(event.target)) {
       }
     };
 
-        const handleSequence = () => {
+            const handleSequence = () => {
       // Handle previous layer cleanup
         if (prevMapId) {
           let prevLayer = document.querySelector("#" + prevMapId);
@@ -572,14 +551,14 @@ if (!ele.contains(event.target)) {
 
         if (nextNextMapId) {
           // There are more layers to go
-        let prevLayerId = mapIdsCopy.shift();
-          setClickListeners(element, mapIdsCopy, prevLayerId);
+        let prevLayerId = mapIds.shift();
+          setClickListeners(element, mapIds, prevLayerId);
         onClickOutside(event, element, function() {
           nextLayer.classList.remove("active");
             nextLayer.style.zIndex = -1;
           });
         } else {
-          // Final layer logic - reset currentActiveBuilding when reaching the end
+          // Final layer logic
           try {
           element.addEventListener("click", function() {
               if (currentLayer) {
@@ -587,7 +566,6 @@ if (!ele.contains(event.target)) {
                 currentLayer.style.zIndex = -1;
               }
               currentLayer = undefined;
-              currentActiveBuilding = null; // Clear active building tracker
               removeAllClickListeners();
               document.removeEventListener("click", handleClickOutside);
               setTimeout(() => {
@@ -610,29 +588,7 @@ if (!ele.contains(event.target)) {
   function setClickListeners(element, mapIds, prevMapId=undefined) {
     element.addEventListener("click", handleOpenDetail = (event) => openDetail(event, element, mapIds, prevMapId),{once: true})
   }
-  const map = document.querySelector("#mapa")
-  
-  function resetBuildingToLayer1(buildingElement) {
-    // Remove any existing listeners from this building element
-    let newElement = buildingElement.cloneNode(true);
-    buildingElement.parentNode.replaceChild(newElement, buildingElement);
-    
-    // Restore the original layer 1 listener based on building ID
-    const buildingId = newElement.id;
-    const originalMaps = {
-      'casita-detail': ["casita-down-1", "casita-down-2"],
-      'central-detail': ["central-down-1", "central-down-2", "central-down-3"],
-      'chozas-detail': ["chozas-down-1"],
-      'calle-detail': ["calle-down-1", "calle-down-2", "calle-down-3"],
-      'jardin-detail': ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"],
-      'cosina-detail': ["central-down-1", "central-down-2", "central-down-3"]
-    };
-    
-    if (originalMaps[buildingId]) {
-      setClickListeners(newElement, originalMaps[buildingId]);
-    }
-  }
-  
+     const map = document.querySelector("#mapa")
   function setAllClickListeners() {
     const casitaDetail = document.querySelector("#casita-detail")
     const centralDetail = document.querySelector("#central-detail")
@@ -647,7 +603,7 @@ if (!ele.contains(event.target)) {
     setClickListeners(calleDetail, ["calle-down-1", "calle-down-2", "calle-down-3"])
     setClickListeners(jardinDetail, ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"])
     setClickListeners(cosinaDetail, ["central-down-1", "central-down-2", "central-down-3"])
-      addExitListeners(); 
+    addExitListeners() 
 }
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
@@ -797,13 +753,6 @@ if (!ele.contains(event.target)) {
     showContour(areaId) {
       if (!this.contourConfig[areaId]) return;
       
-      // Don't show contour if this building is currently being navigated
-      const targetElement = document.querySelector(`#${areaId}`);
-      if (currentActiveBuilding === targetElement) {
-        console.log(`Skipping contour for active building: ${areaId}`);
-        return;
-      }
-      
       let contour = this.contourElements.get(areaId);
       if (!contour) {
         contour = this.createContourElement(areaId);
@@ -839,17 +788,6 @@ if (!ele.contains(event.target)) {
       console.log(`Hiding all contours`);
     }
 
-    // Hide contour for active building (called when building becomes active)
-    hideActiveBuilding(buildingElement) {
-      if (!buildingElement || !buildingElement.id) return;
-      
-      const areaId = buildingElement.id;
-      if (this.contourConfig[areaId]) {
-        this.hideContour(areaId);
-        console.log(`Hiding contour for newly active building: ${areaId}`);
-      }
-    }
-
     // Reset the contour engine to initial state
     resetToInitialState() {
       console.log('Resetting contour engine...');
@@ -869,7 +807,7 @@ if (!ele.contains(event.target)) {
       console.log('Contour engine reset complete');
     }
 
-    // Setup event listeners
+            // Setup event listeners
     setupEventListeners() {
       const mapContainer = document.getElementById('imap');
       if (!mapContainer) return;
@@ -945,7 +883,6 @@ if (!ele.contains(event.target)) {
       this.isRunning = false;
       this.userInteractionDisabled = false;
       this.hasRunDemo = false; // Prevent demo from running multiple times
-      this.demoInterrupted = false; // Flag to track if demo was interrupted
       this.init();
     }
 
@@ -1211,61 +1148,14 @@ if (!ele.contains(event.target)) {
         return true;
       }
       
-      // Detect real user clicks during demo and interrupt it
-      if (this.userInteractionDisabled && event.isTrusted && this.isRunning) {
-        console.log('User click detected during demo - interrupting...');
-        this.interruptDemo(event);
-        return false;
-      }
-      
-      // Block other interactions during demo
+      // Block all real user clicks during demo
       if (this.userInteractionDisabled) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        console.log('User interaction blocked during demo');
+        console.log('User click blocked during demo');
         return false;
       }
-    }
-
-    async interruptDemo(userEvent) {
-      console.log('Demo interrupted by user interaction');
-      
-      // Set interrupt flag to stop ongoing demo sequence
-      this.demoInterrupted = true;
-      
-      // Immediately fade out the demo cursor
-      await this.fadeOutCursor();
-      
-      // Re-enable user interactions
-      this.enableUserInteraction();
-      
-      // Reset demo state
-      this.isRunning = false;
-      this.demoInterrupted = false;
-      
-      // Reset map to initial state if needed
-      resetMapToInitialState();
-      
-      // Re-dispatch the user's original click event to the appropriate element
-      setTimeout(() => {
-        console.log('Processing user click after demo interrupt...');
-        
-        // Find the element the user actually wanted to click
-        const clickedElement = document.elementFromPoint(userEvent.clientX, userEvent.clientY);
-        if (clickedElement) {
-          // Create a new event and dispatch it
-          const newEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            clientX: userEvent.clientX,
-            clientY: userEvent.clientY
-          });
-          clickedElement.dispatchEvent(newEvent);
-        }
-      }, 200); // Small delay to ensure cleanup is complete
-      
-      console.log('Demo interrupt complete - user interaction restored');
     }
 
     async startDemo() {
@@ -1273,7 +1163,6 @@ if (!ele.contains(event.target)) {
       
       this.isRunning = true;
       this.hasRunDemo = true;
-      this.demoInterrupted = false; // Reset interrupt flag
       console.log('Starting map demo...');
       
       // Disable user interactions
@@ -1281,19 +1170,15 @@ if (!ele.contains(event.target)) {
       
       // Show cursor at central building with fade-in
       await this.showCursorAtCentral();
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait a moment at the central building
       await this.wait(300);
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Perform the click sequence through all central layers (now includes return to base)
       await this.performCentralClickSequence();
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait before fading out
       await this.wait(400);
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Re-enable user interactions when fade-out starts (not when it completes)
       this.enableUserInteraction();
@@ -1355,21 +1240,15 @@ if (!ele.contains(event.target)) {
       
       // Click to start the sequence (from base to central-down-1)
       await this.performClick(centralDetail, 'Click 1: Base -> Central Down 1');
-      if (this.demoInterrupted) return; // Check for interrupt
       await this.wait(1000);
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to go to central-down-2  
       await this.performClick(centralDetail, 'Click 2: Central Down 1 -> Central Down 2');
-      if (this.demoInterrupted) return; // Check for interrupt
       await this.wait(1000);
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to go to central-down-3
       await this.performClick(centralDetail, 'Click 3: Central Down 2 -> Central Down 3');
-      if (this.demoInterrupted) return; // Check for interrupt
       await this.wait(1000);
-      if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to return to base (fourth click)
       await this.performFinalClick(centralDetail, 'Click 4: Central Down 3 -> Base');

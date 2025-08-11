@@ -476,11 +476,6 @@ if (!ele.contains(event.target)) {
     // Set the current active building
     currentActiveBuilding = element;
     
-    // Hide the contour for the newly active building
-    if (typeof contourEngine !== 'undefined' && contourEngine && contourEngine.hideActiveBuilding) {
-      contourEngine.hideActiveBuilding(element);
-    }
-    
     // Create a copy of mapIds to avoid modifying the original array
     let mapIdsCopy = [...mapIds];
     let currentMapIndex = 0;
@@ -797,13 +792,6 @@ if (!ele.contains(event.target)) {
     showContour(areaId) {
       if (!this.contourConfig[areaId]) return;
       
-      // Don't show contour if this building is currently being navigated
-      const targetElement = document.querySelector(`#${areaId}`);
-      if (currentActiveBuilding === targetElement) {
-        console.log(`Skipping contour for active building: ${areaId}`);
-        return;
-      }
-      
       let contour = this.contourElements.get(areaId);
       if (!contour) {
         contour = this.createContourElement(areaId);
@@ -837,17 +825,6 @@ if (!ele.contains(event.target)) {
     hideAllContours() {
       this.activeContours.forEach(areaId => this.hideContour(areaId));
       console.log(`Hiding all contours`);
-    }
-
-    // Hide contour for active building (called when building becomes active)
-    hideActiveBuilding(buildingElement) {
-      if (!buildingElement || !buildingElement.id) return;
-      
-      const areaId = buildingElement.id;
-      if (this.contourConfig[areaId]) {
-        this.hideContour(areaId);
-        console.log(`Hiding contour for newly active building: ${areaId}`);
-      }
     }
 
     // Reset the contour engine to initial state

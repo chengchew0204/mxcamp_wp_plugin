@@ -71,6 +71,11 @@ class Navigation {
         this.slideIndexMap = {};
         this.slideVisibleIndex = 0;
         this.slideVisibleId = 0;
+        
+        // Cursor hint management
+        this.currentCursorHint = null;
+        this.currentCursorHintSlide = null;
+        this.cleanupCurrentHint = null;
         // Create safe closeAllPreviews function for use before MenuConstruct
         if (!window.closeAllPreviews) {
             window.closeAllPreviews = function() {
@@ -97,6 +102,7 @@ class Navigation {
             this.addGifToMapBackground()
             this.initScrollEvent();
             this.initEscapeButton();
+            this.initScrollHints();
             this.UrlVerif();
             this.ashTagLinks();
             this.empecherDefilementSurChangementOrientation();
@@ -1163,6 +1169,10 @@ class Navigation {
     }
     activateMenu() {
         console.log('menuopen', this.menuopened);
+        
+        // Hide any active cursor hint when menu is activated
+        this.hideCurrentCursorHint();
+        
         if(this.cardopened===true){this.closeCards()};
         this.slider.classList.add('menuactive');
         this.body.style.overflow = "hidden";
@@ -1214,6 +1224,9 @@ class Navigation {
         // Handle both string and object formats for backward compatibility
         const slideId = typeof obj === 'string' ? obj : obj.divId;
         
+        // Immediately hide any active cursor hint to prevent interference
+        this.hideCurrentCursorHint();
+        
         gtag('event', 'Open_Card', {
             'event_category': slideId,
             'event_label': slideId,
@@ -1251,11 +1264,11 @@ class Navigation {
            // Initialize compact calendar navigation for events section
            this.initializeCompactCalendarNav();
           }
-          // Don't pause videos here - let BgVideoSound.js handle video management
-          // this.theFrontVideo.forEach(function(el) {
-          //     console.log(el);
-          //     el.pause();
-          // });
+          // Pause all background videos when opening a card
+          this.theFrontVideo.forEach(function(el) {
+              console.log(el);
+              el.pause();
+          });
         //this.cardopened ?? this.closeCards();
         this.desActivateMenu();
         this.targetSlide = slideId;
@@ -1272,12 +1285,49 @@ class Navigation {
 			setTimeout(() => { 
 				//document.getElementById('focus-point').scrollIntoView({behavior: "auto"})
 				const mapContainer = document.getElementById('imap'); //Get scroll object
-				mapContainer.scrollLeft = 0;
-				mapContainer.scrollTop=(mapContainer.scrollHeight-mapContainer.offsetHeight)*2/3;//allign vertical
+				
+				// Check if mobile device for different positioning
+				const isMobileDevice = () => {
+					const userAgent = navigator.userAgent.toLowerCase();
+					const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
+					const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+					const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+					const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 768;
+					return isMobileUA || (hasTouch && isSmallScreen);
+				};
+				
+				if (isMobileDevice()) {
+					// On mobile: reset scroll position for mobile auto-scroll to work
+					mapContainer.scrollLeft = 0;
+					mapContainer.scrollTop = 0;
+					console.log('Mobile map positioned at top - scrollTop: 0');
+					
+					// Also scroll the page to show the map card at the top
+					setTimeout(() => {
+						const mapCard = document.getElementById(slideId);
+						if (mapCard) {
+							mapCard.scrollIntoView({ 
+								behavior: 'smooth', 
+								block: 'start',
+								inline: 'nearest'
+							});
+							console.log('Mobile page scrolled to show map card at top');
+						}
+					}, 200); // Small delay to ensure card is fully opened
+				} else {
+					// On desktop: disable auto-scroll animation completely
+					if (typeof window.mapscroll !== 'undefined') {
+						window.mapscroll = 0; // Stop any auto-scroll animation
+						console.log('Desktop: Auto-scroll animation disabled');
+					}
+					
+					// Don't reset scroll position on desktop - let it stay where it naturally is
+					console.log('Desktop map opened without position reset');
+				}
+				
 				console.log('Map scrolled to Pos:'+mapContainer.scrollLeft+', '+mapContainer.scrollTop+' Max:'+mapContainer.scrollWidth+','+mapContainer.scrollHeight+' Size:'+mapContainer.offsetWidth+','+mapContainer.offsetHeight);
 				
-				// Initialize map interactions
-				this.initMapInteractions();
+				// Map interactions now handled directly in Map/Mapa post content
 		    },100)
 		}
        // Supprimer l'événement a slide_scroll click en utilisant la référence stockée
@@ -1330,12 +1380,91 @@ class Navigation {
         // Add to slide
         slideElement.appendChild(cursorHint);
         
-        // Remove the hint after animation completes
-        setTimeout(() => {
+        // Store reference for immediate cleanup
+        this.currentCursorHint = cursorHint;
+        this.currentCursorHintSlide = slideElement;
+        
+        // Create cleanup function with smooth fade-out
+        const cleanupHint = () => {
             if (cursorHint && cursorHint.parentNode) {
-                cursorHint.parentNode.removeChild(cursorHint);
+                // Fade out smoothly first
+                cursorHint.style.opacity = '0';
+                cursorHint.style.animation = 'none';
+                
+                // Remove after fade transition completes
+                setTimeout(() => {
+                    if (cursorHint && cursorHint.parentNode) {
+                        cursorHint.parentNode.removeChild(cursorHint);
+                    }
+                }, 100); // Match CSS transition time
             }
+            this.currentCursorHint = null;
+            this.currentCursorHintSlide = null;
+        };
+        
+        // Store cleanup function for immediate access
+        this.cleanupCurrentHint = cleanupHint;
+        
+        // Set up interaction listeners to hide hint - use mousedown/touchstart to catch before click
+        const hideOnInteraction = (event) => {
+            // Hide hint on any meaningful interaction
+            if (event.type === 'mousedown' || 
+                event.type === 'touchstart' || 
+                (event.type === 'keydown' && (event.key === 'Enter' || event.key === ' '))) {
+                
+                // Remove listeners first to prevent any recursive calls
+                document.removeEventListener('mousedown', hideOnInteraction, { capture: true, passive: true });
+                document.removeEventListener('touchstart', hideOnInteraction, { capture: true, passive: true });
+                document.removeEventListener('keydown', hideOnInteraction, true);
+                
+                // Hide hint immediately without interfering with the event
+                cleanupHint();
+                
+                // DO NOT prevent default or stop propagation - let the interaction proceed normally
+            }
+        };
+        
+        // Use mousedown instead of click to catch the interaction before it triggers navigation
+        document.addEventListener('mousedown', hideOnInteraction, { capture: true, passive: true });
+        document.addEventListener('touchstart', hideOnInteraction, { capture: true, passive: true });
+        document.addEventListener('keydown', hideOnInteraction, true); // keydown can't be passive
+        
+        // Remove the hint after animation completes (fallback)
+        setTimeout(() => {
+            cleanupHint();
+            // Clean up interaction listeners in case they weren't triggered
+            document.removeEventListener('mousedown', hideOnInteraction, { capture: true, passive: true });
+            document.removeEventListener('touchstart', hideOnInteraction, { capture: true, passive: true });
+            document.removeEventListener('keydown', hideOnInteraction, true);
         }, 3000);
+    }
+    
+    // Force hide any current cursor hint
+    hideCurrentCursorHint() {
+        if (this.currentCursorHint && this.currentCursorHint.parentNode) {
+            this.currentCursorHint.parentNode.removeChild(this.currentCursorHint);
+            this.currentCursorHint = null;
+            this.currentCursorHintSlide = null;
+        }
+        if (this.cleanupCurrentHint) {
+            this.cleanupCurrentHint();
+            this.cleanupCurrentHint = null;
+        }
+    }
+    
+    // Emergency method to remove all cursor hints from the page
+    forceRemoveAllCursorHints() {
+        const allHints = document.querySelectorAll('.cursor-hint');
+        allHints.forEach(hint => {
+            if (hint.parentNode) {
+                hint.parentNode.removeChild(hint);
+            }
+        });
+        // Clear tracking variables
+        this.currentCursorHint = null;
+        this.currentCursorHintSlide = null;
+        this.cleanupCurrentHint = null;
+        console.log('Force removed all cursor hints from page');
     }
     
     // Show cursor hint when slide comes into view during scrolling
@@ -1348,7 +1477,6 @@ class Navigation {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
                         const slideId = entry.target.id;
-                        
                         // Show hint every time user navigates to a slide
                         if (!entry.target.classList.contains('opened')) {
                             this.showCursorHint(entry.target);
@@ -1406,6 +1534,10 @@ class Navigation {
     }
     closeCards(){
         console.log('START closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+        
+        // Hide any active cursor hint when closing cards
+        this.hideCurrentCursorHint();
+        
         //console.log(this.targetSlide);
         if(this.targetSlide==='gallery'||this.targetSlide==='galeria'){
             this.removeVideosFromGallery();
@@ -1442,11 +1574,11 @@ class Navigation {
             }
             this.targetSlide = 'none';
             this.cardopened = false;
-            // Don't force play all videos here - let BgVideoSound.js handle video management
-            // this.theFrontVideo.forEach(function(el) {
-            //     console.log(el);
-            //     el.play();
-            // });
+            // Resume background videos when closing cards
+            this.theFrontVideo.forEach(function(el) {
+                console.log(el);
+                el.play();
+            });
             //this.theFrontVideo.play();
             console.log('END closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
         }, 250); // Wait 250ms for fade-out animation to complete
@@ -1585,239 +1717,15 @@ class Navigation {
             }
         });
     }
-    initMapInteractions() {
-        // Initialize interactive map hover effects for CASA, CHOZAS, CENTRAL, CALLE, FORO
-        console.log('Initializing map interactions');
-        
-        const mapContainer = document.getElementById('imap');
-        if (!mapContainer) {
-            console.log('Map container not found');
-            return;
-        }
-        
-        // Map area definitions with their corresponding detail divs, layer images, and contour images
-        const mapAreas = {
-            'central': {
-                detailId: 'central-detail',
-                layers: ['central-down-1', 'central-down-2', 'central-down-3'],
-                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-central.png',
-                isClicked: false
-            },
-            'casita': {
-                detailId: 'casita-detail', 
-                layers: ['casita-down-1', 'casita-down-2'],
-                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-casa.png',
-                isClicked: false
-            },
-            'chozas': {
-                detailId: 'chozas-detail',
-                layers: ['chozas-down-1', 'chozas-down-2'],
-                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-chozas.png',
-                isClicked: false
-            },
-            'calle': {
-                detailId: 'calle-detail',
-                layers: ['calle-down-1', 'calle-down-2', 'calle-down-3'],
-                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-calle.png',
-                isClicked: false
-            },
-            'jardin': {
-                detailId: 'jardin-detail',
-                layers: ['jardin-down-1', 'jardin-down-2', 'jardin-down-3', 'jardin-down-4'],
-                contourImage: 'https://camp.mx/wp-content/uploads/palapa-hover-foro.png',
-                isClicked: false
-            }
-        };
-        
-        // Store map areas for later reference
-        this.mapAreas = mapAreas;
-        
-        // Preload all contour images for faster display
-        this.preloadContourImages(mapAreas);
-        
-        // Create contour overlay container
-        this.createContourOverlay();
-        
-        // Store current contour for tracking
-        this.currentContour = null;
-        
-        // Add hover and click event listeners to each detail area
-        Object.keys(mapAreas).forEach(areaName => {
-            const area = mapAreas[areaName];
-            const detailElement = document.getElementById(area.detailId);
-            
-            if (detailElement) {
-                // Add mouseenter event to show contour
-                detailElement.addEventListener('mouseenter', () => {
-                    console.log(`Mouse entered ${areaName}`);
-                    this.showContour(areaName);
-                });
-                
-                // Add mouseleave event to hide contour
-                detailElement.addEventListener('mouseleave', () => {
-                    console.log(`Mouse left ${areaName}`);
-                    this.hideContour();
-                });
-                
-                // Add click event to toggle layers
-                detailElement.addEventListener('click', (e) => {
-                    console.log(`Clicked on ${areaName}`);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleMapArea(areaName);
-                });
-                
-                console.log(`Added hover and click events for ${areaName} area`);
-            } else {
-                console.log(`Detail element not found for ${areaName}: ${area.detailId}`);
-            }
-        });
-    }
-    
-    preloadContourImages(mapAreas) {
-        // Preload all contour images to improve hover performance
-        console.log('Preloading contour images...');
-        this.preloadedImages = {};
-        
-        Object.keys(mapAreas).forEach(areaName => {
-            const area = mapAreas[areaName];
-            const img = new Image();
-            img.onload = () => {
-                console.log(`Preloaded contour image for ${areaName}`);
-            };
-            img.onerror = () => {
-                console.error(`Failed to preload contour image for ${areaName}: ${area.contourImage}`);
-            };
-            img.src = area.contourImage;
-            this.preloadedImages[areaName] = img;
-        });
-    }
-    
-    isOnFirstLayer(areaName) {
-        // Check if the area is currently showing the first layer (z-index: -1)
-        const area = this.mapAreas[areaName];
-        if (!area) return false;
-        
-        // Check if all layers for this area have z-index: -1 (first layer state)
-        const allLayersOnFirstLevel = area.layers.every(layerId => {
-            const layer = document.getElementById(layerId);
-            if (!layer) return true; // If layer doesn't exist, consider it as first level
-            
-            const zIndex = window.getComputedStyle(layer).zIndex;
-            return zIndex === '-1' || zIndex === 'auto';
-        });
-        
-        return allLayersOnFirstLevel;
-    }
-    
-    createContourOverlay() {
-        // Create overlay container for contour images if it doesn't exist
-        if (!document.getElementById('map-contour-overlay')) {
-            const mapContainer = document.getElementById('imap');
-            this.contourOverlay = document.createElement('div');
-            this.contourOverlay.id = 'map-contour-overlay';
-            this.contourOverlay.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-                z-index: 15;
-            `;
-            mapContainer.appendChild(this.contourOverlay);
-        } else {
-            this.contourOverlay = document.getElementById('map-contour-overlay');
-        }
-    }
-    
-    
-    showContour(areaName) {
-        const area = this.mapAreas[areaName];
-        if (!area) return;
-        
-        // If same contour is already showing, do nothing
-        if (this.currentContour === areaName) return;
-        
-        // Clear any existing contour
-        this.hideContour();
-        
-        // Get preloaded image
-        const preloadedImg = this.preloadedImages && this.preloadedImages[areaName];
-        if (!preloadedImg) {
-            console.log(`No preloaded image for ${areaName}`);
-            return;
-        }
-        
-        // Create and show contour
-        const contourImg = document.createElement('img');
-        contourImg.src = preloadedImg.src;
-        contourImg.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.8;
-            pointer-events: none;
-            object-fit: cover;
-            z-index: 20;
-        `;
-        
-        this.contourOverlay.appendChild(contourImg);
-        this.currentContour = areaName;
-        console.log(`Showing contour for ${areaName}`);
-    }
-    
-    hideContour() {
-        if (this.contourOverlay) {
-            this.contourOverlay.innerHTML = '';
-            this.currentContour = null;
-            console.log('Hiding all contours');
-        }
-    }
-    
-    toggleMapArea(areaName) {
-        const area = this.mapAreas[areaName];
-        if (!area) return;
-        
-        // Toggle the clicked state
-        area.isClicked = !area.isClicked;
-        
-        if (area.isClicked) {
-            // Show the layers (contour behavior is independent)
-            this.showMapLayers(area.layers);
-            console.log(`Activated ${areaName} area - layers shown`);
-        } else {
-            // Hide the layers (contour behavior is independent)
-            this.hideMapLayers(area.layers);
-            console.log(`Deactivated ${areaName} area - layers hidden`);
-        }
-    }
-    
-    showMapLayers(layerIds) {
-        // Show the specified map layers by changing their z-index
-        layerIds.forEach(layerId => {
-            const layer = document.getElementById(layerId);
-            if (layer) {
-                layer.style.zIndex = '1';
-                layer.style.opacity = '1';
-                layer.style.transition = 'opacity 0.3s ease';
-            }
-        });
-    }
-    
-    hideMapLayers(layerIds) {
-        // Hide the specified map layers by changing their z-index back
-        layerIds.forEach(layerId => {
-            const layer = document.getElementById(layerId);
-            if (layer) {
-                layer.style.zIndex = '-1';
-                layer.style.opacity = '0.8';
-                layer.style.transition = 'opacity 0.3s ease';
-            }
-        });
-    }
+    // Map interactions moved to individual Map/Mapa post content for better control
+
+
+
+
+
+
+
+
     initializeCompactCalendarNav() {
         // Implementation of initializeCompactCalendarNav method
         console.log('Compact calendar navigation initialized for eventos/events section');
