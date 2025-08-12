@@ -188,13 +188,7 @@ The site's responsive layouts are controlled by media queries in the CSS files. 
 
 This section documents known glitches and their possible fixes, as well as general troubleshooting guidance.
 
-### 8.1. Known Glitches
-
-- **Halo Positioning**: The halo effect around interactive elements can sometimes be misaligned. This is a known issue that is being investigated.
-- **Contour Flashing**: The contour images on the interactive map can sometimes flash when hovering over them. This is a known issue that is being investigated.
-- **Blank Base Image Flicker**: The base image on the interactive map can sometimes flicker when the page is loading. This is a known issue that is being investigated.
-
-### 8.2. Troubleshooting
+### 8.1. Troubleshooting
 
 - **Check the Console**: The first step in troubleshooting any issue is to check the browser's developer console for errors.
 - **Clear the Cache**: If you're experiencing issues with the site's styling or functionality, try clearing your browser's cache.
