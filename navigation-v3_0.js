@@ -165,6 +165,65 @@ class Navigation {
 			const gifDetail = document.createElement("div");
 			gifDetail.id = "gif-detail";
 			
+			// Create video element instead of using background-image
+			const video = document.createElement("video");
+			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
+			video.autoplay = true;
+			video.loop = true;
+			video.muted = true;
+			video.playsInline = true;
+			
+			// Optimize for mobile performance
+			const isMobile = window.innerWidth <= 768;
+			if (isMobile) {
+				video.setAttribute('preload', 'metadata'); // Load only metadata on mobile
+				video.setAttribute('loading', 'lazy'); // Lazy load on mobile
+			} else {
+				video.setAttribute('preload', 'auto'); // Full preload on desktop
+			}
+			
+			// Add poster image as fallback while video loads
+			video.poster = "https://camp.mx/wp-content/uploads/map_thumbnail_poster.webp";
+			
+			// Add error handling and loading optimization
+			video.addEventListener('loadstart', () => {
+				console.log('Video loading started');
+			});
+			
+			video.addEventListener('canplay', () => {
+				console.log('Video can start playing');
+				// Start playing if autoplay failed
+				if (video.paused) {
+					video.play().catch(e => console.log('Autoplay prevented:', e));
+				}
+			});
+			
+			video.addEventListener('error', (e) => {
+				console.error('Video loading error:', e);
+				// Fallback to poster image if video fails
+				gifDetail.style.backgroundImage = "url('https://camp.mx/wp-content/uploads/map_thumbnail_poster.webp')";
+				gifDetail.style.backgroundSize = "contain";
+				gifDetail.style.backgroundRepeat = "no-repeat";
+				gifDetail.style.backgroundPosition = "center";
+				video.style.display = 'none';
+			});
+			
+			// Intersection Observer for lazy loading optimization
+			if ('IntersectionObserver' in window && isMobile) {
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							video.load(); // Start loading when visible
+							observer.unobserve(entry.target);
+						}
+					});
+				}, { threshold: 0.1 });
+				observer.observe(gifDetail);
+			}
+			
+			// Add video to the gif-detail container
+			gifDetail.appendChild(video);
+			
 			// Add the onmouseover-detail class for emphatic cursor
 			//gifDetail.classList.add('onmouseover-detail');
 			
@@ -198,6 +257,65 @@ class Navigation {
 			const map = document.querySelector("div.slide_10#map");
 			const gifDetail = document.createElement("div");
 			gifDetail.id = "gif-detail";
+			
+			// Create video element instead of using background-image
+			const video = document.createElement("video");
+			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
+			video.autoplay = true;
+			video.loop = true;
+			video.muted = true;
+			video.playsInline = true;
+			
+			// Optimize for mobile performance
+			const isMobile = window.innerWidth <= 768;
+			if (isMobile) {
+				video.setAttribute('preload', 'metadata'); // Load only metadata on mobile
+				video.setAttribute('loading', 'lazy'); // Lazy load on mobile
+			} else {
+				video.setAttribute('preload', 'auto'); // Full preload on desktop
+			}
+			
+			// Add poster image as fallback while video loads
+			video.poster = "https://camp.mx/wp-content/uploads/map_thumbnail_poster.jpg";
+			
+			// Add error handling and loading optimization
+			video.addEventListener('loadstart', () => {
+				console.log('Video loading started');
+			});
+			
+			video.addEventListener('canplay', () => {
+				console.log('Video can start playing');
+				// Start playing if autoplay failed
+				if (video.paused) {
+					video.play().catch(e => console.log('Autoplay prevented:', e));
+				}
+			});
+			
+			video.addEventListener('error', (e) => {
+				console.error('Video loading error:', e);
+				// Fallback to poster image if video fails
+				gifDetail.style.backgroundImage = "url('https://camp.mx/wp-content/uploads/map_thumbnail_poster.jpg')";
+				gifDetail.style.backgroundSize = "contain";
+				gifDetail.style.backgroundRepeat = "no-repeat";
+				gifDetail.style.backgroundPosition = "center";
+				video.style.display = 'none';
+			});
+			
+			// Intersection Observer for lazy loading optimization
+			if ('IntersectionObserver' in window && isMobile) {
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							video.load(); // Start loading when visible
+							observer.unobserve(entry.target);
+						}
+					});
+				}, { threshold: 0.1 });
+				observer.observe(gifDetail);
+			}
+			
+			// Add video to the gif-detail container
+			gifDetail.appendChild(video);
 			
 			// Add the onmouseover-detail class for emphatic cursor
 			gifDetail.classList.add('onmouseover-detail');
@@ -1227,6 +1345,10 @@ class Navigation {
         // Immediately hide any active cursor hint to prevent interference
         this.hideCurrentCursorHint();
         
+        // Force close any open card immediately to ensure clean state before opening new card
+        // This prevents crashes when cards aren't properly closed
+        this.forceCloseCards();
+        
         gtag('event', 'Open_Card', {
             'event_category': slideId,
             'event_label': slideId,
@@ -1234,7 +1356,6 @@ class Navigation {
           });
         console.log('START opening card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
         this.downloadsources(slideId);
-        if(this.cardopened===true){console.log('closing last card');this.closeCards();}
         //on charge le post
         const target = '#'+slideId+' .target';
         //j'affiche un message de loading
@@ -1332,7 +1453,9 @@ class Navigation {
 		}
        // Supprimer l'événement a slide_scroll click en utilisant la référence stockée
         const zoneClick = slideopened.querySelector('.slide_10_scroll');
-        zoneClick.removeEventListener('click', this.eventHandlers[slideId+'scroll'], false);
+        if (zoneClick && this.eventHandlers[slideId+'scroll']) {
+            zoneClick.removeEventListener('click', this.eventHandlers[slideId+'scroll'], false);
+        }
         
         // Also remove slide_10_bg click event listener
         const zoneBg = slideopened.querySelector('.slide_10_bg');
@@ -1532,6 +1655,65 @@ class Navigation {
         event.stopPropagation();
         this.closeCards();
     }
+    forceCloseCards(){
+        // Force close any open card immediately without animation to ensure clean state
+        if(this.targetSlide && this.targetSlide !== 'none') {
+            console.log('FORCE closing card', 'slideid', this.targetSlide);
+            
+            const closingSlideId = this.targetSlide; // Store the slide being closed
+            
+            // Hide any active cursor hint when closing cards
+            this.hideCurrentCursorHint();
+            
+            // Handle gallery cleanup
+            if(this.targetSlide==='gallery'||this.targetSlide==='galeria'){
+                this.removeVideosFromGallery();
+            }
+            
+            const slideopened = document.getElementById(this.targetSlide);
+            if(slideopened) {
+                // Immediately remove all card-related classes and styles
+                slideopened.classList.remove('opened', 'closing');
+                slideopened.classList.add('closed');
+                
+                // Remove body classes
+                this.body.classList.remove(this.targetSlide);
+                this.body.classList.remove('bodycardopened');
+                
+                // Clean up event listeners
+                const cardHeader = slideopened.querySelector('.card-header');
+                if(cardHeader && this.eventHandlers[this.targetSlide+'header']) {
+                    cardHeader.removeEventListener('click', this.eventHandlers[this.targetSlide+'header']);
+                }
+                
+                // Re-add click event listeners to restore card clickability
+                // This ensures the card can be clicked again after being force-closed
+                const zoneClick = slideopened.querySelector('.slide_10_scroll');
+                if(zoneClick) {
+                    this.eventHandlers[closingSlideId+'scroll'] = this.openCard.bind(this, { divId: closingSlideId });
+                    zoneClick.addEventListener('click', this.eventHandlers[closingSlideId+'scroll'], false);
+                }
+                
+                const zoneBg = slideopened.querySelector('.slide_10_bg');
+                if (zoneBg) {
+                    this.eventHandlers[closingSlideId+'bg'] = this.openCard.bind(this, { divId: closingSlideId });
+                    zoneBg.addEventListener('click', this.eventHandlers[closingSlideId+'bg'], false);
+                }
+            }
+            
+            // Reset state variables
+            this.targetSlide = 'none';
+            this.cardopened = false;
+            
+            // Resume background videos
+            this.theFrontVideo.forEach(function(el) {
+                el.play();
+            });
+            
+            console.log('FORCE close completed for:', closingSlideId);
+        }
+    }
+    
     closeCards(){
         console.log('START closing card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
         
@@ -1625,7 +1807,9 @@ class Navigation {
             var topLen = divcardopened.getBoundingClientRect().top;
            var heightScreen = window.innerHeight
            if ((topLen > heightScreen/2)||(topLen < (-heightScreen/2))){
-            this.closeCards();
+            // Use forceCloseCards for immediate cleanup when scrolling away from an open card
+            // This prevents timing issues when user immediately tries to open the same card again
+            this.forceCloseCards();
           }
         }
         this.getVisibleSlideInfo();
@@ -1652,7 +1836,7 @@ class Navigation {
 		  }
 			  
           if (!document.fullscreenElement) {
-            this.closeCards();
+            this.forceCloseCards();
           }
         }
       }.bind(this);

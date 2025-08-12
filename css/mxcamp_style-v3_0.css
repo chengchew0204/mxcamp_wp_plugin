@@ -1238,10 +1238,35 @@ body.galeria footer {
     position: absolute;
     bottom: 21%;
     left: 28%;
-    background-size: contain;
-    background-image: url(https://camp.mx/wp-content/uploads/map_thumbnail.gif);
     z-index: 50; /* Much higher than slide_10_scroll (z-index: 2) and other elements to ensure hover events work */
 	cursor: pointer;
+}
+
+#gif-detail video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border: none;
+    outline: none;
+    background: transparent;
+    pointer-events: none; /* Let the parent handle clicks */
+    
+    /* Mobile optimizations */
+    transform: translateZ(0); /* Enable hardware acceleration */
+    will-change: transform; /* Hint browser for optimization */
+    backface-visibility: hidden; /* Reduce repaints */
+}
+
+/* Additional mobile video optimizations */
+@media screen and (max-width: 768px) {
+    #gif-detail video {
+        /* Reduce quality slightly on mobile for faster loading */
+        image-rendering: optimizeSpeed;
+        image-rendering: -webkit-optimize-contrast;
+        
+        /* Ensure smooth playback on mobile */
+        transform: translate3d(0, 0, 0);
+    }
 }
 
 /* Disable pointer events on slide_10_scroll for map slides to allow gif-detail to receive hover events */
@@ -1279,6 +1304,12 @@ div.slide_10 #gif-detail,
         width: 292.5px;
         z-index: 50; /* Ensure z-index is maintained in responsive breakpoints */
 	}
+	
+	#gif-detail video {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
 }
 
 @media screen and (max-width:600px) {
@@ -1288,6 +1319,12 @@ div.slide_10 #gif-detail,
 		left: 20px;
         bottom: 22%;
         z-index: 50; /* Ensure z-index is maintained in mobile breakpoints */
+	}
+	
+	#gif-detail video {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
 	
 	.slide_10#mapa, .slide_10#map {

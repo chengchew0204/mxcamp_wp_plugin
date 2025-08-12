@@ -485,7 +485,7 @@ body.ajde_events-template-default div#main-container > * {
   body.ajde_events-template-default p.desc_trig_outter{border-radius:0!important}
   body.ajde_events-template-default p.desc_trig_outter a{background:#FFFFFF!important}
   body.ajde_events-template-default  .eventon_main_section{
-      margin-top:-20px
+      margin-top:-60px
   }
   @media screen and (max-width:600px){
       body.ajde_events-template-default  .eventon_main_section{
@@ -649,6 +649,11 @@ body.ajde_events-template-default div#main-container > * {
   .ajde_evcal_calendar.boxy .evo_lightbox, .evo_lightbox  {background:rgba(32,16,16,0.70)!important;}
   .evo_lightbox.eventcard .evo_lightbox_body, .evo_lightbox .evo_lightbox_body, .evo_lightbox .evolb_content {border-radius:0!important}
   .evo_lightbox_content, .evolb_box {max-width:500px; margin-top:32px!important}
+  
+  /* Move event card higher to align with title top position */
+  .evo_lightbox_content, .evolb_box {
+      margin-top: 22px!important;
+  }
   .slide_10 #evcal_list > div.eventon_list_event:hover {
       -webkit-transform: scale(1.2);
       -ms-transform: scale(1.2) !important;
