@@ -223,28 +223,14 @@ The MxCamp V3 project is a highly interactive and visually rich application, whi
 
 ## 10. Maintenance Guide
 
-This section provides a comprehensive guide to maintaining and updating the MxCamp V3 project.
-
-### 10.1. Updating WordPress
-
-To update WordPress, simply log in to the WordPress admin panel and follow the on-screen instructions. It's recommended to back up the site before updating.
-
-### 10.2. Updating Plugins
-
-To update the plugins, simply log in to the WordPress admin panel and follow the on-screen instructions. It's recommended to back up the site before updating.
-
-### 10.3. Updating the Theme
-
-To update the theme, you will need to upload the new theme files to the server. It's recommended to back up the site before updating.
-
-### 10.4. Debugging
+### 10.1. Debugging
 
 - **Check the Console**: The first step in troubleshooting any issue is to check the browser's developer console for errors.
 - **Clear the Cache**: If you're experiencing issues with the site's styling or functionality, try clearing your browser's cache.
 - **Disable Plugins**: If you're experiencing issues with the site's functionality, try disabling all plugins except for the `mxcamp` plugin.
 - **Contact Support**: If you're still experiencing issues, please contact the developer for assistance.
 
-### 10.5. Extending the System
+### 10.2. Extending the System
 
 The MxCamp V3 project is designed to be highly customizable and extensible. To extend the system, you can:
 
