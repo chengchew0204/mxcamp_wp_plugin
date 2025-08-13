@@ -1,9 +1,12 @@
 
 # MxCamp V3 Technical Manual
 
-## 1. Project Overview
+> **Disclaimer**  
+> This document was composed with the assistance of Gemini AI. Use it at your own risk.
 
-The MxCamp V3 project is a highly interactive and visually rich website designed to showcase the MxCamp experience. It combines a custom WordPress theme with a sophisticated, full-page JavaScript-driven slider to create a seamless and immersive user journey.
+## 1. Plugin Overview
+
+The MxCamp V3 Plugin is a highly interactive and visually rich website designed to showcase the MxCamp experience. It combines a custom WordPress theme with a sophisticated, full-page JavaScript-driven slider to create a seamless and immersive user journey.
 
 The core of the site is a vertical-scrolling homepage that presents different aspects of the camp through a series of "slides." Each slide is a full-screen section that can contain a variety of content, including background videos, images, text, and interactive elements. The site is designed to be highly responsive, with a mobile-first approach that ensures a consistent experience across all devices.
 
