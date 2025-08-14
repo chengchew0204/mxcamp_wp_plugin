@@ -583,7 +583,7 @@ body.ajde_events-template-default div#main-container > * {
   .ajde_evcal_calendar.boxy.boxstyle0 #evcal_list .eventon_list_event .desc_trig span {}
   .ajde_evcal_calendar.boxy.boxstyle0 #evcal_list .eventon_list_event .desc_trig {
       padding: 0px!important;
-      flex-direction: row-reverse!important;
+       flex-direction: row-reverse !important;
       align-content: flex-start;
   }
       .ajde_evcal_calendar.boxy.boxstyle0 #evcal_list .eventon_list_event .desc_trig .evoet_c2 {
@@ -947,6 +947,38 @@ body.ajde_events-template-default div#main-container > * {
   
   }
   body.single-ajde_events .evoet_c2.evoet_cx .evo_end .date, body.single-ajde_events .evoet_c2.evoet_cx .evo_start .date,body.single-ajde_events .evoet_c2.evoet_cx .evo_end .day, body.single-ajde_events .evoet_c2.evoet_cx .evo_start .day, body.single-ajde_events .evoet_c2.evoet_cx .evo_end .month, body.single-ajde_events .evoet_c2.evoet_cx .evo_start .month{display:inline-block!important}
+  
+  /* Reorder month and date for single event pages - make evo_start a flex container */
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_start {
+      display: flex !important;
+      flex-direction: row !important;
+      padding-top: 10px !important;
+  }
+  
+  /* Set order for elements within evo_start to display month first, then date, then time */
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_start em.month {
+      order: 1 !important;
+  }
+  
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_start em.date {
+      order: 2 !important;
+  }
+  
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_start em.time {
+      order: 3 !important;
+  }
+  
+  /* Add dash before end date element for single event pages */
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_end em.date::before {
+      content: " - " !important;
+      color: black !important;
+      font-family: 'ClearSans', helvetica, sans-serif !important;
+      font-weight: 500 !important;
+      font-size: 18px !important;
+      position: relative !important;
+      left: -3px !important;
+      top: -3.1px !important;
+  }
   #evo_lightboxes .evoet_c2.evoet_cx .only_time, body.single-ajde_events .evoet_c2.evoet_cx .only_time{display:none!important}
   body.single-ajde_events .eventon_events_list .eventon_list_event .evcal_list_a {min-height:unset!important}
   #evo_lightboxes .time, body.single-ajde_events
@@ -1026,7 +1058,3 @@ body.ajde_events-template-default div#main-container > * {
       margin-bottom: 0px !important;
   }
   
-  .ajde_evcal_calendar.boxy .evo_end {
-      top: -4px !important; /* Also adjust end time position */
-  }
-*/

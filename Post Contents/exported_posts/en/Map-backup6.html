@@ -1,5 +1,5 @@
- <!-- wp:html -->
- <style>
+<!-- wp:html -->
+<style>
   body.map {margin: 0;}
   @media screen and (max-width: 1050px) {
       body.bodycardopened.map header#header .ct-container-fluid>div:first-child {opacity: 1;}
@@ -59,6 +59,7 @@ z-index: 1;
           overflow: hidden;
           z-index: 20;
           position: absolute;
+          cursor: pointer;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent;
           -moz-user-select: -moz-none;
@@ -97,14 +98,14 @@ z-index: 1;
           width: 28%;
           height: 36%;
         }
-        .onmouseover-detail:hover{
-           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
-        }
         #focus-point {
           top:0;
           right: 0;
           height:1px;
           width:0;
+        }
+        .onmouseover-detail:hover{
+           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
         }
 .map-container {
   position: relative;
@@ -184,7 +185,7 @@ img {
       }
  .interactive-map {
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y:scroll;
   height: auto;
   width: 100dvw;
   }
@@ -232,7 +233,7 @@ img {
   position: absolute;
   width: 68px;
   height: 68px;
-  background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
+  background: url('https://camp.mx/wp-content/uploads/pointer.png') no-repeat center;
   background-size: contain;
   z-index: 99999 !important;
   pointer-events: none;
@@ -255,7 +256,7 @@ img {
 }
 
 .demo-cursor.fade-in {
-  animation: smoothFadeIn 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: smoothFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes smoothFadeIn {
@@ -270,7 +271,7 @@ img {
 }
 
 .demo-cursor.click-animation {
-  animation: smoothClick 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: smoothClick 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 @keyframes smoothClick {
@@ -293,7 +294,7 @@ img {
 }
 
 .demo-cursor.fade-out {
-  animation: smoothFadeOut 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+  animation: smoothFadeOut 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
 
 @keyframes smoothFadeOut {
@@ -424,7 +425,7 @@ img {
     resetMapToInitialState();
     
     // Close the map card
-    const mapHeader = document.querySelector("#mapa .card-header") || document.querySelector("#map .card-header");
+    const mapHeader = document.querySelector("#map .card-header") || document.querySelector("#mapa .card-header");
     if (mapHeader) {
       mapHeader.click();
     } else {
@@ -446,26 +447,25 @@ function clickOutside(event, ele, cb) {
 if (event.target.classList.contains('mapExit')) return;
 
 if (!ele.contains(event.target)) {
-  if (currentLayer) {
-    currentLayer.style.zIndex = -1;
+      if (currentLayer) {
+        currentLayer.style.zIndex = -1
+      }
+      currentLayer = undefined
+      currentActiveBuilding = null; // Reset building tracker on click outside
+      event.preventDefault();
+      removeAllClickListeners()
+      setAllClickListeners()
+      cb();
+      document.removeEventListener('click', handleClickOutside);
+    }
   }
-  currentLayer = undefined;
-  currentActiveBuilding = null; // Reset building tracker on click outside
-  event.preventDefault();
-  removeAllClickListeners();
-  setAllClickListeners();
-  cb();
-  document.removeEventListener('click', handleClickOutside);
-}
-}
-
   let handleClickOutside;
   
   function onClickOutside(event, ele, cb) {
-    handleClickOutside = (event) => clickOutside(event, ele, cb);
-    document.addEventListener('click', handleClickOutside);
-  }
-
+     console.log('clicked outside event:'+event+ ' ele:'+ele +' cb:'+cb);
+      handleClickOutside = (event) => clickOutside(event, ele, cb);
+      document.addEventListener('click', handleClickOutside);
+    };
   function openDetail(event, element, mapIds, prevMapId) {
     // Check if we're switching to a different building
     if (currentActiveBuilding && currentActiveBuilding !== element) {
@@ -486,7 +486,7 @@ if (!ele.contains(event.target)) {
     let currentMapIndex = 0;
     let nextMapId = mapIdsCopy[currentMapIndex];
     let nextNextMapId = mapIdsCopy[currentMapIndex + 1];
-    let map = document.querySelector("#mapa");
+         let map = document.querySelector("#mapa");
     let nextLayer = document.querySelector("#" + nextMapId);
     
     if (!nextLayer) {
@@ -503,7 +503,7 @@ if (!ele.contains(event.target)) {
       
       // Ensure image is ready and start transition
       if (nextLayer.complete && nextLayer.naturalWidth > 0) {
-                // Hide ALL layers first to prevent any bleed-through
+                        // Hide ALL layers first to prevent any bleed-through
         const allLayers = document.querySelectorAll('.layer');
         allLayers.forEach(layer => {
           layer.classList.remove('active');
@@ -553,7 +553,7 @@ if (!ele.contains(event.target)) {
       }
     };
 
-        const handleSequence = () => {
+            const handleSequence = () => {
       // Handle previous layer cleanup
         if (prevMapId) {
           let prevLayer = document.querySelector("#" + prevMapId);
@@ -610,7 +610,7 @@ if (!ele.contains(event.target)) {
   function setClickListeners(element, mapIds, prevMapId=undefined) {
     element.addEventListener("click", handleOpenDetail = (event) => openDetail(event, element, mapIds, prevMapId),{once: true})
   }
-  const map = document.querySelector("#mapa")
+     const map = document.querySelector("#mapa")
   
   function resetBuildingToLayer1(buildingElement) {
     // Remove any existing listeners from this building element
@@ -647,7 +647,7 @@ if (!ele.contains(event.target)) {
     setClickListeners(calleDetail, ["calle-down-1", "calle-down-2", "calle-down-3"])
     setClickListeners(jardinDetail, ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"])
     setClickListeners(cosinaDetail, ["central-down-1", "central-down-2", "central-down-3"])
-      addExitListeners(); 
+    addExitListeners() 
 }
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
@@ -869,7 +869,7 @@ if (!ele.contains(event.target)) {
       console.log('Contour engine reset complete');
     }
 
-    // Setup event listeners
+            // Setup event listeners
     setupEventListeners() {
       const mapContainer = document.getElementById('imap');
       if (!mapContainer) return;
@@ -966,7 +966,9 @@ if (!ele.contains(event.target)) {
             this.waitForMobileMapPositioning();
           } else {
             console.log('Desktop device - starting demo immediately');
-            this.startDemo(); // Short delay after card opens
+            setTimeout(() => {
+              this.startDemo();
+            }, 500); // Short delay after card opens
           }
         }
         return;
@@ -1043,7 +1045,7 @@ if (!ele.contains(event.target)) {
                   console.log('Desktop device - starting demo after positioning');
                   setTimeout(() => {
                     this.startDemo();
-                  }, 400); // Wait for card animation and scroll positioning
+                  }, 800); // Wait for card animation and scroll positioning
                 }
               }
               
@@ -1067,7 +1069,9 @@ if (!ele.contains(event.target)) {
       // Check if map positioning is already complete (mapscroll = 0)
       if (typeof window.mapscroll !== 'undefined' && window.mapscroll === 0) {
         console.log('Map positioning already complete - starting mobile demo');
-        this.startDemo(); // Extra delay for mobile to ensure positioning is settled
+        setTimeout(() => {
+          this.startDemo();
+        }, 1000); // Extra delay for mobile to ensure positioning is settled
         return;
       }
       
@@ -1076,7 +1080,9 @@ if (!ele.contains(event.target)) {
         if (typeof window.mapscroll !== 'undefined' && window.mapscroll === 0) {
           console.log('Mobile map positioning complete - starting demo');
           clearInterval(checkPositioning);
-          this.startDemo(); // Extra delay for mobile to ensure positioning is settled
+          setTimeout(() => {
+            this.startDemo();
+          }, 1000); // Extra delay for mobile to ensure positioning is settled
         }
       }, 100); // Check every 100ms
       
@@ -1278,7 +1284,7 @@ if (!ele.contains(event.target)) {
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait a moment at the central building
-      await this.wait(150);
+      await this.wait(300);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Perform the click sequence through all central layers (now includes return to base)
@@ -1286,7 +1292,7 @@ if (!ele.contains(event.target)) {
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait before fading out
-      await this.wait(200);
+      await this.wait(400);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Re-enable user interactions when fade-out starts (not when it completes)
@@ -1350,19 +1356,19 @@ if (!ele.contains(event.target)) {
       // Click to start the sequence (from base to central-down-1)
       await this.performClick(centralDetail, 'Click 1: Base -> Central Down 1');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(500);
+      await this.wait(1000);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to go to central-down-2  
       await this.performClick(centralDetail, 'Click 2: Central Down 1 -> Central Down 2');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(500);
+      await this.wait(1000);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to go to central-down-3
       await this.performClick(centralDetail, 'Click 3: Central Down 2 -> Central Down 3');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(500);
+      await this.wait(1000);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to return to base (fourth click)
@@ -1379,7 +1385,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(150);
+      await this.wait(300);
       
       // Create a synthetic click event marked as demo-generated
       const clickEvent = new MouseEvent('click', {
@@ -1413,7 +1419,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.opacity = '1';
         // Re-ensure visibility after transition
         this.ensureCursorVisibility();
-      }, 400); // Match click animation duration
+      }, 800); // Match click animation duration
     }
 
     async performFinalClick(element, logMessage) {
@@ -1426,7 +1432,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(150);
+      await this.wait(300);
       
       // Reset to base map by calling reset function directly (no need for event)
       resetMapToInitialState();
@@ -1441,7 +1447,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
         this.demoCursor.style.opacity = '1';
         this.ensureCursorVisibility();
-      }, 400); // Match click animation duration
+      }, 800); // Match click animation duration
     }
 
     ensureCursorVisibility() {
@@ -1479,7 +1485,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(150);
+      await this.wait(300);
       
       // Reset to base map by simulating a click outside or calling reset function
       resetMapToInitialState();
@@ -1494,7 +1500,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
         this.demoCursor.style.opacity = '1';
         this.ensureCursorVisibility();
-      }, 400); // Match click animation duration
+      }, 800); // Match click animation duration
     }
 
     async fadeOutCursor() {
@@ -1514,7 +1520,7 @@ if (!ele.contains(event.target)) {
             this.demoCursor.classList.remove('fade-out');
             this.demoCursor.style.opacity = '0';
             resolve();
-          }, 600); // Match fade-out animation duration
+          }, 1200); // Match fade-out animation duration
         }, 100); // Brief pause for smooth transition
       });
     }

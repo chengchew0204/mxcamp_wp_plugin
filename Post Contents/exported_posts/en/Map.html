@@ -233,7 +233,7 @@ img {
   position: absolute;
   width: 68px;
   height: 68px;
-  background: url('https://camp.mx/wp-content/uploads/pointer.png') no-repeat center;
+  background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
   background-size: contain;
   z-index: 99999 !important;
   pointer-events: none;
@@ -256,7 +256,7 @@ img {
 }
 
 .demo-cursor.fade-in {
-  animation: smoothFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: smoothFadeIn 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes smoothFadeIn {
@@ -271,7 +271,7 @@ img {
 }
 
 .demo-cursor.click-animation {
-  animation: smoothClick 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: smoothClick 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 @keyframes smoothClick {
@@ -294,7 +294,7 @@ img {
 }
 
 .demo-cursor.fade-out {
-  animation: smoothFadeOut 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+  animation: smoothFadeOut 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
 
 @keyframes smoothFadeOut {
@@ -966,9 +966,7 @@ if (!ele.contains(event.target)) {
             this.waitForMobileMapPositioning();
           } else {
             console.log('Desktop device - starting demo immediately');
-            setTimeout(() => {
-              this.startDemo();
-            }, 500); // Short delay after card opens
+            this.startDemo(); // Short delay after card opens
           }
         }
         return;
@@ -1045,7 +1043,7 @@ if (!ele.contains(event.target)) {
                   console.log('Desktop device - starting demo after positioning');
                   setTimeout(() => {
                     this.startDemo();
-                  }, 800); // Wait for card animation and scroll positioning
+                  }, 400); // Wait for card animation and scroll positioning
                 }
               }
               
@@ -1069,9 +1067,7 @@ if (!ele.contains(event.target)) {
       // Check if map positioning is already complete (mapscroll = 0)
       if (typeof window.mapscroll !== 'undefined' && window.mapscroll === 0) {
         console.log('Map positioning already complete - starting mobile demo');
-        setTimeout(() => {
-          this.startDemo();
-        }, 1000); // Extra delay for mobile to ensure positioning is settled
+        this.startDemo(); // Extra delay for mobile to ensure positioning is settled
         return;
       }
       
@@ -1080,9 +1076,7 @@ if (!ele.contains(event.target)) {
         if (typeof window.mapscroll !== 'undefined' && window.mapscroll === 0) {
           console.log('Mobile map positioning complete - starting demo');
           clearInterval(checkPositioning);
-          setTimeout(() => {
-            this.startDemo();
-          }, 1000); // Extra delay for mobile to ensure positioning is settled
+          this.startDemo(); // Extra delay for mobile to ensure positioning is settled
         }
       }, 100); // Check every 100ms
       
@@ -1284,7 +1278,7 @@ if (!ele.contains(event.target)) {
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait a moment at the central building
-      await this.wait(300);
+      await this.wait(150);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Perform the click sequence through all central layers (now includes return to base)
@@ -1292,7 +1286,7 @@ if (!ele.contains(event.target)) {
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait before fading out
-      await this.wait(400);
+      await this.wait(200);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Re-enable user interactions when fade-out starts (not when it completes)
@@ -1356,19 +1350,19 @@ if (!ele.contains(event.target)) {
       // Click to start the sequence (from base to central-down-1)
       await this.performClick(centralDetail, 'Click 1: Base -> Central Down 1');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(1000);
+      await this.wait(500);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to go to central-down-2  
       await this.performClick(centralDetail, 'Click 2: Central Down 1 -> Central Down 2');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(1000);
+      await this.wait(500);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to go to central-down-3
       await this.performClick(centralDetail, 'Click 3: Central Down 2 -> Central Down 3');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(1000);
+      await this.wait(500);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to return to base (fourth click)
@@ -1385,7 +1379,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(300);
+      await this.wait(150);
       
       // Create a synthetic click event marked as demo-generated
       const clickEvent = new MouseEvent('click', {
@@ -1419,7 +1413,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.opacity = '1';
         // Re-ensure visibility after transition
         this.ensureCursorVisibility();
-      }, 800); // Match click animation duration
+      }, 400); // Match click animation duration
     }
 
     async performFinalClick(element, logMessage) {
@@ -1432,7 +1426,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(300);
+      await this.wait(150);
       
       // Reset to base map by calling reset function directly (no need for event)
       resetMapToInitialState();
@@ -1447,7 +1441,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
         this.demoCursor.style.opacity = '1';
         this.ensureCursorVisibility();
-      }, 800); // Match click animation duration
+      }, 400); // Match click animation duration
     }
 
     ensureCursorVisibility() {
@@ -1485,7 +1479,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(300);
+      await this.wait(150);
       
       // Reset to base map by simulating a click outside or calling reset function
       resetMapToInitialState();
@@ -1500,7 +1494,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
         this.demoCursor.style.opacity = '1';
         this.ensureCursorVisibility();
-      }, 800); // Match click animation duration
+      }, 400); // Match click animation duration
     }
 
     async fadeOutCursor() {
@@ -1520,7 +1514,7 @@ if (!ele.contains(event.target)) {
             this.demoCursor.classList.remove('fade-out');
             this.demoCursor.style.opacity = '0';
             resolve();
-          }, 1200); // Match fade-out animation duration
+          }, 600); // Match fade-out animation duration
         }, 100); // Brief pause for smooth transition
       });
     }

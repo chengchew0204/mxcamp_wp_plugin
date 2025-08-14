@@ -1870,4 +1870,49 @@ body.bodycardopened.map #gif-detail {
         font-size: 28px;
         margin: 10px 0;
     }
+}
+
+/* Silent update: hide wrong grids but keep layout height */
+.ajde_evcal_calendar[data-updating="1"] .eventon_events_list,
+.ajde_evcal_calendar[data-updating="1"] .evcal_month_line{
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Smoothness for re-showing */
+.ajde_evcal_calendar .eventon_events_list,
+.ajde_evcal_calendar .evcal_month_line{
+  will-change: opacity, visibility;
+  transition: opacity .18s ease;
+}
+
+/* Force-show EventON built-in loader if present */
+.ajde_evcal_calendar[data-updating="1"] .evo_loader_bar,
+.ajde_evcal_calendar[data-updating="1"] .evcal_loader_bar{
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fallback loader: visible only during updating */
+.ajde_evcal_calendar .calendar-progress{ display:none; }
+.ajde_evcal_calendar[data-updating="1"] .calendar_header .calendar-progress{
+  display:block;
+  position:absolute;
+  left:0; right:0; top:0;
+  height:2px;
+  background: transparent;
+  overflow:hidden;
+}
+.ajde_evcal_calendar[data-updating="1"] .calendar_header .calendar-progress::before{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left:-40%; width:40%;
+  background: rgba(245,245,245,.95);
+  animation: cal-progress 1.2s linear infinite;
+}
+@keyframes cal-progress{
+  from{ left:-40%; }
+  to{ left:100%; }
 } 

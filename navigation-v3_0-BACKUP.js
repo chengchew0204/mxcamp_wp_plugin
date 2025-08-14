@@ -115,6 +115,9 @@ class Navigation {
             this.initMobileLandscapeWarning();
             this.initOrganizadorxsTitleUpdater();
             
+            // Initialize scroll-based cursor hints
+            this.initScrollHints();
+            
             // Final overlay hide attempt
             setTimeout(() => this.hideLoadingOverlay(), 100);
             
@@ -450,7 +453,7 @@ class Navigation {
         };
 
         // Check URL path for direct navigation
-        currentPath = window.location.pathname;
+        var currentPath = window.location.pathname;
         if (currentPath && urlToSlideMap[currentPath]) {
             const slideData = {
                 post: 'dontknow',
@@ -462,7 +465,7 @@ class Navigation {
         }
 
         // Check URL hash for navigation
-        urlHash = window.location.hash;
+        var urlHash = window.location.hash;
         if (urlHash && urlHash.length>1) {
             // Retirer le caractère # du hash
             var cleanHash = urlHash.substring(1);
@@ -602,7 +605,7 @@ class Navigation {
         
         // Create arrow element
         const arrowImg = document.createElement('img');
-        arrowImg.src = this.isMobileDevice() ? "https://camp.mx/img/caret28.svg" : "https://camp.mx/img/caret28.svg";
+        arrowImg.src = isMobileDevice() ? "https://camp.mx/img/caret28.svg" : "https://camp.mx/img/caret28.svg";
         arrowImg.classList.add('menu-arrow');
         arrowImg.style.width = '16px'; // Original width
         arrowImg.style.height = 'auto';
@@ -677,7 +680,15 @@ class Navigation {
         let volunteerIsHovering = false;
         let volunteerPreviewShown = false;
         
-
+        // Function to detect mobile device
+        function isMobileDevice() {
+            return (window.innerWidth <= 768 || 
+                   navigator.maxTouchPoints > 0 || 
+                   navigator.msMaxTouchPoints > 0 ||
+                   ('ontouchstart' in window) || 
+                   (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
+                   (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
+        }
         
         // Create shared function to close all previews
         function closeAllPreviews() {
@@ -757,14 +768,14 @@ class Navigation {
         // For volunteer section, set up proper hover events
         // Create named event handler functions we can reference
         const volunteerArrowMouseEnter = () => {
-            if (!this.isMobileDevice()) {
+            if (!isMobileDevice()) {
                 clearTimeout(volunteerHoverTimer);
                 showVolunteerPreview();
             }
         };
         
         const volunteerArrowMouseLeave = () => {
-            if (!this.isMobileDevice()) {
+            if (!isMobileDevice()) {
                 volunteerIsHovering = false;
                 hideVolunteerPreview();
             }
@@ -776,14 +787,14 @@ class Navigation {
         
         // Add hover event listeners to the hover div to maintain hover state
         hoverDiv.addEventListener('mouseenter', () => {
-            if (!this.isMobileDevice()) {
+            if (!isMobileDevice()) {
                 clearTimeout(volunteerHoverTimer);
                 volunteerIsHovering = true;
             }
         });
         
         hoverDiv.addEventListener('mouseleave', () => {
-            if (!this.isMobileDevice()) {
+            if (!isMobileDevice()) {
                 volunteerIsHovering = false;
                 hideVolunteerPreview();
             }
@@ -852,13 +863,8 @@ class Navigation {
         
         NewMenuItem.appendChild(NewParagraph);
         
-        const liList = list.querySelectorAll("li");
-        const anchorItem = liList[3] || liList[liList.length - 1] || null;
-        if (anchorItem?.after) {
-            anchorItem.after(NewMenuItem);
-        } else {
-            list.appendChild(NewMenuItem);
-        }
+        const artistMenuItem = list.querySelectorAll("li")[3];
+        artistMenuItem.after(NewMenuItem);
     
         /* COMMENTED OUT: Old Restaurant section - now using WordPress post with video background
         // Restaurant section
@@ -1184,12 +1190,6 @@ class Navigation {
         const divId = obj.divId;
         const openCard = obj.openTheCard === undefined ? true : obj.openTheCard;
         const element = document.getElementById(divId);
-        
-        if (!element) {
-            console.warn('[gotoSlide] target element not found:', divId);
-            return;
-        }
-        
         window.location.hash ='';
       if (this.cardopened === true && this.targetSlide === divId) {
           this.openCard(obj);
@@ -1266,10 +1266,10 @@ class Navigation {
             
             // Only skip tap event listeners if it's mobile device AND events section
             if (!(isMobileDevice && isEventsSection)) {
-                tapTop && tapTop.addEventListener('click', this.eventHandlers[slideId+'tap']);
-                tapLeft && tapLeft.addEventListener('click', this.eventHandlers[slideId+'tap']);
-                tapRight && tapRight.addEventListener('click', this.eventHandlers[slideId+'tap']);
-                tapBottom && tapBottom.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapTop.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapLeft.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapRight.addEventListener('click', this.eventHandlers[slideId+'tap']);
+                tapBottom.addEventListener('click', this.eventHandlers[slideId+'tap']);
             }
             
             this.menuToActivate.addEventListener('click', (e) => {e.preventDefault();this.desActivateMenu(e); e.stopPropagation();});
@@ -1923,76 +1923,10 @@ class Navigation {
         const monthPattern = isEnglish ? englishMonths : spanishMonths;
         const monthRegex = new RegExp(`^(${monthPattern.join('|')})$`, 'i');
         
-        // Universal year detection regex (instead of hardcoded 2024-2027)
-        const YEAR_RE = /^\d{4}$/;
-        
         // Language-aware month names for navigation logic
         const januaryName = isEnglish ? 'JAN' : 'ENE';
         const decemberName = isEnglish ? 'DEC' : 'DIC';
         const defaultMonth = isEnglish ? 'MAY' : 'MAY'; // MAY is same in both languages
-        
-        // Ensure there is a visible loader during updating: prefer EventON loader, else create a custom bar
-        function ensureCalendarProgressEl(cal) {
-            // Try built-in loader inside calendar header
-            const header = cal.querySelector('.calendar_header');
-            if (!header) return null;
-
-            let builtin = header.querySelector('.evo_loader_bar, .evcal_loader_bar');
-            if (builtin) {
-                // Header must be positioned for absolute children
-                if (getComputedStyle(header).position === 'static') header.style.position = 'relative';
-                return { type: 'builtin', el: builtin };
-            }
-
-            // Create lightweight custom loader if not present
-            let custom = header.querySelector('.calendar-progress');
-            if (!custom) {
-                custom = document.createElement('div');
-                custom.className = 'calendar-progress';
-                if (getComputedStyle(header).position === 'static') header.style.position = 'relative';
-                header.appendChild(custom);
-            }
-            return { type: 'custom', el: custom };
-        }
-
-        // Begin silent update: lock list height and set data-updating flag
-        function startCalendarSilentUpdate() {
-            const cal = document.querySelector('.ajde_evcal_calendar');
-            if (!cal) return null;
-
-            const list = cal.querySelector('.eventon_events_list') || cal;
-            const h = list.offsetHeight;
-            list.style.minHeight = h + 'px'; // Prevent layout collapse while grids are hidden
-
-            const loaderRef = ensureCalendarProgressEl(cal);
-            cal.setAttribute('data-updating', '1');
-
-            // Safety timeout to avoid stuck state
-            const killer = setTimeout(() => endCalendarSilentUpdate({ cal, list, loaderRef }), 7000);
-            console.log('Calendar silent update started with loader');
-            return { cal, list, loaderRef, killer };
-        }
-
-        // End silent update: remove flags and unlock height
-        function endCalendarSilentUpdate(state) {
-            const cal = state?.cal || document.querySelector('.ajde_evcal_calendar');
-            const list = state?.list || cal?.querySelector('.eventon_events_list');
-            if (!cal) return;
-
-            cal.removeAttribute('data-updating');
-            if (list) list.style.minHeight = '';
-
-            // Let plugin regain control over built-in loader if we touched inline styles
-            const lr = state?.loaderRef;
-            if (lr && lr.type === 'builtin') {
-                lr.el.style.display = '';
-                lr.el.style.opacity = '';
-                lr.el.style.visibility = '';
-            }
-
-            if (state?.killer) clearTimeout(state.killer);
-            console.log('Calendar silent update ended');
-        }
         
         // Immediately hide original navigation to prevent glitch
         const hideOriginalNavigation = () => {
@@ -2002,7 +1936,7 @@ class Navigation {
                 const allLinks = Array.from(calendar.querySelectorAll('a'));
                 allLinks.forEach(link => {
                     const text = link.textContent.trim();
-                    if (YEAR_RE.test(text) || monthRegex.test(text)) {
+                    if (/^(2024|2025|2026|2027)$/.test(text) || monthRegex.test(text)) {
                         link.style.display = 'none';
                         if (link.parentElement && link.parentElement.tagName !== 'BODY') {
                             link.parentElement.style.display = 'none';
@@ -2054,7 +1988,7 @@ class Navigation {
             allLinks.forEach(link => {
                 const text = link.textContent.trim();
                 // Check if it's a year (4 digits)
-                if (YEAR_RE.test(text)) {
+                if (/^(2024|2025|2026|2027)$/.test(text)) {
                     years.push(link);
                     if (link.classList.contains('current')) {
                         currentYear = link;
@@ -2277,267 +2211,14 @@ class Navigation {
                 return null;
             };
             
-            // Helper function to refresh node lists after DOM changes (e.g., cross-year navigation)
-            const freshNodeLists = () => {
-                const cal = document.querySelector('.ajde_evcal_calendar');
-                const all = cal ? Array.from(cal.querySelectorAll('a')) : [];
-                return {
-                    years: all.filter(a => YEAR_RE.test((a.textContent || '').trim())),
-                    months: all.filter(a => monthRegex.test((a.textContent || '').trim()))
-                };
-            };
-            
-            // Ultra-robust calendar update detection with event content verification
-            const waitForCalendarUpdate = (callback, targetMonthName = null, maxWaitTime = 8000) => {
-                const calendar = document.querySelector('.ajde_evcal_calendar');
-                if (!calendar) {
-                    console.warn('Calendar not found for mutation observation');
-                    setTimeout(callback, 500); // Longer fallback delay
-                    return;
-                }
-                
-                let updateDetected = false;
-                let timeoutId;
-                let stabilityCheckId;
-                let verificationCheckId;
-                let lastChangeTime = Date.now();
-                let initialEventCount = 0;
-                
-                // Get initial event count for comparison
-                const getEventCount = () => {
-                    const events = calendar.querySelectorAll('.eventon_list_event, .event, .ajde_evcal_event');
-                    return events.length;
-                };
-                
-                initialEventCount = getEventCount();
-                console.log(`Initial event count: ${initialEventCount}`);
-                
-                // Enhanced stability and content verification
-                const verifyCalendarReadiness = () => {
-                    const currentTime = Date.now();
-                    const timeSinceLastChange = currentTime - lastChangeTime;
-                    
-                    // Wait for at least 500ms of stability (increased from 300ms)
-                    if (timeSinceLastChange >= 500) {
-                        // Verify target month is available if specified
-                        if (targetMonthName) {
-                            const allLinks = Array.from(calendar.querySelectorAll('a'));
-                            const availableMonths = allLinks.filter(link => monthRegex.test(link.textContent.trim()));
-                            const targetMonth = availableMonths.find(m => m.textContent.toUpperCase() === targetMonthName.toUpperCase());
-                            
-                            if (!targetMonth) {
-                                console.log(`Target month ${targetMonthName} not yet available, continuing to wait...`);
-                                lastChangeTime = currentTime; // Reset timer
-                                return false;
-                            }
-                            
-                            // Verify target month is actually clickable and not disabled
-                            if (targetMonth.classList.contains('disabled') || 
-                                targetMonth.style.pointerEvents === 'none' ||
-                                targetMonth.getAttribute('aria-disabled') === 'true') {
-                                console.log(`Target month ${targetMonthName} is not yet clickable, continuing to wait...`);
-                                lastChangeTime = currentTime; // Reset timer
-                                return false;
-                            }
-                        }
-                        
-                        // Additional verification: check if events are loading
-                        const currentEventCount = getEventCount();
-                        const hasEvents = currentEventCount > 0;
-                        
-                        // For cross-year navigation, we expect event count to potentially change
-                        // Wait for events to stabilize
-                        if (targetMonthName && !hasEvents) {
-                            console.log(`Waiting for events to load for ${targetMonthName}...`);
-                            lastChangeTime = currentTime; // Reset timer
-                            return false;
-                        }
-                        
-                        console.log(`Calendar is stable and ready. Event count: ${currentEventCount}, Target: ${targetMonthName}`);
-                        return true;
-                    }
-                    return false;
-                };
-                
-                // More comprehensive mutation detection
-                const observer = new MutationObserver((mutations) => {
-                    const hasRelevantChanges = mutations.some(mutation => {
-                        // Comprehensive childList monitoring
-                        if (mutation.type === 'childList') {
-                            // Check removed nodes (important for detecting content clearing)
-                            const hasRemovedNodes = mutation.removedNodes.length > 0;
-                            
-                            // Check added nodes for calendar-related content
-                            const hasAddedNodes = Array.from(mutation.addedNodes).some(node => {
-                                if (node.nodeType === Node.ELEMENT_NODE) {
-                                    return node.querySelector && (
-                                        node.querySelector('a') || 
-                                        node.querySelector('.eventon_list_event') ||
-                                        node.querySelector('.event') ||
-                                        node.querySelector('.ajde_evcal_event') ||
-                                        node.classList.contains('evo_j_dates') ||
-                                        node.classList.contains('evo_jumper_months') ||
-                                        node.classList.contains('evo_j_years') ||
-                                        node.classList.contains('eventon_events_list') ||
-                                        node.classList.contains('calendar_header') ||
-                                        node.classList.contains('ajde_evcal_event') ||
-                                        node.classList.contains('evcal_month_line')
-                                    );
-                                }
-                                return false;
-                            });
-                            
-                            return hasRemovedNodes || hasAddedNodes;
-                        }
-                        
-                        // Monitor attribute changes more precisely
-                        if (mutation.type === 'attributes') {
-                            const target = mutation.target;
-                            
-                            // Month/year link changes
-                            if (target.tagName === 'A' && target.textContent) {
-                                return monthRegex.test(target.textContent.trim()) || 
-                                       YEAR_RE.test(target.textContent.trim());
-                            }
-                            
-                            // Class changes on important elements
-                            if (mutation.attributeName === 'class') {
-                                return target.classList.contains('current') ||
-                                       target.classList.contains('evo_j_dates') ||
-                                       target.classList.contains('eventon_events_list') ||
-                                       target.classList.contains('ajde_evcal_event') ||
-                                       target.classList.contains('loading');
-                            }
-                            
-                            // Style changes that might indicate loading/updating
-                            if (mutation.attributeName === 'style') {
-                                return target.classList.contains('eventon_events_list') ||
-                                       target.classList.contains('ajde_evcal_event');
-                            }
-                        }
-                        
-                        return false;
-                    });
-                    
-                    if (hasRelevantChanges && !updateDetected) {
-                        lastChangeTime = Date.now();
-                        console.log('Calendar change detected, resetting stability timer');
-                    }
-                });
-                
-                // Enhanced observation settings
-                observer.observe(calendar, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    attributeFilter: ['class', 'href', 'data-value', 'style', 'aria-disabled']
-                });
-                
-                // Check readiness every 150ms (slightly longer intervals)
-                verificationCheckId = setInterval(() => {
-                    if (!updateDetected && verifyCalendarReadiness()) {
-                        updateDetected = true;
-                        observer.disconnect();
-                        clearInterval(verificationCheckId);
-                        clearTimeout(timeoutId);
-                        console.log('Calendar verification passed, executing callback');
-                        callback();
-                    }
-                }, 150);
-                
-                // Extended fallback timeout
-                timeoutId = setTimeout(() => {
-                    if (!updateDetected) {
-                        updateDetected = true;
-                        observer.disconnect();
-                        clearInterval(verificationCheckId);
-                        console.log('Calendar update timeout reached, proceeding with extended fallback');
-                        callback();
-                    }
-                }, maxWaitTime);
-                
-                console.log(`Enhanced calendar update detection started${targetMonthName ? ' for ' + targetMonthName : ''}...`);
-            };
-            
-            // Year navigation with enhanced stability checking
+            // Year navigation with intelligent month defaults
             yearLeft.onclick = () => {
                 if (changeYear('previous')) {
                     // When going to previous year, default to December
                     updateToMonth(decemberName);
-                    console.log('Clicking previous year, targeting December');
-                    
-                    // Start silent update before cross-year transition
-                    const silentState = startCalendarSilentUpdate();
-                    
-                    // Click year first, then wait for stable update before clicking month
+                    // Click year first, then month
                     currentYear.click();
-                    waitForCalendarUpdate(() => {
-                        // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
-                        hideOriginalNavigation();
-
-                        // [新增 #2] 重新抓取最新的年份／月份 anchors
-                        const { years: y2, months: m2 } = freshNodeLists();
-
-                        // 用原陣列容器回填，保持外層閉包引用不變
-                        years.length = 0; years.push(...y2);
-                        months.length = 0; months.push(...m2);
-
-                        // [新增 #3] 將 currentYear 指到「新節點」：
-                        // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
-                        const targetYearText = (yearText.textContent || '').trim();
-                        const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
-                        if (matchedYear) {
-                            currentYear = matchedYear;
-                            currentYearIndex = years.indexOf(matchedYear);
-                        } else if (years.length) {
-                            currentYear = years[0];
-                            currentYearIndex = 0;
-                        }
-
-                        // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
-                        if (decemberName) {
-                            const target = months.find(m => (m.textContent || '').trim().toUpperCase() === decemberName.toUpperCase());
-                            if (target) {
-                                currentMonth = target;
-                                currentMonthIndex = months.indexOf(target);
-                                monthText.textContent = (currentMonth.textContent || '').trim();
-                                
-                                // Extended delay before final click to ensure complete stability
-                                setTimeout(() => {
-                                    // Final verification before clicking
-                                    if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
-                                        currentMonth.click();
-                                        console.log('Successfully navigated to previous year and December');
-                                        // End after month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
-                                    } else {
-                                        console.warn('Month element became invalid, attempting fallback click');
-                                        // Fallback: re-find the December month and click
-                                        const fallbackLinks = Array.from(calendar.querySelectorAll('a'));
-                                        const fallbackMonths = fallbackLinks.filter(link => monthRegex.test(link.textContent.trim()));
-                                        const fallbackDecember = fallbackMonths.find(m => m.textContent.toUpperCase() === decemberName.toUpperCase());
-                                        if (fallbackDecember) {
-                                            fallbackDecember.click();
-                                        }
-                                        // End after fallback month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
-                                    }
-                                }, 300);
-                            } else if (months.length) {
-                                // fallback：若找不到目標月，選擇最後一個合理的候選（很可能是12月）
-                                const fallback = months[months.length - 1];
-                                if (fallback && fallback.click) {
-                                    fallback.click();
-                                    console.warn('Target month December not found; clicked fallback month:', fallback.textContent);
-                                }
-                                // End after fallback month finishes loading
-                                waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
-                            } else {
-                                // No months found at all - end silent update immediately
-                                endCalendarSilentUpdate(silentState);
-                            }
-                        }
-                    }, decemberName); // Pass target month name for verification
+                    setTimeout(() => currentMonth.click(), 100);
                 }
             };
             
@@ -2545,84 +2226,13 @@ class Navigation {
                 if (changeYear('next')) {
                     // When going to next year, default to January
                     updateToMonth(januaryName);
-                    console.log('Clicking next year, targeting January');
-                    
-                    // Start silent update before cross-year transition
-                    const silentState = startCalendarSilentUpdate();
-                    
-                    // Click year first, then wait for stable update before clicking month
+                    // Click year first, then month
                     currentYear.click();
-                    waitForCalendarUpdate(() => {
-                        // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
-                        hideOriginalNavigation();
-
-                        // [新增 #2] 重新抓取最新的年份／月份 anchors
-                        const { years: y2, months: m2 } = freshNodeLists();
-
-                        // 用原陣列容器回填，保持外層閉包引用不變
-                        years.length = 0; years.push(...y2);
-                        months.length = 0; months.push(...m2);
-
-                        // [新增 #3] 將 currentYear 指到「新節點」：
-                        // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
-                        const targetYearText = (yearText.textContent || '').trim();
-                        const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
-                        if (matchedYear) {
-                            currentYear = matchedYear;
-                            currentYearIndex = years.indexOf(matchedYear);
-                        } else if (years.length) {
-                            currentYear = years[0];
-                            currentYearIndex = 0;
-                        }
-
-                        // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
-                        if (januaryName) {
-                            const target = months.find(m => (m.textContent || '').trim().toUpperCase() === januaryName.toUpperCase());
-                            if (target) {
-                                currentMonth = target;
-                                currentMonthIndex = months.indexOf(target);
-                                monthText.textContent = (currentMonth.textContent || '').trim();
-                                
-                                // Extended delay before final click to ensure complete stability
-                                setTimeout(() => {
-                                    // Final verification before clicking
-                                    if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
-                                        currentMonth.click();
-                                        console.log('Successfully navigated to next year and January');
-                                        // End after month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
-                                    } else {
-                                        console.warn('Month element became invalid, attempting fallback click');
-                                        // Fallback: re-find the January month and click
-                                        const fallbackLinks = Array.from(calendar.querySelectorAll('a'));
-                                        const fallbackMonths = fallbackLinks.filter(link => monthRegex.test(link.textContent.trim()));
-                                        const fallbackJanuary = fallbackMonths.find(m => m.textContent.toUpperCase() === januaryName.toUpperCase());
-                                        if (fallbackJanuary) {
-                                            fallbackJanuary.click();
-                                        }
-                                        // End after fallback month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
-                                    }
-                                }, 300);
-                            } else if (months.length) {
-                                // fallback：若找不到目標月，選擇第一個合理的候選（很可能是1月）
-                                const fallback = months[0];
-                                if (fallback && fallback.click) {
-                                    fallback.click();
-                                    console.warn('Target month January not found; clicked fallback month:', fallback.textContent);
-                                }
-                                // End after fallback month finishes loading
-                                waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
-                            } else {
-                                // No months found at all - end silent update immediately
-                                endCalendarSilentUpdate(silentState);
-                            }
-                        }
-                    }, januaryName); // Pass target month name for verification
+                    setTimeout(() => currentMonth.click(), 100);
                 }
             };
             
-            // Enhanced month navigation with stability checking for cross-year transitions
+            // Intelligent month navigation with automatic year adjustment
             monthLeft.onclick = () => {
                 const currentMonthName = currentMonth.textContent.toUpperCase();
                 console.log(`Month left clicked, current month: ${currentMonthName}`);
@@ -2631,80 +2241,9 @@ class Navigation {
                 if (currentMonthName === januaryName.toUpperCase()) {
                     if (changeYear('previous')) {
                         updateToMonth(decemberName);
-                        console.log('Month left triggering year change: January -> Previous Year December');
-                        
-                        // Start silent update before cross-year transition
-                        const silentState = startCalendarSilentUpdate();
-                        
-                        // Click year first, then wait for stable update before clicking month
+                        // Click year first, then month
                         currentYear.click();
-                        waitForCalendarUpdate(() => {
-                            // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
-                            hideOriginalNavigation();
-
-                            // [新增 #2] 重新抓取最新的年份／月份 anchors
-                            const { years: y2, months: m2 } = freshNodeLists();
-
-                            // 用原陣列容器回填，保持外層閉包引用不變
-                            years.length = 0; years.push(...y2);
-                            months.length = 0; months.push(...m2);
-
-                            // [新增 #3] 將 currentYear 指到「新節點」：
-                            // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
-                            const targetYearText = (yearText.textContent || '').trim();
-                            const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
-                            if (matchedYear) {
-                                currentYear = matchedYear;
-                                currentYearIndex = years.indexOf(matchedYear);
-                            } else if (years.length) {
-                                currentYear = years[0];
-                                currentYearIndex = 0;
-                            }
-
-                            // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
-                            if (decemberName) {
-                                const target = months.find(m => (m.textContent || '').trim().toUpperCase() === decemberName.toUpperCase());
-                                if (target) {
-                                    currentMonth = target;
-                                    currentMonthIndex = months.indexOf(target);
-                                    monthText.textContent = (currentMonth.textContent || '').trim();
-                                    
-                                    // Extended delay before final click to ensure complete stability
-                                    setTimeout(() => {
-                                        // Final verification before clicking
-                                        if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
-                                            currentMonth.click();
-                                            console.log('Successfully navigated to previous year and December via month left');
-                                            // End after month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
-                                        } else {
-                                            console.warn('Month element became invalid, attempting fallback click');
-                                            // Fallback: re-find the December month and click
-                                            const fallbackLinks = Array.from(calendar.querySelectorAll('a'));
-                                            const fallbackMonths = fallbackLinks.filter(link => monthRegex.test(link.textContent.trim()));
-                                            const fallbackDecember = fallbackMonths.find(m => m.textContent.toUpperCase() === decemberName.toUpperCase());
-                                            if (fallbackDecember) {
-                                                fallbackDecember.click();
-                                            }
-                                            // End after fallback month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
-                                        }
-                                    }, 300);
-                                } else if (months.length) {
-                                    // fallback：若找不到目標月，選擇最後一個合理的候選（很可能是12月）
-                                    const fallback = months[months.length - 1];
-                                    if (fallback && fallback.click) {
-                                        fallback.click();
-                                        console.warn('Target month December not found; clicked fallback month:', fallback.textContent);
-                                    }
-                                    // End after fallback month finishes loading
-                                    waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
-                                } else {
-                                    // No months found at all - end silent update immediately
-                                    endCalendarSilentUpdate(silentState);
-                                }
-                            }
-                        }, decemberName); // Pass target month name for verification
+                        setTimeout(() => currentMonth.click(), 100);
                     }
                 } else {
                     // Normal previous month navigation using pattern-based approach
@@ -2732,80 +2271,9 @@ class Navigation {
                 if (currentMonthName === decemberName.toUpperCase()) {
                     if (changeYear('next')) {
                         updateToMonth(januaryName);
-                        console.log('Month right triggering year change: December -> Next Year January');
-                        
-                        // Start silent update before cross-year transition
-                        const silentState = startCalendarSilentUpdate();
-                        
-                        // Click year first, then wait for stable update before clicking month
+                        // Click year first, then month
                         currentYear.click();
-                        waitForCalendarUpdate(() => {
-                            // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
-                            hideOriginalNavigation();
-
-                            // [新增 #2] 重新抓取最新的年份／月份 anchors
-                            const { years: y2, months: m2 } = freshNodeLists();
-
-                            // 用原陣列容器回填，保持外層閉包引用不變
-                            years.length = 0; years.push(...y2);
-                            months.length = 0; months.push(...m2);
-
-                            // [新增 #3] 將 currentYear 指到「新節點」：
-                            // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
-                            const targetYearText = (yearText.textContent || '').trim();
-                            const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
-                            if (matchedYear) {
-                                currentYear = matchedYear;
-                                currentYearIndex = years.indexOf(matchedYear);
-                            } else if (years.length) {
-                                currentYear = years[0];
-                                currentYearIndex = 0;
-                            }
-
-                            // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
-                            if (januaryName) {
-                                const target = months.find(m => (m.textContent || '').trim().toUpperCase() === januaryName.toUpperCase());
-                                if (target) {
-                                    currentMonth = target;
-                                    currentMonthIndex = months.indexOf(target);
-                                    monthText.textContent = (currentMonth.textContent || '').trim();
-                                    
-                                    // Extended delay before final click to ensure complete stability
-                                    setTimeout(() => {
-                                        // Final verification before clicking
-                                        if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
-                                            currentMonth.click();
-                                            console.log('Successfully navigated to next year and January via month right');
-                                            // End after month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
-                                        } else {
-                                            console.warn('Month element became invalid, attempting fallback click');
-                                            // Fallback: re-find the January month and click
-                                            const fallbackLinks = Array.from(calendar.querySelectorAll('a'));
-                                            const fallbackMonths = fallbackLinks.filter(link => monthRegex.test(link.textContent.trim()));
-                                            const fallbackJanuary = fallbackMonths.find(m => m.textContent.toUpperCase() === januaryName.toUpperCase());
-                                            if (fallbackJanuary) {
-                                                fallbackJanuary.click();
-                                            }
-                                            // End after fallback month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
-                                        }
-                                    }, 300);
-                                } else if (months.length) {
-                                    // fallback：若找不到目標月，選擇第一個合理的候選（很可能是1月）
-                                    const fallback = months[0];
-                                    if (fallback && fallback.click) {
-                                        fallback.click();
-                                        console.warn('Target month January not found; clicked fallback month:', fallback.textContent);
-                                    }
-                                    // End after fallback month finishes loading
-                                    waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
-                                } else {
-                                    // No months found at all - end silent update immediately
-                                    endCalendarSilentUpdate(silentState);
-                                }
-                            }
-                        }, januaryName); // Pass target month name for verification
+                        setTimeout(() => currentMonth.click(), 100);
                     }
                 } else {
                     // Normal next month navigation using pattern-based approach
