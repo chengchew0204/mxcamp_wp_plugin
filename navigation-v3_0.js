@@ -1,52 +1,51 @@
-/*
-2025-05-05 Burger menu test
-Hovering the menu items to show a preview of the content
-*/ 
-
-// Enhanced auto-hide loading overlay functionality for /en pages
+// LOADING SYSTEM - Now integrated directly from PHP
+// Force remove any old #inite elements that might be created by cache or other scripts
 (function() {
-    console.log('Loading overlay auto-hide system initializing...');
-    
-    // Multi-layered auto-hide system for the #inite loading overlay
-    const autoHideLoadingOverlay = () => {
-        const inite = document.getElementById("inite");
-        if (inite && inite.style.display !== "none") {
-            console.log("Auto-hiding loading overlay");
-            inite.style.display = "none";
-            return true;
+    const removeOldIniteSystem = () => {
+        const oldInite = document.getElementById("inite");
+        if (oldInite) {
+            console.log("Found and removing old #inite element");
+            oldInite.remove();
         }
-        return false;
     };
-
-    // Immediate hide attempt for fast connections
+    
+    // Remove immediately and repeatedly to handle any dynamic creation
+    removeOldIniteSystem();
+    setTimeout(removeOldIniteSystem, 0);
+    setTimeout(removeOldIniteSystem, 10);
+    setTimeout(removeOldIniteSystem, 50);
+    setTimeout(removeOldIniteSystem, 100);
+    setTimeout(removeOldIniteSystem, 500);
+    
+    // Also remove on DOM ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoHideLoadingOverlay);
-    } else {
-        autoHideLoadingOverlay();
+        document.addEventListener('DOMContentLoaded', removeOldIniteSystem);
     }
-
-    // Additional triggers for different page load states
-    window.addEventListener('load', autoHideLoadingOverlay);
     
-    // Hide on first user interaction (mobile-friendly)
-    const userInteractionEvents = ['click', 'scroll', 'touchstart', 'keydown'];
-    userInteractionEvents.forEach(event => {
-        document.addEventListener(event, autoHideLoadingOverlay, { once: true });
-    });
-
-    // Fallback timer - force hide after 2.5 seconds maximum
-    setTimeout(autoHideLoadingOverlay, 2500);
-
-    // Specific check for English pages
-    const isEnglishPage = document.documentElement.lang === "en-US" || 
-                         window.location.pathname.includes('/en') || 
-                         window.location.href.includes('/en/');
-    
-    if (isEnglishPage) {
-        console.log('English page detected - ensuring overlay auto-hide');
-        // More aggressive hiding for English pages
-        setTimeout(autoHideLoadingOverlay, 1000);
-        setTimeout(autoHideLoadingOverlay, 1500);
+    // Monitor for any dynamic creation of #inite elements
+    if (window.MutationObserver) {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.id === 'inite') {
+                            console.log("Detected dynamically created #inite element, removing it");
+                            node.remove();
+                        }
+                        // Also check children
+                        const initeChild = node.querySelector && node.querySelector('#inite');
+                        if (initeChild) {
+                            console.log("Detected #inite in added subtree, removing it");
+                            initeChild.remove();
+                        }
+                    }
+                });
+            });
+        });
+        observer.observe(document.body || document.documentElement, {
+            childList: true,
+            subtree: true
+        });
     }
 })();
 
@@ -76,6 +75,13 @@ class Navigation {
         this.currentCursorHint = null;
         this.currentCursorHintSlide = null;
         this.cleanupCurrentHint = null;
+        
+        // Loading state management
+        this.isFullyLoaded = false;
+        this.gifDetailLoaded = false;
+        this.backgroundImagesLoaded = false;
+        this.loadingSpinner = null;
+        
         // Create safe closeAllPreviews function for use before MenuConstruct
         if (!window.closeAllPreviews) {
             window.closeAllPreviews = function() {
@@ -85,265 +91,409 @@ class Navigation {
         }
         //orientation
         this.currentOrientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+        
+        // Use existing spinner created immediately at page start
+        this.useExistingSpinner();
+        
         // initialisation de la navigation
         this.init();
 	
     }
     
+    // Use the existing spinner created by PHP
+    useExistingSpinner() {
+        // Get reference to the spinner created by PHP
+        this.loadingSpinner = document.getElementById('loading-spinner-overlay');
+        
+        if (this.loadingSpinner) {
+            console.log('Using loading spinner created by PHP');
+            // Ensure interactions are blocked
+            this.blockAllInteractions();
+        } else {
+            console.warn('Loading spinner not found from PHP, creating fallback');
+            this.createFallbackSpinner();
+        }
+    }
+    
+    // Fallback spinner creation if PHP spinner failed
+    createFallbackSpinner() {
+        const spinnerOverlay = document.createElement('div');
+        spinnerOverlay.id = 'loading-spinner-overlay';
+        
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+        
+        spinnerOverlay.appendChild(spinner);
+        document.body.appendChild(spinnerOverlay);
+        
+        this.loadingSpinner = spinnerOverlay;
+        this.blockAllInteractions();
+        
+        console.log('Fallback loading spinner created');
+    }
+    
+    // Block all user interactions during loading
+    blockAllInteractions() {
+        // Disable pointer events on main content areas
+        if (this.slider) this.slider.style.pointerEvents = 'none';
+        if (this.menuToActivate) this.menuToActivate.style.pointerEvents = 'none';
+        if (this.burgerMenu) this.burgerMenu.style.pointerEvents = 'none';
+        
+        // Disable scroll
+        document.body.style.overflow = 'hidden';
+        
+        console.log('All interactions blocked');
+    }
+    
+    // Re-enable interactions after loading
+    enableInteractions() {
+        // Re-enable pointer events
+        if (this.slider) this.slider.style.pointerEvents = '';
+        if (this.menuToActivate) this.menuToActivate.style.pointerEvents = '';
+        if (this.burgerMenu) this.burgerMenu.style.pointerEvents = '';
+        
+        // Re-enable scroll
+        document.body.style.overflow = '';
+        
+        console.log('Interactions enabled');
+    }
+    
+    // Hide loading spinner and enable interactions
+    hideLoadingSpinner() {
+        if (this.loadingSpinner) {
+            this.loadingSpinner.classList.add('fade-out');
+            setTimeout(() => {
+                if (this.loadingSpinner && this.loadingSpinner.parentNode) {
+                    this.loadingSpinner.parentNode.removeChild(this.loadingSpinner);
+                }
+                this.loadingSpinner = null;
+            }, 500); // Match CSS transition time
+        }
+        
+        this.enableInteractions();
+        console.log('Loading spinner hidden - interactions enabled');
+    }
+    
     // initialisation de la navigation
     init() {
         try {
-            // Enhanced loading overlay auto-hide with error handling
-            this.hideLoadingOverlay();
-            
+            // Phase 1: Basic setup (no user interaction needed)
             this.replaceDefaultBurgerFunction();
-            this.LetsListen();
             this.MenuConstruct();
-            this.addGifToMapBackground()
             this.initScrollEvent();
             this.initEscapeButton();
-            this.initScrollHints();
-            this.UrlVerif();
-            this.ashTagLinks();
             this.empecherDefilementSurChangementOrientation();
-            
-            // Ensure overlay is hidden again after all initialization
-            this.hideLoadingOverlay();
-            
             this.getVisibleSlideInfo();
             this.initArrowKeyNavigation();
             this.initMobileLandscapeWarning();
             this.initOrganizadorxsTitleUpdater();
             
-            // Final overlay hide attempt
-            setTimeout(() => this.hideLoadingOverlay(), 100);
+            // Phase 2: Load all resources in parallel
+            this.loadAllResourcesWithCallback(() => {
+                // All resources loaded, now complete initialization
+                this.completeInitialization();
+            });
             
         } catch (error) {
             console.error('Navigation initialization error:', error);
-            // Even if navigation fails, ensure overlay is hidden
-            this.hideLoadingOverlay();
+            // Even if navigation fails, ensure spinner is hidden
+            this.hideLoadingSpinner();
+        }
+    }
+    
+    // Complete initialization after gif loads
+    completeInitialization() {
+        try {
+            // Phase 3: Complete setup
+            this.LetsListen();
+            this.UrlVerif();
+            this.ashTagLinks();
+            
+            // Hide spinner first
+            this.hideLoadingSpinner();
+            
+            // Phase 4: Start gif-detail video after spinner disappears, then show cursor hint
+            setTimeout(() => {
+                // Start gif-detail video now that spinner is gone
+                this.startGifDetailVideo();
+                
+                this.initScrollHints();
+                this.isFullyLoaded = true;
+                console.log('Site fully loaded and ready for interaction');
+            }, 600); // Delay to ensure spinner fade-out is complete (500ms + buffer)
+            
+        } catch (error) {
+            console.error('Complete initialization error:', error);
+            this.hideLoadingSpinner();
         }
     }
 
-    // Enhanced loading overlay hide method with multiple safety checks
-    hideLoadingOverlay() {
+
+    // Load all resources (gif-detail, background images, etc.) with callback when ready
+    loadAllResourcesWithCallback(callback) {
+        console.log('Starting comprehensive resource loading...');
+        
+        const resourcePromises = [];
+        
+        // 1. Load gif-detail video
+        const gifPromise = new Promise((resolve, reject) => {
+            this.loadGifDetailVideo(resolve, reject);
+        });
+        resourcePromises.push(gifPromise);
+        
+        // 2. Load background images
+        const backgroundPromise = new Promise((resolve) => {
+            this.loadBackgroundImages(resolve);
+        });
+        resourcePromises.push(backgroundPromise);
+        
+        // 3. Load cursor hint image
+        const cursorHintPromise = new Promise((resolve) => {
+            this.loadCursorHintImage(resolve);
+        });
+        resourcePromises.push(cursorHintPromise);
+        
+        // 4. Wait for document to be fully loaded
+        const documentPromise = new Promise((resolve) => {
+            if (document.readyState === 'complete') {
+                resolve();
+            } else {
+                window.addEventListener('load', resolve, { once: true });
+            }
+        });
+        resourcePromises.push(documentPromise);
+        
+        // Set timeout fallback in case loading takes too long
+        const timeoutPromise = new Promise((resolve) => {
+            setTimeout(() => {
+                console.warn('Resource loading timeout - proceeding anyway');
+                resolve();
+            }, 8000); // 8 second timeout for all resources
+        });
+        
+        // Use whichever resolves first - all resources or timeout
+        Promise.race([Promise.all(resourcePromises), timeoutPromise])
+            .then(() => {
+                console.log('All resources loading completed');
+                callback();
+            })
+            .catch((error) => {
+                console.error('Resource loading failed:', error);
+                callback(); // Still proceed to prevent hanging
+            });
+    }
+    
+    // Load background images used by slides
+    loadBackgroundImages(callback) {
+        console.log('Loading background images...');
+        
+        // Get all slides with background images
+        const slidesWithBackgrounds = [
+            { selector: '.slide_10#mapa', url: 'https://camp.mx/wp-content/uploads/mapa_escrit.webp' },
+            { selector: '.slide_10#map', url: 'https://camp.mx/wp-content/uploads/mapa_escrit.webp' }
+        ];
+        
+        const imagePromises = [];
+        
+        slidesWithBackgrounds.forEach(({ selector, url }) => {
+            const element = document.querySelector(selector);
+            if (element) {
+                const imagePromise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        console.log('Background image loaded:', url);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.warn('Background image failed to load:', url);
+                        resolve(); // Still resolve to not block loading
+                    };
+                    img.src = url;
+                });
+                imagePromises.push(imagePromise);
+            }
+        });
+        
+        if (imagePromises.length === 0) {
+            console.log('No background images to load');
+            callback();
+            return;
+        }
+        
+        Promise.all(imagePromises)
+            .then(() => {
+                this.backgroundImagesLoaded = true;
+                console.log('All background images loaded');
+                callback();
+            })
+            .catch(() => {
+                console.warn('Some background images failed to load');
+                callback(); // Still proceed
+            });
+    }
+    
+    // Load cursor hint image
+    loadCursorHintImage(callback) {
+        console.log('Loading cursor hint image...');
+        
+        const img = new Image();
+        img.onload = () => {
+            console.log('Cursor hint image loaded');
+            callback();
+        };
+        img.onerror = () => {
+            console.warn('Cursor hint image failed to load');
+            callback(); // Still proceed
+        };
+        img.src = 'https://camp.mx/wp-content/uploads/pointer-1.png';
+    }
+    
+    // Load gif-detail video with enhanced detection
+    loadGifDetailVideo(resolve, reject) {
         try {
-            const inite = document.getElementById("inite");
-            if (inite) {
-                // Check if we're on an English page for logging
-                const isEnglishPage = document.documentElement.lang === "en-US" || 
-                                     window.location.pathname.includes('/en') || 
-                                     window.location.href.includes('/en/');
-                
-                if (isEnglishPage) {
-                    console.log("Navigation: Hiding loading overlay on English page");
+            const mapa = document.querySelector("div.slide_10#mapa");
+            if (!mapa) {
+                // Try English version
+                const map = document.querySelector("div.slide_10#map");
+                if (map) {
+                    this.createGifDetail(map, 'map', resolve, reject);
+                } else {
+                    reject(new Error('No map slide found'));
                 }
-                
-                inite.style.display = "none";
-                inite.style.visibility = "hidden";
-                inite.style.opacity = "0";
-                
-                // Also try removing it from DOM if it's still visible
-                if (inite.offsetParent !== null) {
-                    inite.remove();
-                }
-                
-                return true;
+            } else {
+                this.createGifDetail(mapa, 'mapa', resolve, reject);
             }
         } catch (error) {
-            console.error('Error hiding loading overlay:', error);
+            reject(error);
         }
-        return false;
     }
-	
-	addGifToMapBackground() {
-		try {
-			const mapa = document.querySelector("div.slide_10#mapa");
+    
+    // Create gif-detail element with enhanced loading detection
+    createGifDetail(slideElement, slideId, resolve, reject) {
 			const gifDetail = document.createElement("div");
 			gifDetail.id = "gif-detail";
 			
-			// Create video element instead of using background-image
+        // Create video element with highest priority loading
 			const video = document.createElement("video");
 			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
-			video.autoplay = true;
-			video.loop = true;
+			video.autoplay = false; // Changed: don't autoplay, wait for spinner to finish
+			video.loop = false; // Changed: don't loop the video
 			video.muted = true;
 			video.playsInline = true;
 			
-			// Optimize for mobile performance
-			const isMobile = window.innerWidth <= 768;
-			if (isMobile) {
-				video.setAttribute('preload', 'metadata'); // Load only metadata on mobile
-				video.setAttribute('loading', 'lazy'); // Lazy load on mobile
-			} else {
-				video.setAttribute('preload', 'auto'); // Full preload on desktop
-			}
-			
-			// Add poster image as fallback while video loads
-			video.poster = "https://camp.mx/wp-content/uploads/map_thumbnail_poster.webp";
-			
-			// Add error handling and loading optimization
-			video.addEventListener('loadstart', () => {
-				console.log('Video loading started');
+        // Force highest priority loading - no lazy loading during initial load
+        video.setAttribute('preload', 'auto'); // Always full preload for initial load
+        video.setAttribute('loading', 'eager'); // Load immediately
+        
+        // Add poster image as fallback
+        const posterUrl = slideId === 'mapa' ? 
+            "https://camp.mx/wp-content/uploads/map_thumbnail_poster.webp" : 
+            "https://camp.mx/wp-content/uploads/map_thumbnail_poster.jpg";
+        video.poster = posterUrl;
+        
+        let hasResolved = false;
+        
+        // Enhanced loading detection
+        const resolveOnce = () => {
+            if (!hasResolved) {
+                hasResolved = true;
+                resolve();
+            }
+        };
+        
+        // Multiple ways to detect when video is ready
+        video.addEventListener('loadeddata', () => {
+            console.log('Video loadeddata event - first frame loaded');
+            resolveOnce();
 			});
 			
 			video.addEventListener('canplay', () => {
-				console.log('Video can start playing');
-				// Start playing if autoplay failed
-				if (video.paused) {
-					video.play().catch(e => console.log('Autoplay prevented:', e));
-				}
+            console.log('Video canplay event - ready to play when spinner finishes');
+            resolveOnce();
+        });
+        
+        video.addEventListener('loadstart', () => {
+            console.log('Video loading started');
 			});
 			
 			video.addEventListener('error', (e) => {
 				console.error('Video loading error:', e);
 				// Fallback to poster image if video fails
-				gifDetail.style.backgroundImage = "url('https://camp.mx/wp-content/uploads/map_thumbnail_poster.webp')";
+            gifDetail.style.backgroundImage = `url('${posterUrl}')`;
 				gifDetail.style.backgroundSize = "contain";
 				gifDetail.style.backgroundRepeat = "no-repeat";
 				gifDetail.style.backgroundPosition = "center";
 				video.style.display = 'none';
-			});
-			
-			// Intersection Observer for lazy loading optimization
-			if ('IntersectionObserver' in window && isMobile) {
-				const observer = new IntersectionObserver((entries) => {
-					entries.forEach(entry => {
-						if (entry.isIntersecting) {
-							video.load(); // Start loading when visible
-							observer.unobserve(entry.target);
-						}
-					});
-				}, { threshold: 0.1 });
-				observer.observe(gifDetail);
-			}
-			
-			// Add video to the gif-detail container
+            resolveOnce(); // Still resolve to prevent hanging
+        });
+        
+        // Hide gif-detail when video finishes playing (after first cycle)
+        video.addEventListener('ended', () => {
+            console.log('Video finished playing - hiding gif-detail');
+            gifDetail.style.transition = 'opacity 0.5s ease-out';
+            gifDetail.style.opacity = '0';
+            
+            // Remove the element after fade transition completes
+            setTimeout(() => {
+                if (gifDetail && gifDetail.parentNode) {
+                    gifDetail.parentNode.removeChild(gifDetail);
+                }
+            }, 500); // Match the transition duration
+        });
+        
+        // Fallback: resolve after a reasonable time even if events don't fire
+        setTimeout(() => {
+            if (!hasResolved) {
+                console.log('Video loading timeout fallback');
+                resolveOnce();
+            }
+        }, 3000);
+        
+        // Add video to container
 			gifDetail.appendChild(video);
 			
-			// Add the onmouseover-detail class for emphatic cursor
-			//gifDetail.classList.add('onmouseover-detail');
-			
-			// Append to the slide container, not inside slide_10_scroll to avoid event interception
-			mapa.append(gifDetail);
-			
-			// Force the OnMouseOverDetailAdder to process this element
-			if (window.onMouseOverDetailAdder) {
-				window.onMouseOverDetailAdder.addToElements([gifDetail]);
-			}
-			/*
-			// Add debugging event listeners to help identify issues
-			gifDetail.addEventListener('mouseenter', (e) => {
-				console.log('gif-detail mouseenter event triggered');
-				console.log('Element classList:', e.target.classList.toString());
-				console.log('Computed cursor style:', window.getComputedStyle(e.target).cursor);
-			});
-			
-			gifDetail.addEventListener('mouseleave', (e) => {
-				console.log('gif-detail mouseleave event triggered');
-			});*/
-			
-			// Add click handler to gif-detail to open the mapa card
-			gifDetail.addEventListener('click', (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				console.log('gif-detail clicked!');
-				this.openCard({ divId: 'mapa' });
-			});
-		} catch {
-			const map = document.querySelector("div.slide_10#map");
-			const gifDetail = document.createElement("div");
-			gifDetail.id = "gif-detail";
-			
-			// Create video element instead of using background-image
-			const video = document.createElement("video");
-			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
-			video.autoplay = true;
-			video.loop = true;
-			video.muted = true;
-			video.playsInline = true;
-			
-			// Optimize for mobile performance
-			const isMobile = window.innerWidth <= 768;
-			if (isMobile) {
-				video.setAttribute('preload', 'metadata'); // Load only metadata on mobile
-				video.setAttribute('loading', 'lazy'); // Lazy load on mobile
-			} else {
-				video.setAttribute('preload', 'auto'); // Full preload on desktop
-			}
-			
-			// Add poster image as fallback while video loads
-			video.poster = "https://camp.mx/wp-content/uploads/map_thumbnail_poster.jpg";
-			
-			// Add error handling and loading optimization
-			video.addEventListener('loadstart', () => {
-				console.log('Video loading started');
-			});
-			
-			video.addEventListener('canplay', () => {
-				console.log('Video can start playing');
-				// Start playing if autoplay failed
-				if (video.paused) {
-					video.play().catch(e => console.log('Autoplay prevented:', e));
-				}
-			});
-			
-			video.addEventListener('error', (e) => {
-				console.error('Video loading error:', e);
-				// Fallback to poster image if video fails
-				gifDetail.style.backgroundImage = "url('https://camp.mx/wp-content/uploads/map_thumbnail_poster.jpg')";
-				gifDetail.style.backgroundSize = "contain";
-				gifDetail.style.backgroundRepeat = "no-repeat";
-				gifDetail.style.backgroundPosition = "center";
-				video.style.display = 'none';
-			});
-			
-			// Intersection Observer for lazy loading optimization
-			if ('IntersectionObserver' in window && isMobile) {
-				const observer = new IntersectionObserver((entries) => {
-					entries.forEach(entry => {
-						if (entry.isIntersecting) {
-							video.load(); // Start loading when visible
-							observer.unobserve(entry.target);
-						}
-					});
-				}, { threshold: 0.1 });
-				observer.observe(gifDetail);
-			}
-			
-			// Add video to the gif-detail container
-			gifDetail.appendChild(video);
+			// Store video reference for later playback after spinner finishes
+			this.gifDetailVideo = video;
 			
 			// Add the onmouseover-detail class for emphatic cursor
+        if (slideId === 'map') {
 			gifDetail.classList.add('onmouseover-detail');
+        }
 			
-			// Append to the slide container, not inside slide_10_scroll to avoid event interception
-			map.append(gifDetail);
+        // Append to slide container
+        slideElement.append(gifDetail);
 			
 			// Force the OnMouseOverDetailAdder to process this element
 			if (window.onMouseOverDetailAdder) {
 				window.onMouseOverDetailAdder.addToElements([gifDetail]);
 			}
 			
-			// Add debugging event listeners to help identify issues
-			gifDetail.addEventListener('mouseenter', (e) => {
-				console.log('gif-detail mouseenter event triggered');
-				console.log('Element classList:', e.target.classList.toString());
-				console.log('Computed cursor style:', window.getComputedStyle(e.target).cursor);
-			});
-			
-			gifDetail.addEventListener('mouseleave', (e) => {
-				console.log('gif-detail mouseleave event triggered');
-			});
-			
-			// Add click handler to gif-detail to open the map card
+        // Add click handler
 			gifDetail.addEventListener('click', (e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				console.log('gif-detail clicked!');
-				this.openCard({ divId: 'map' });
+            this.openCard({ divId: slideId });
+			});
+        
+        // Start loading the video immediately
+        video.load();
+		}
+		
+	// Start gif-detail video playback after loading spinner is hidden
+	startGifDetailVideo() {
+		if (this.gifDetailVideo && this.gifDetailVideo.paused) {
+			console.log('Starting gif-detail video playback after spinner finished');
+			this.gifDetailVideo.play().catch(e => {
+				console.log('Gif-detail video playback failed:', e);
 			});
 		}
+	}
+
+	addGifToMapBackground() {
+        // This method is now handled by loadGifDetailWithCallback
+        // Keeping for backward compatibility but it does nothing
+        console.log('addGifToMapBackground called - now handled by loadGifDetailWithCallback');
 	}
 	
     getVisibleSlideInfo() {
@@ -1507,6 +1657,13 @@ class Navigation {
         this.currentCursorHint = cursorHint;
         this.currentCursorHintSlide = slideElement;
         
+        // Trigger the animation by adding the play class after a brief delay
+        setTimeout(() => {
+            if (cursorHint && cursorHint.parentNode) {
+                cursorHint.classList.add('play');
+            }
+        }, 100);
+        
         // Create cleanup function with smooth fade-out
         const cleanupHint = () => {
             if (cursorHint && cursorHint.parentNode) {
@@ -1591,17 +1748,19 @@ class Navigation {
     }
     
     // Show cursor hint when slide comes into view during scrolling
+    // Now acts as the "ready" signal after gif loads
     initScrollHints() {
-        // Use a slight delay to ensure DOM is fully ready
-        setTimeout(() => {
+        console.log('Initializing cursor hints - site is ready for interaction');
+        
+        // Immediate setup since we're now the "ready" signal
             const slides = document.querySelectorAll('.slide_10');
             
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
                         const slideId = entry.target.id;
-                        // Show hint every time user navigates to a slide
-                        if (!entry.target.classList.contains('opened')) {
+                    // Only show hint if site is fully loaded and slide is not opened
+                    if (this.isFullyLoaded && !entry.target.classList.contains('opened')) {
                             this.showCursorHint(entry.target);
                         }
                     }
@@ -1614,7 +1773,15 @@ class Navigation {
             slides.forEach(slide => {
                 observer.observe(slide);
             });
-        }, 1000); // 1 second delay to ensure everything is loaded
+        
+        // Show immediate cursor hint on currently visible slide as "ready" signal
+        setTimeout(() => {
+            const currentSlide = document.getElementById(this.slideVisibleId);
+            if (currentSlide && !currentSlide.classList.contains('opened')) {
+                console.log('Showing initial cursor hint as ready signal');
+                this.showCursorHint(currentSlide);
+            }
+        }, 100); // Brief delay to ensure everything is set up
     }
     
     // Debug function to test cursor hints manually
@@ -1643,6 +1810,22 @@ class Navigation {
         console.log('Current URL:', window.location.href);
         console.log('Document language:', document.documentElement.lang);
         console.log('Page path:', window.location.pathname);
+        console.log('Menu active:', this.slider?.classList.contains('menuactive'));
+        console.log('Card opened:', this.cardopened);
+        console.log('Current cursor hint:', this.currentCursorHint);
+    }
+    
+    // Quick test function to show cursor hint on current visible slide
+    testCursorHintOnCurrentSlide() {
+        const visibleSlide = document.getElementById(this.slideVisibleId);
+        if (visibleSlide && !visibleSlide.classList.contains('opened')) {
+            console.log('Testing cursor hint on current visible slide:', this.slideVisibleId);
+            this.showCursorHint(visibleSlide);
+        } else if (visibleSlide && visibleSlide.classList.contains('opened')) {
+            console.log('Current slide is opened, cursor hints are hidden by CSS');
+        } else {
+            console.log('No visible slide found');
+        }
     }
     
     // Force reinitialize scroll hints (for debugging)
@@ -1931,6 +2114,22 @@ class Navigation {
         const decemberName = isEnglish ? 'DEC' : 'DIC';
         const defaultMonth = isEnglish ? 'MAY' : 'MAY'; // MAY is same in both languages
         
+        // Inject a minimal CSS rule once to ensure no competing animations leak in
+        (function ensureCalendarRevealCSS(){
+            if (document.getElementById('calendar-reveal-css')) return;
+            const css = document.createElement('style');
+            css.id = 'calendar-reveal-css';
+            css.textContent = `
+                /* Force clean state during our manual reveal */
+                .ajde_evcal_calendar.calendar-reveal-pending .eventon_events_list {
+                    display: block !important;
+                    overflow: hidden;
+                    opacity: 0;
+                }
+            `;
+            document.head.appendChild(css);
+        })();
+        
         // Ensure there is a visible loader during updating: prefer EventON loader, else create a custom bar
         function ensureCalendarProgressEl(cal) {
             // Try built-in loader inside calendar header
@@ -1955,6 +2154,117 @@ class Navigation {
             return { type: 'custom', el: custom };
         }
 
+        // Create a helper to hide the list immediately (before reveal)
+        function prepareHiddenList(cal){
+            // Ensure we have a list
+            const list = cal?.querySelector('.eventon_events_list');
+            if (!list) return null;
+
+            console.log('Preparing hidden list for animation...');
+
+            // Check if list is already hidden to avoid double-hiding
+            const isAlreadyHidden = list.style.display === 'none' || 
+                                   getComputedStyle(list).display === 'none' ||
+                                   list.offsetHeight === 0;
+
+            if (isAlreadyHidden) {
+                console.log('List already hidden, skipping prepareHiddenList');
+                cal.classList.add('calendar-reveal-pending');
+                return list;
+            }
+
+            // Mark calendar as pending reveal and hide the list
+            cal.classList.add('calendar-reveal-pending');
+
+            // jQuery-first: hard hide for a clean slideDown start
+            try {
+                const $ = window.jQuery;
+                if ($) { 
+                    $(list).stop(true, true).hide(); 
+                    console.log('List hidden with jQuery');
+                }
+                else {
+                    // Vanilla fallback
+                    list.style.display = 'none';
+                    list.style.opacity = '0';
+                    list.style.height = '0px';
+                    console.log('List hidden with vanilla CSS');
+                }
+            } catch(e){ 
+                console.warn('Failed to hide list:', e);
+            }
+
+            return list;
+        }
+
+        // Create a single-use reveal helper (called after content is stable)
+        function revealListOnce(cal){
+            const list = cal?.querySelector('.eventon_events_list');
+            if (!list) return;
+
+            // Prevent multiple reveals per update cycle
+            if (cal.getAttribute('data-revealed') === '1') return;
+            cal.setAttribute('data-revealed', '1');
+
+            console.log('Revealing calendar list...');
+
+            // Safety cleanup function to ensure list is always visible
+            const ensureListVisible = () => {
+                if (list) {
+                    list.style.display = '';
+                    list.style.opacity = '';
+                    list.style.height = '';
+                    list.style.overflow = '';
+                    list.style.transition = '';
+                }
+                cal.classList.remove('calendar-reveal-pending');
+                console.log('Calendar list revealed (safety cleanup)');
+            };
+
+            // Safety timeout to ensure list becomes visible even if animation fails
+            const safetyTimeout = setTimeout(ensureListVisible, 500);
+
+            // jQuery slideDown preferred
+            try {
+                const $ = window.jQuery;
+                if ($) {
+                    $(list).stop(true, true).hide().slideDown(260, 'swing', function(){
+                        clearTimeout(safetyTimeout);
+                        // Clean up after reveal
+                        cal.classList.remove('calendar-reveal-pending');
+                        list.style.opacity = '';
+                        list.style.height  = '';
+                        console.log('Calendar list revealed (jQuery)');
+                    });
+                    return;
+                }
+            } catch(e){ 
+                console.warn('jQuery slideDown failed, using vanilla fallback:', e);
+            }
+
+            // Vanilla fallback: height + opacity transition
+            list.style.display = 'block';
+            list.style.overflow = 'hidden';
+            list.style.opacity = '0';
+            const finalH = list.scrollHeight + 'px';
+            list.style.height = '0px';
+            list.style.transition = 'height 260ms ease, opacity 260ms ease';
+
+            requestAnimationFrame(() => {
+                list.style.opacity = '1';
+                list.style.height  = finalH;
+                setTimeout(() => {
+                    clearTimeout(safetyTimeout);
+                    list.style.transition = '';
+                    list.style.height = '';
+                    list.style.opacity = '';
+                    list.style.overflow = '';
+                    cal.classList.remove('calendar-reveal-pending');
+                    console.log('Calendar list revealed (vanilla)');
+                }, 280);
+            });
+        }
+
         // Begin silent update: lock list height and set data-updating flag
         function startCalendarSilentUpdate() {
             const cal = document.querySelector('.ajde_evcal_calendar');
@@ -1963,6 +2273,12 @@ class Navigation {
             const list = cal.querySelector('.eventon_events_list') || cal;
             const h = list.offsetHeight;
             list.style.minHeight = h + 'px'; // Prevent layout collapse while grids are hidden
+
+            // NEW: reset reveal flag for this update cycle
+            cal.removeAttribute('data-revealed');
+
+            // NEW: prepare a clean hidden first frame so only the slide-down is seen later
+            prepareHiddenList(cal);
 
             const loaderRef = ensureCalendarProgressEl(cal);
             cal.setAttribute('data-updating', '1');
@@ -1979,8 +2295,18 @@ class Navigation {
             const list = state?.list || cal?.querySelector('.eventon_events_list');
             if (!cal) return;
 
-            cal.removeAttribute('data-updating');
+            // Keep minHeight until after we trigger reveal
+            if (list) {
+                // Do not force show here; let revealListOnce animate it
+            }
+
+            // Reveal with a single animation
+            revealListOnce(cal);
+
+            // Unlock container after starting the reveal
             if (list) list.style.minHeight = '';
+
+            cal.removeAttribute('data-updating');
 
             // Let plugin regain control over built-in loader if we touched inline styles
             const lr = state?.loaderRef;
@@ -2712,14 +3038,18 @@ class Navigation {
                     if (currentPatternIndex > 0) {
                         const previousMonthName = getMonthByIndex(currentPatternIndex - 1);
                         if (previousMonthName && updateToMonth(previousMonthName)) {
+                            const silentState = startCalendarSilentUpdate();
                             currentMonth.click();
+                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), previousMonthName);
                         }
                     } else {
                         // Fallback to array-based navigation
                         currentMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
                         currentMonth = months[currentMonthIndex];
                         monthText.textContent = currentMonth.textContent;
+                        const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
+                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState));
                     }
                 }
             };
@@ -2813,14 +3143,18 @@ class Navigation {
                     if (currentPatternIndex >= 0 && currentPatternIndex < monthPattern.length - 1) {
                         const nextMonthName = getMonthByIndex(currentPatternIndex + 1);
                         if (nextMonthName && updateToMonth(nextMonthName)) {
+                            const silentState = startCalendarSilentUpdate();
                             currentMonth.click();
+                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), nextMonthName);
                         }
                     } else {
                         // Fallback to array-based navigation
                         currentMonthIndex = currentMonthIndex < months.length - 1 ? currentMonthIndex + 1 : 0;
                         currentMonth = months[currentMonthIndex];
                         monthText.textContent = currentMonth.textContent;
+                        const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
+                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState));
                     }
                 }
             };
@@ -2846,6 +3180,18 @@ class Navigation {
             attempts++;
             if (createCompactNav()) {
                 console.log('Success on attempt', attempts);
+                
+                // First paint: just ensure calendar is ready, no hiding/revealing needed
+                const cal = document.querySelector('.ajde_evcal_calendar');
+                if (cal) {
+                    // Mark as revealed so navigation animations will work properly
+                    cal.setAttribute('data-revealed', '1');
+                    
+                    // Ensure any pending reveal class is removed
+                    cal.classList.remove('calendar-reveal-pending');
+                    
+                    console.log('Calendar navigation created - grid should remain visible on first load');
+                }
             } else if (attempts < 20) {
                 setTimeout(tryCreate, 250);
             } else {
@@ -2855,6 +3201,24 @@ class Navigation {
         
         // Start trying after a short delay
         setTimeout(tryCreate, 500);
+        
+        // Emergency fallback: ensure grid is never permanently hidden
+        setTimeout(() => {
+            const cal = document.querySelector('.ajde_evcal_calendar');
+            if (cal && cal.classList.contains('calendar-reveal-pending')) {
+                console.warn('Emergency fallback: Grid still hidden after 10 seconds, forcing visibility');
+                const list = cal.querySelector('.eventon_events_list');
+                if (list) {
+                    list.style.display = '';
+                    list.style.opacity = '';
+                    list.style.height = '';
+                    list.style.overflow = '';
+                    list.style.transition = '';
+                }
+                cal.classList.remove('calendar-reveal-pending');
+                cal.setAttribute('data-revealed', '1');
+            }
+        }, 10000);
     }
     
     // Mobile Landscape Warning Methods

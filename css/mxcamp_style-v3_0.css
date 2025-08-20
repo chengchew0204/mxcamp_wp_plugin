@@ -1236,11 +1236,17 @@ body.galeria footer {
 	height: 185px;
     width: 325px;
     position: absolute;
-    bottom: 21%;
-    left: 28%;
+	bottom: 26%;
+	left: 33%;
     z-index: 50; /* Much higher than slide_10_scroll (z-index: 2) and other elements to ensure hover events work */
 	cursor: pointer;
+	transition: transform 0.3s ease;
 }
+/*
+#gif-detail:hover {
+	transform: scale(0.85);
+}
+	*/
 
 #gif-detail video {
     width: 100%;
@@ -1551,116 +1557,65 @@ body.bodycardopened.map #gif-detail {
 	display: none !important;
 }
 
-/* Cursor Hint Animation for Slide Backgrounds */
+/* Cursor Hint – short, single tap, longer fade-in (1.3s total) */
 .cursor-hint {
-    position: absolute;
-    width: 68px;
-    height: 68px;
-    background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
-    background-size: contain;
-    z-index: 2000;
-    pointer-events: none !important;
-    opacity: 0;
-    top: 59px;
-    left: 153px;
-    transform: translate(-50%, -50%);
-    animation: hintBounceGlow 3s ease-out forwards;
-    
-    /* Smooth transition when being hidden */
-    transition: opacity 0.1s ease-out;
-    
-    /* Ensure hint never blocks interactions */
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    
-    /* Make sure it's never clickable or touchable */
-    touch-action: none;
-    -webkit-touch-callout: none;
-    
-    /* Fallback cursor icon using CSS 
-    border: 2px solid rgba(100, 200, 255, 0.8);
-    border-radius: 20% 0 50% 50%;
-	*/
-}
-
-/* Alternative CSS-only cursor version */
-.cursor-hint.css-cursor {
-    background: none;
-    border: none;
-    width: 48px;
-    height: 64px;
-}
-
-.cursor-hint.css-cursor::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-left: 24px solid rgba(100, 200, 255, 0.9);
-    border-right: 24px solid transparent;
-    border-bottom: 32px solid transparent;
-    border-top: 32px solid rgba(100, 200, 255, 0.9);
-    transform: rotate(-45deg);
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-@keyframes hintBounceGlow {
-	/*
-		0% {
-			transform: translate(-50%, -50%) scale(1);
-			opacity: 1;
-		}
-		30% {
-			transform: translate(-50%, -50%) scale(0.85);
-			opacity: 0.9;
-		}
-		60% {
-			transform: translate(-50%, -50%) scale(1.1);
-			opacity: 1;
-		}
-		100% {
-			transform: translate(-50%, -50%) scale(1);
-			opacity: 1;
-		}
-	*/
-	
-	0% { 
-        opacity: 0; 
-        transform: translate(-50%, -50%) translateY(15px) scale(0.8); 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    15% { 
-        opacity: 0.7; 
-        transform: translate(-50%, -50%) translateY(0) scale(1); 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    25% { 
-        transform: translate(-50%, -50%) translateY(-8px) scale(1.05); 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    35% { 
-        transform: translate(-50%, -50%) translateY(2px) scale(0.98); 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    45% { 
-        transform: translate(-50%, -50%) translateY(0) scale(1); 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    65% { 
-        opacity: 1; 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    100% { 
-        opacity: 0.7; 
-        transform: translate(-50%, -50%) translateY(15px) scale(0.8); 
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-	
-}
+	position: absolute;
+	width: 68px;
+	height: 68px;
+	background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
+	background-size: contain;
+	z-index: 2000;
+	pointer-events: none !important;
+	opacity: 0;
+	top: 59px;
+	left: 153px;
+	transform: translate(-50%, -50%) scale(0.96);
+	will-change: transform, opacity;
+	/* smooth hide if you manually toggle opacity */
+	transition: opacity 0.1s ease-out;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: none;
+  }
+  
+  /* Add .play to start the sequence */
+  .cursor-hint.play {
+	animation: hintTap 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  
+  /* Optional: subtle ripple near the pointer tip to visualize the tap */
+  .cursor-hint::after {
+	content: '';
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(255,255,255,0.95);
+	border-radius: 50%;
+	opacity: 0;
+	transform: translate(10px, 10px) scale(0.2);
+	will-change: transform, opacity;
+  }
+  
+  /* Sequence: longer fade-in → press → release → short hold → fade-out */
+  @keyframes hintTap {
+	/* fade-in (relatively longer) */
+	0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+	36%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+	/* press */
+	44%  { opacity: 1; transform: translate(-50%, -50%) scale(0.92); }
+	/* release */
+	56%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+	/* short hold then fade out */
+	68%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+	100% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  }
+  
+  /* Accessibility */
+  @media (prefers-reduced-motion: reduce) {
+	.cursor-hint, .cursor-hint::after { animation: none !important; opacity: 1; }
+  }
+  
+  
 
 /* Hide cursor hint when card is opened */
 .slide_10.opened .cursor-hint {
@@ -1686,7 +1641,7 @@ body.bodycardopened.map #gif-detail {
     .cursor-hint {
         width: 80px;
         height: 80px;
-        top: 58%;
+        top: 32%;
 		left: 50%;
 		z-index: 2000;
     }
@@ -1729,6 +1684,54 @@ body.bodycardopened.map #gif-detail {
 .slide > div[style*="z-index: 22"] {
     pointer-events: auto;
 } 
+
+/* Force hide any old #inite loading overlay - now using PHP-generated spinner */
+#inite {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+/* Loading Spinner Overlay - created by PHP, blocks all interactions until resources load */
+#loading-spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000; /* Higher than landscape warning */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+    touch-action: none;
+    pointer-events: auto;
+    user-select: none;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+#loading-spinner-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(245, 245, 245, 0.3);
+    border-top: 3px solid rgba(245, 245, 245, 0.9);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
 /* Mobile Landscape Orientation Warning Overlay */
 #landscape-warning-overlay {
@@ -1916,3 +1919,50 @@ body.bodycardopened.map #gif-detail {
   from{ left:-40%; }
   to{ left:100%; }
 } 
+
+/* WPCode – CSS Snippet from Code-snippet by Erick */
+.eventon_full_description strong,
+.eventon_full_description b {
+  font-weight: 700 !important;
+  font-family: inherit !important;
+}
+
+/*CSS Snippet from Code-snippet by Erick */
+@media only screen and (max-width: 768px) {
+	#gif-detail {
+	  width: 48% !important;
+	  bottom: 26% !important;
+	  left: 5% !important;
+	  z-index: 999 !important;
+  
+	  border: none !important;
+	  box-shadow: none !important;
+  
+	  /* Evitar que se repita como mosaico o espejo */
+	  background-repeat: no-repeat !important;
+	  background-size: contain !important;
+	  background-position: center !important;
+	}
+  
+	#mapa.opened #gif-detail {
+	  display: none !important;
+	}
+  }
+  @media only screen and (min-width: 769px) {
+	#gif-detail {
+	  transform: scale(0.8);
+	  right: auto !important;
+	  z-index: 999 !important;
+	  border: none !important;
+	  box-shadow: none !important;
+	  background-repeat: no-repeat !important;
+	  background-size: contain !important;
+	  background-position: center !important;
+	  display: block !important;
+	}
+  
+	#mapa.opened #gif-detail,
+	#slides.menuactive #gif-detail {
+	  display: none !important;
+	}
+  }

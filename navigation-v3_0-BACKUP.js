@@ -3,50 +3,31 @@
 Hovering the menu items to show a preview of the content
 */ 
 
-// Enhanced auto-hide loading overlay functionality for /en pages
+// Remove old #inite loading overlay immediately - no waiting
 (function() {
-    console.log('Loading overlay auto-hide system initializing...');
+    // Try to remove immediately when script loads
+    const inite = document.getElementById("inite");
+    if (inite) {
+        console.log("Removing old #inite loading overlay immediately");
+        inite.remove();
+    }
     
-    // Multi-layered auto-hide system for the #inite loading overlay
-    const autoHideLoadingOverlay = () => {
+    // Also set up removal for any case where it might be added later
+    const removeOldOverlay = () => {
         const inite = document.getElementById("inite");
-        if (inite && inite.style.display !== "none") {
-            console.log("Auto-hiding loading overlay");
-            inite.style.display = "none";
-            return true;
+        if (inite) {
+            console.log("Removing old #inite loading overlay (fallback)");
+            inite.remove();
         }
-        return false;
     };
 
-    // Immediate hide attempt for fast connections
+    // Multiple fallback attempts
+    setTimeout(removeOldOverlay, 0);
+    setTimeout(removeOldOverlay, 10);
+    setTimeout(removeOldOverlay, 50);
+    
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoHideLoadingOverlay);
-    } else {
-        autoHideLoadingOverlay();
-    }
-
-    // Additional triggers for different page load states
-    window.addEventListener('load', autoHideLoadingOverlay);
-    
-    // Hide on first user interaction (mobile-friendly)
-    const userInteractionEvents = ['click', 'scroll', 'touchstart', 'keydown'];
-    userInteractionEvents.forEach(event => {
-        document.addEventListener(event, autoHideLoadingOverlay, { once: true });
-    });
-
-    // Fallback timer - force hide after 2.5 seconds maximum
-    setTimeout(autoHideLoadingOverlay, 2500);
-
-    // Specific check for English pages
-    const isEnglishPage = document.documentElement.lang === "en-US" || 
-                         window.location.pathname.includes('/en') || 
-                         window.location.href.includes('/en/');
-    
-    if (isEnglishPage) {
-        console.log('English page detected - ensuring overlay auto-hide');
-        // More aggressive hiding for English pages
-        setTimeout(autoHideLoadingOverlay, 1000);
-        setTimeout(autoHideLoadingOverlay, 1500);
+        document.addEventListener('DOMContentLoaded', removeOldOverlay);
     }
 })();
 
@@ -76,6 +57,12 @@ class Navigation {
         this.currentCursorHint = null;
         this.currentCursorHintSlide = null;
         this.cleanupCurrentHint = null;
+        
+        // Loading state management
+        this.isFullyLoaded = false;
+        this.gifDetailLoaded = false;
+        this.loadingSpinner = null;
+        
         // Create safe closeAllPreviews function for use before MenuConstruct
         if (!window.closeAllPreviews) {
             window.closeAllPreviews = function() {
@@ -85,6 +72,10 @@ class Navigation {
         }
         //orientation
         this.currentOrientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+        
+        // Create loading spinner immediately
+        this.createLoadingSpinner();
+        
         // initialisation de la navigation
         this.init();
 	
@@ -93,9 +84,6 @@ class Navigation {
     // initialisation de la navigation
     init() {
         try {
-            // Enhanced loading overlay auto-hide with error handling
-            this.hideLoadingOverlay();
-            
             this.replaceDefaultBurgerFunction();
             this.LetsListen();
             this.MenuConstruct();
@@ -107,9 +95,6 @@ class Navigation {
             this.ashTagLinks();
             this.empecherDefilementSurChangementOrientation();
             
-            // Ensure overlay is hidden again after all initialization
-            this.hideLoadingOverlay();
-            
             this.getVisibleSlideInfo();
             this.initArrowKeyNavigation();
             this.initMobileLandscapeWarning();
@@ -118,46 +103,12 @@ class Navigation {
             // Initialize scroll-based cursor hints
             this.initScrollHints();
             
-            // Final overlay hide attempt
-            setTimeout(() => this.hideLoadingOverlay(), 100);
-            
         } catch (error) {
             console.error('Navigation initialization error:', error);
-            // Even if navigation fails, ensure overlay is hidden
-            this.hideLoadingOverlay();
         }
     }
 
-    // Enhanced loading overlay hide method with multiple safety checks
-    hideLoadingOverlay() {
-        try {
-            const inite = document.getElementById("inite");
-            if (inite) {
-                // Check if we're on an English page for logging
-                const isEnglishPage = document.documentElement.lang === "en-US" || 
-                                     window.location.pathname.includes('/en') || 
-                                     window.location.href.includes('/en/');
-                
-                if (isEnglishPage) {
-                    console.log("Navigation: Hiding loading overlay on English page");
-                }
-                
-                inite.style.display = "none";
-                inite.style.visibility = "hidden";
-                inite.style.opacity = "0";
-                
-                // Also try removing it from DOM if it's still visible
-                if (inite.offsetParent !== null) {
-                    inite.remove();
-                }
-                
-                return true;
-            }
-        } catch (error) {
-            console.error('Error hiding loading overlay:', error);
-        }
-        return false;
-    }
+
 	
 	addGifToMapBackground() {
 		try {
@@ -168,8 +119,8 @@ class Navigation {
 			// Create video element instead of using background-image
 			const video = document.createElement("video");
 			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
-			video.autoplay = true;
-			video.loop = true;
+			video.autoplay = false; // Changed: don't autoplay, wait for spinner to finish
+			video.loop = false; // Changed: don't loop the video
 			video.muted = true;
 			video.playsInline = true;
 			
@@ -192,10 +143,7 @@ class Navigation {
 			
 			video.addEventListener('canplay', () => {
 				console.log('Video can start playing');
-				// Start playing if autoplay failed
-				if (video.paused) {
-					video.play().catch(e => console.log('Autoplay prevented:', e));
-				}
+				// Video ready to play when spinner finishes
 			});
 			
 			video.addEventListener('error', (e) => {
@@ -206,6 +154,20 @@ class Navigation {
 				gifDetail.style.backgroundRepeat = "no-repeat";
 				gifDetail.style.backgroundPosition = "center";
 				video.style.display = 'none';
+			});
+			
+			// Hide gif-detail when video finishes playing (after first cycle)
+			video.addEventListener('ended', () => {
+				console.log('Video finished playing - hiding gif-detail');
+				gifDetail.style.transition = 'opacity 0.5s ease-out';
+				gifDetail.style.opacity = '0';
+				
+				// Remove the element after fade transition completes
+				setTimeout(() => {
+					if (gifDetail && gifDetail.parentNode) {
+						gifDetail.parentNode.removeChild(gifDetail);
+					}
+				}, 500); // Match the transition duration
 			});
 			
 			// Intersection Observer for lazy loading optimization
@@ -261,8 +223,8 @@ class Navigation {
 			// Create video element instead of using background-image
 			const video = document.createElement("video");
 			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
-			video.autoplay = true;
-			video.loop = true;
+			video.autoplay = false; // Changed: don't autoplay, wait for spinner to finish
+			video.loop = false; // Changed: don't loop the video
 			video.muted = true;
 			video.playsInline = true;
 			
@@ -285,10 +247,7 @@ class Navigation {
 			
 			video.addEventListener('canplay', () => {
 				console.log('Video can start playing');
-				// Start playing if autoplay failed
-				if (video.paused) {
-					video.play().catch(e => console.log('Autoplay prevented:', e));
-				}
+				// Video ready to play when spinner finishes
 			});
 			
 			video.addEventListener('error', (e) => {
@@ -1506,6 +1465,14 @@ class Navigation {
         // Store reference for immediate cleanup
         this.currentCursorHint = cursorHint;
         this.currentCursorHintSlide = slideElement;
+        
+        // Trigger the animation by adding the play class after a brief delay
+        setTimeout(() => {
+            if (cursorHint && cursorHint.parentNode) {
+                cursorHint.classList.add('play');
+                console.log('Cursor hint animation started for slide:', slideElement.id);
+            }
+        }, 100);
         
         // Create cleanup function with smooth fade-out
         const cleanupHint = () => {
