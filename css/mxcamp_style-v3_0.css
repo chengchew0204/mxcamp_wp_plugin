@@ -115,7 +115,7 @@ html,
 }
 
 body {
-	background: #000000;
+	/*background: #000000;*/
 	font-size: 19px;
 	line-height: 1.3em;
 	font-weight: 500
@@ -210,7 +210,7 @@ body {
 
 header#header.ct-header {
 	position: absolute;
-	z-index: 3;
+	z-index: 99998;
 	background-color: transparent;
 
 }
@@ -225,9 +225,14 @@ header .ct-container-fluid {
 	fill: rgba(245, 245, 245, 0.95);
 }
 button.ct-toggle svg.ct-icon {
-
 	fill: rgba(245, 245, 245, 0.95)!important;
+}
 
+/* Ensure burger menu is always clickable above slide content */
+button.ct-header-trigger.ct-toggle {
+	z-index: 99999 !important;
+	position: relative !important;
+	pointer-events: auto !important;
 }
 
 
@@ -263,6 +268,16 @@ button.ct-toggle svg.ct-icon {
 
 	/*-webkit-overflow-scrolling: touch;*/
 	/* padding-right: 40px */
+}
+
+/* Ensure slide content doesn't interfere with burger menu */
+.slide_10_scroll {
+	pointer-events: auto;
+}
+
+/* When slide is opened, ensure burger menu remains accessible */
+.slide_10.opened .slide_10_scroll {
+	z-index: 2 !important;
 }
 
 .slide_10.opened .slide_10_bg {
@@ -1232,107 +1247,20 @@ body.galeria footer {
 	display:none
 }
 
-#gif-detail {
-	height: 185px;
-    width: 325px;
-    position: absolute;
-	bottom: 26%;
-	left: 33%;
-    z-index: 50; /* Much higher than slide_10_scroll (z-index: 2) and other elements to ensure hover events work */
-	cursor: pointer;
-	transition: transform 0.3s ease;
-}
-/*
-#gif-detail:hover {
-	transform: scale(0.85);
-}
-	*/
+/* gif-detail functionality removed */
 
-#gif-detail video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border: none;
-    outline: none;
-    background: transparent;
-    pointer-events: none; /* Let the parent handle clicks */
-    
-    /* Mobile optimizations */
-    transform: translateZ(0); /* Enable hardware acceleration */
-    will-change: transform; /* Hint browser for optimization */
-    backface-visibility: hidden; /* Reduce repaints */
-}
-
-/* Additional mobile video optimizations */
-@media screen and (max-width: 768px) {
-    #gif-detail video {
-        /* Reduce quality slightly on mobile for faster loading */
-        image-rendering: optimizeSpeed;
-        image-rendering: -webkit-optimize-contrast;
-        
-        /* Ensure smooth playback on mobile */
-        transform: translate3d(0, 0, 0);
-    }
-}
-
-/* Disable pointer events on slide_10_scroll for map slides to allow gif-detail to receive hover events */
+/* Map slide pointer events restored - gif-detail removed */
 #mapa .slide_10_scroll,
 #map .slide_10_scroll {
-	pointer-events: none !important;
-}
-
-/* Re-enable pointer events for specific areas within map slides that need them */
-#mapa .slide_10_scroll .card,
-#map .slide_10_scroll .card,
-#mapa .slide_10_scroll .card-header,
-#map .slide_10_scroll .card-header {
-	pointer-events: auto !important;
-}
-
-/* Ensure gif-detail has proper pointer events but inherits cursor from parent */
-div.slide_10 #gif-detail.onmouseover-detail,
-div.slide_10 #gif-detail:hover,
-div.slide_10 #gif-detail,
-#gif-detail.onmouseover-detail,
-#gif-detail:hover,
-#gif-detail {
 	pointer-events: auto !important;
 }
 
 .slide_10#mapa, .slide_10#map {
 		background-image: url(https://camp.mx/wp-content/uploads/mapa_escrit.webp) !important;
 	}
-@media screen and (max-width: 1200px) {
-   	#gif-detail {
-		bottom: 17%;
-        left: 15%;
-        height: 166.5px;
-        width: 292.5px;
-        z-index: 50; /* Ensure z-index is maintained in responsive breakpoints */
-	}
-	
-	#gif-detail video {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-	}
-}
+/* gif-detail responsive styles removed */
 
 @media screen and (max-width:600px) {
-	#gif-detail {
-	    height: 109px;
-	    width: 192px;
-		left: 20px;
-        bottom: 22%;
-        z-index: 50; /* Ensure z-index is maintained in mobile breakpoints */
-	}
-	
-	#gif-detail video {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-	}
-	
 	.slide_10#mapa, .slide_10#map {
 		background-image: url(https://camp.mx/wp-content/uploads/mapa_movil.jpg)  !important;
 	}
@@ -1541,21 +1469,14 @@ input[type="button"],
 }
 */
 
-/* Hide gif-detail when menu is active (consistent across desktop and mobile) */
-.slides.menuactive #gif-detail {
-	display: none !important;
-}
+/* gif-detail functionality removed */
 
 /* Hide cursor hint when menu is active */
 .slides.menuactive .cursor-hint {
 	display: none !important;
 }
 
-/* Hide gif-detail when map card is opened */
-body.bodycardopened.mapa #gif-detail,
-body.bodycardopened.map #gif-detail {
-	display: none !important;
-}
+/* gif-detail functionality removed */
 
 /* Cursor Hint – short, single tap, longer fade-in (1.3s total) */
 .cursor-hint {
@@ -1564,7 +1485,7 @@ body.bodycardopened.map #gif-detail {
 	height: 68px;
 	background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
 	background-size: contain;
-	z-index: 2000;
+	z-index: 10000; /* Higher than image flash overlay (9999) */
 	pointer-events: none !important;
 	opacity: 0;
 	top: 59px;
@@ -1611,9 +1532,126 @@ body.bodycardopened.map #gif-detail {
   }
   
   /* Accessibility */
-  @media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
 	.cursor-hint, .cursor-hint::after { animation: none !important; opacity: 1; }
-  }
+}
+
+/* Post Content Hint - Flash-open animation for first encounters */
+.slide_10.flash-hint .card-content {
+	display: block !important;
+	animation: flashOpen 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	opacity: 0;
+	z-index: 5;
+	pointer-events: none; /* Prevent interference during flash */
+}
+
+.slide_10.flash-hint .card-header {
+	position: fixed;
+	width: fit-content;
+	left: 77px;
+	z-index: 10;
+}
+
+@keyframes flashOpen {
+	0% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+	25% { 
+		opacity: 0.9;
+		transform: translateY(0);
+	}
+	75% { 
+		opacity: 0.9;
+		transform: translateY(0);
+	}
+	100% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+}
+
+/* Ensure flash hint doesn't interfere with normal interactions */
+.slide_10.flash-hint {
+	pointer-events: none;
+}
+
+/* Accessibility for flash hint */
+@media (prefers-reduced-motion: reduce) {
+	.slide_10.flash-hint .card-content {
+		animation: none !important;
+		opacity: 0.6 !important;
+	}
+	
+	@keyframes flashOpen {
+		0%, 100% { opacity: 0; }
+		50% { opacity: 0.6; }
+	}
+}
+
+/* Post Content Hint - Image Flash Overlay for Heavy Slides */
+.post-hint-image-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	opacity: 0;
+	z-index: 9999; /* Very high z-index to ensure visibility */
+	pointer-events: none;
+	transition: opacity 0.1s ease-out;
+}
+
+.post-hint-image-overlay.flash-active {
+	animation: imageFlash 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes imageFlash {
+	0% { 
+		opacity: 0;
+		transform: scale(1);
+	}
+	20% { 
+		opacity: 1;
+		transform: scale(1);
+	}
+	80% { 
+		opacity: 1;
+		transform: scale(1);
+	}
+	100% { 
+		opacity: 0;
+		transform: scale(1);
+	}
+}
+
+/* Mobile adjustments for image flash */
+@media screen and (max-width: 768px) {
+	.post-hint-image-overlay {
+		background-size: cover;
+		background-position: center top;
+		background-repeat: no-repeat;
+		/* Ensure the image aligns to the top of the screen on mobile */
+		object-fit: cover;
+		object-position: center top;
+	}
+}
+
+/* Accessibility for image flash */
+@media (prefers-reduced-motion: reduce) {
+	.post-hint-image-overlay.flash-active {
+		animation: none !important;
+		opacity: 0.7 !important;
+	}
+	
+	@keyframes imageFlash {
+		0%, 100% { opacity: 0; }
+		50% { opacity: 0.7; }
+	}
+}
   
   
 
@@ -1643,7 +1681,21 @@ body.bodycardopened.map #gif-detail {
         height: 80px;
         top: 32%;
 		left: 50%;
-		z-index: 2000;
+		z-index: 10000; /* Higher than image flash overlay (9999) */
+    }
+}
+
+/* Mobile background positioning for meditadores slide */
+@media screen and (max-width: 768px) {
+    #meditators.slide_10 {
+        background-position: left top !important;
+    }
+}
+
+/* Desktop background positioning for meditators slide */
+@media screen and (min-width: 769px) {
+    #meditators.slide_10 {
+        background-position: center top !important;
     }
 }
 
@@ -1701,12 +1753,11 @@ body.bodycardopened.map #gif-detail {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 10000; /* Higher than landscape warning */
+    background: transparent;
+    z-index: 99999; /* Much higher to cover all elements including header, logo, and social icons */
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(3px);
     touch-action: none;
     pointer-events: auto;
     user-select: none;
@@ -1719,11 +1770,41 @@ body.bodycardopened.map #gif-detail {
     pointer-events: none;
 }
 
+/* Hide all interface elements when loading spinner is active */
+body:has(#loading-spinner-overlay:not(.fade-out)) header#header,
+body:has(#loading-spinner-overlay:not(.fade-out)) .site-branding,
+body:has(#loading-spinner-overlay:not(.fade-out)) footer,
+body:has(#loading-spinner-overlay:not(.fade-out)) .ct-social-box,
+body:has(#loading-spinner-overlay:not(.fade-out)) .gallery-logo,
+body:has(#loading-spinner-overlay:not(.fade-out)) #playbutton,
+body:has(#loading-spinner-overlay:not(.fade-out)) .card-header,
+body:has(#loading-spinner-overlay:not(.fade-out)) .cursor-hint,
+body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Fallback for browsers that don't support :has() */
+.loading-active header#header,
+.loading-active .site-branding,
+.loading-active footer,
+.loading-active .ct-social-box,
+.loading-active .gallery-logo,
+.loading-active #playbutton,
+.loading-active .card-header,
+.loading-active .cursor-hint,
+.loading-active .caretdiv {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(245, 245, 245, 0.3);
-    border-top: 3px solid rgba(245, 245, 245, 0.9);
+    width: 75px;
+    height: 75px;
+    border: 4.5px solid rgba(245, 245, 245, 0.3);
+    border-top: 4.5px solid rgba(245, 245, 245, 0.9);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -1927,42 +2008,4 @@ body.bodycardopened.map #gif-detail {
   font-family: inherit !important;
 }
 
-/*CSS Snippet from Code-snippet by Erick */
-@media only screen and (max-width: 768px) {
-	#gif-detail {
-	  width: 48% !important;
-	  bottom: 26% !important;
-	  left: 5% !important;
-	  z-index: 999 !important;
-  
-	  border: none !important;
-	  box-shadow: none !important;
-  
-	  /* Evitar que se repita como mosaico o espejo */
-	  background-repeat: no-repeat !important;
-	  background-size: contain !important;
-	  background-position: center !important;
-	}
-  
-	#mapa.opened #gif-detail {
-	  display: none !important;
-	}
-  }
-  @media only screen and (min-width: 769px) {
-	#gif-detail {
-	  transform: scale(0.8);
-	  right: auto !important;
-	  z-index: 999 !important;
-	  border: none !important;
-	  box-shadow: none !important;
-	  background-repeat: no-repeat !important;
-	  background-size: contain !important;
-	  background-position: center !important;
-	  display: block !important;
-	}
-  
-	#mapa.opened #gif-detail,
-	#slides.menuactive #gif-detail {
-	  display: none !important;
-	}
-  }
+/* gif-detail functionality completely removed */

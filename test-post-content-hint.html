@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Content Hint Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #333;
+            color: white;
+        }
+        
+        .test-controls {
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .test-controls button {
+            margin: 5px;
+            padding: 10px 15px;
+            background: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .test-controls button:hover {
+            background: #666;
+        }
+        
+        .info {
+            background: #222;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            background: #006600;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-controls">
+        <h2>Post Content Hint Testing</h2>
+        <p>This test page allows you to verify the Post Content Hint functionality.</p>
+        
+        <button onclick="testPostContentHint()">Test Flash Animation</button>
+        <button onclick="testImageFlash()">Test Image Flash</button>
+        <button onclick="testImageFlashDuringCursorHint()">Test Image Flash + Cursor Hint</button>
+        <button onclick="forceTestImageFlash()">Force Test Image Flash</button>
+        <button onclick="testSimpleOverlay()">Test Simple Overlay</button>
+        <button onclick="testCursorHint()">Test Cursor Hint</button>
+        <button onclick="testFullSequence()">Test Full Sequence</button>
+        <button onclick="resetFirstEncounters()">Reset First Encounters</button>
+        <button onclick="toggleDirectUrl()">Toggle Direct URL Mode</button>
+        <button onclick="showStatus()">Show Status</button>
+    </div>
+    
+    <div class="info">
+        <h3>How it works:</h3>
+        <ul>
+            <li><strong>Session Tracking:</strong> Tracks the first 3 slides a user encounters in a session</li>
+            <li><strong>Direct URL Detection:</strong> Automatically disabled for direct URL visits (cards open automatically)</li>
+            <li><strong>Smart Flash Types:</strong> Heavy slides (map, calendar, gallery) use image flash; others use card flash</li>
+            <li><strong>Cursor Hint Integration:</strong> When cursor hint animation plays on a first-encounter slide</li>
+            <li><strong>Midpoint Flash:</strong> At ~650ms (midpoint of 1.3s cursor animation), shows preview</li>
+            <li><strong>Language/Device Detection:</strong> Shows correct screenshot for current language and device type</li>
+        </ul>
+        
+        <h3>Implementation Details:</h3>
+        <ul>
+            <li>Added <code>slideFirstEncounters</code> Set to track encountered slides</li>
+            <li>Added <code>maxHintSlides</code> limit (3 slides)</li>
+            <li>Modified <code>showCursorHint()</code> to detect first encounters</li>
+            <li>Added <code>schedulePostContentHint()</code> for timing</li>
+            <li>Added <code>performPostContentFlash()</code> for the animation</li>
+            <li>Added CSS <code>.flash-hint</code> class with <code>flashOpen</code> keyframes</li>
+            <li><strong>✅ Fixed:</strong> Heavy slides (map, calendar, gallery) now use image flash instead of card flash</li>
+            <li><strong>✅ Fixed:</strong> Language and device detection for correct screenshot selection</li>
+            <li><strong>✅ Fixed:</strong> Disabled for direct URL visits (cards auto-open, making hints redundant)</li>
+            <li><strong>✅ Fixed:</strong> Improved reliability with better condition checking</li>
+            <li><strong>✅ Fixed:</strong> Enhanced logging for debugging</li>
+        </ul>
+        
+        <h3>Recent Fixes:</h3>
+        <ul>
+            <li><strong>Image Flash System:</strong> Heavy slides now use screenshot images instead of card content flash</li>
+            <li><strong>Smart Detection:</strong> Automatic language and device type detection for correct screenshots</li>
+            <li><strong>Direct URL Handling:</strong> Post content hints disabled for direct URL visits (cards auto-open)</li>
+            <li><strong>Reliability:</strong> Added comprehensive condition checking before triggering flash</li>
+            <li><strong>Animation:</strong> Improved CSS animation timing and visibility</li>
+            <li><strong>Debugging:</strong> Enhanced console logging and test methods</li>
+        </ul>
+    </div>
+    
+    <div id="status" class="status" style="display: none;"></div>
+    
+    <script>
+        // Test functions that would normally be called on the Navigation instance
+        function testPostContentHint() {
+            console.log('Testing Post Content Hint...');
+            if (window.navigation && window.navigation.testPostContentHint) {
+                window.navigation.testPostContentHint();
+                updateStatus('Flash animation test triggered - check console for details');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function testImageFlash() {
+            console.log('Testing Image Flash...');
+            if (window.navigation && window.navigation.testImageFlash) {
+                window.navigation.testImageFlash();
+                updateStatus('Image flash test triggered - check console for details');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function testSimpleOverlay() {
+            console.log('Testing Simple Overlay...');
+            if (window.navigation && window.navigation.testSimpleOverlay) {
+                window.navigation.testSimpleOverlay();
+                updateStatus('Simple red overlay test triggered - should be visible for 2 seconds');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function testImageFlashDuringCursorHint() {
+            console.log('Testing Image Flash During Cursor Hint...');
+            if (window.navigation && window.navigation.testImageFlashDuringCursorHint) {
+                window.navigation.testImageFlashDuringCursorHint();
+                updateStatus('Image flash during cursor hint test triggered - watch for both animations');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function forceTestImageFlash() {
+            console.log('Force Testing Image Flash...');
+            if (window.navigation && window.navigation.forceTestImageFlash) {
+                window.navigation.forceTestImageFlash();
+                updateStatus('Force image flash test triggered - should show immediately');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function testCursorHint() {
+            console.log('Testing Cursor Hint...');
+            if (window.navigation && window.navigation.testCursorHintOnCurrentSlide) {
+                window.navigation.testCursorHintOnCurrentSlide();
+                updateStatus('Cursor hint test triggered - check console for details');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function testFullSequence() {
+            console.log('Testing Full Cursor Hint + Post Content Hint Sequence...');
+            if (window.navigation && window.navigation.testFullCursorHintSequence) {
+                window.navigation.testFullCursorHintSequence();
+                updateStatus('Full sequence test triggered - watch for cursor hint + flash animation');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function resetFirstEncounters() {
+            console.log('Resetting first encounters...');
+            if (window.navigation && window.navigation.resetFirstEncounters) {
+                window.navigation.resetFirstEncounters();
+                updateStatus('First encounters reset - next 3 slides will show hints');
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function toggleDirectUrl() {
+            console.log('Toggling direct URL detection...');
+            if (window.navigation && window.navigation.toggleDirectUrlVisit) {
+                const isEnabled = window.navigation.toggleDirectUrlVisit();
+                updateStatus(`Direct URL mode: ${isEnabled ? 'ENABLED (hints disabled)' : 'DISABLED (hints enabled)'}`);
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site');
+            }
+        }
+        
+        function showStatus() {
+            if (window.navigation) {
+                const encounters = window.navigation.slideFirstEncounters;
+                const maxSlides = window.navigation.maxHintSlides;
+                const currentSlide = window.navigation.slideVisibleId;
+                const isDirectUrl = window.navigation.isDirectUrlVisit;
+                
+                updateStatus(`
+                    Current slide: ${currentSlide}<br>
+                    First encounters: ${encounters ? Array.from(encounters).join(', ') : 'none'}<br>
+                    Max hint slides: ${maxSlides}<br>
+                    Remaining hints: ${maxSlides - (encounters ? encounters.size : 0)}<br>
+                    Direct URL visit: ${isDirectUrl ? 'YES (hints disabled)' : 'NO (hints enabled)'}
+                `);
+            } else {
+                updateStatus('Navigation instance not found - load this on the main site to see status');
+            }
+        }
+        
+        function updateStatus(message) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Check if we're on the main site
+        window.addEventListener('load', () => {
+            if (window.navigation) {
+                updateStatus('✓ Navigation instance detected - all tests should work');
+            } else {
+                updateStatus('⚠ Load this page on the main site to test the functionality');
+            }
+        });
+    </script>
+</body>
+</html>

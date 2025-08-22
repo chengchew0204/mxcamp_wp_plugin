@@ -76,6 +76,13 @@ class Navigation {
         this.currentCursorHintSlide = null;
         this.cleanupCurrentHint = null;
         
+        // Post Content Hint tracking - tracks first encounters per session
+        this.slideFirstEncounters = new Set();
+        this.maxHintSlides = 3; // Show hints on first 3 slides only
+        
+        // Check if this is a direct URL visit (card will open automatically)
+        this.isDirectUrlVisit = this.checkDirectUrlVisit();
+        
         // Loading state management
         this.isFullyLoaded = false;
         this.gifDetailLoaded = false;
@@ -107,6 +114,8 @@ class Navigation {
         
         if (this.loadingSpinner) {
             console.log('Using loading spinner created by PHP');
+            // Add body class to hide interface elements
+            document.body.classList.add('loading-active');
             // Ensure interactions are blocked
             this.blockAllInteractions();
         } else {
@@ -119,14 +128,18 @@ class Navigation {
     createFallbackSpinner() {
         const spinnerOverlay = document.createElement('div');
         spinnerOverlay.id = 'loading-spinner-overlay';
+        spinnerOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 99999; display: flex; align-items: center; justify-content: center; touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;';
         
         const spinner = document.createElement('div');
         spinner.className = 'loading-spinner';
+        spinner.style.cssText = 'width: 75px; height: 75px; border: 4.5px solid rgba(245, 245, 245, 0.3); border-top: 4.5px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite;';
         
         spinnerOverlay.appendChild(spinner);
         document.body.appendChild(spinnerOverlay);
         
         this.loadingSpinner = spinnerOverlay;
+        // Add body class to hide interface elements
+        document.body.classList.add('loading-active');
         this.blockAllInteractions();
         
         console.log('Fallback loading spinner created');
@@ -162,6 +175,9 @@ class Navigation {
     hideLoadingSpinner() {
         if (this.loadingSpinner) {
             this.loadingSpinner.classList.add('fade-out');
+            // Remove body class to show interface elements again
+            document.body.classList.remove('loading-active');
+            
             setTimeout(() => {
                 if (this.loadingSpinner && this.loadingSpinner.parentNode) {
                     this.loadingSpinner.parentNode.removeChild(this.loadingSpinner);
@@ -212,11 +228,8 @@ class Navigation {
             // Hide spinner first
             this.hideLoadingSpinner();
             
-            // Phase 4: Start gif-detail video after spinner disappears, then show cursor hint
+            // Phase 4: Show cursor hint after spinner disappears
             setTimeout(() => {
-                // Start gif-detail video now that spinner is gone
-                this.startGifDetailVideo();
-                
                 this.initScrollHints();
                 this.isFullyLoaded = true;
                 console.log('Site fully loaded and ready for interaction');
@@ -235,11 +248,7 @@ class Navigation {
         
         const resourcePromises = [];
         
-        // 1. Load gif-detail video
-        const gifPromise = new Promise((resolve, reject) => {
-            this.loadGifDetailVideo(resolve, reject);
-        });
-        resourcePromises.push(gifPromise);
+        // 1. Gif-detail removed - no longer loading
         
         // 2. Load background images
         const backgroundPromise = new Promise((resolve) => {
@@ -348,153 +357,13 @@ class Navigation {
         img.src = 'https://camp.mx/wp-content/uploads/pointer-1.png';
     }
     
-    // Load gif-detail video with enhanced detection
-    loadGifDetailVideo(resolve, reject) {
-        try {
-            const mapa = document.querySelector("div.slide_10#mapa");
-            if (!mapa) {
-                // Try English version
-                const map = document.querySelector("div.slide_10#map");
-                if (map) {
-                    this.createGifDetail(map, 'map', resolve, reject);
-                } else {
-                    reject(new Error('No map slide found'));
-                }
-            } else {
-                this.createGifDetail(mapa, 'mapa', resolve, reject);
-            }
-        } catch (error) {
-            reject(error);
-        }
-    }
+    // Gif-detail functionality removed
     
-    // Create gif-detail element with enhanced loading detection
-    createGifDetail(slideElement, slideId, resolve, reject) {
-			const gifDetail = document.createElement("div");
-			gifDetail.id = "gif-detail";
-			
-        // Create video element with highest priority loading
-			const video = document.createElement("video");
-			video.src = "https://camp.mx/wp-content/uploads/map_thumbnail.mp4";
-			video.autoplay = false; // Changed: don't autoplay, wait for spinner to finish
-			video.loop = false; // Changed: don't loop the video
-			video.muted = true;
-			video.playsInline = true;
-			
-        // Force highest priority loading - no lazy loading during initial load
-        video.setAttribute('preload', 'auto'); // Always full preload for initial load
-        video.setAttribute('loading', 'eager'); // Load immediately
-        
-        // Add poster image as fallback
-        const posterUrl = slideId === 'mapa' ? 
-            "https://camp.mx/wp-content/uploads/map_thumbnail_poster.webp" : 
-            "https://camp.mx/wp-content/uploads/map_thumbnail_poster.jpg";
-        video.poster = posterUrl;
-        
-        let hasResolved = false;
-        
-        // Enhanced loading detection
-        const resolveOnce = () => {
-            if (!hasResolved) {
-                hasResolved = true;
-                resolve();
-            }
-        };
-        
-        // Multiple ways to detect when video is ready
-        video.addEventListener('loadeddata', () => {
-            console.log('Video loadeddata event - first frame loaded');
-            resolveOnce();
-			});
-			
-			video.addEventListener('canplay', () => {
-            console.log('Video canplay event - ready to play when spinner finishes');
-            resolveOnce();
-        });
-        
-        video.addEventListener('loadstart', () => {
-            console.log('Video loading started');
-			});
-			
-			video.addEventListener('error', (e) => {
-				console.error('Video loading error:', e);
-				// Fallback to poster image if video fails
-            gifDetail.style.backgroundImage = `url('${posterUrl}')`;
-				gifDetail.style.backgroundSize = "contain";
-				gifDetail.style.backgroundRepeat = "no-repeat";
-				gifDetail.style.backgroundPosition = "center";
-				video.style.display = 'none';
-            resolveOnce(); // Still resolve to prevent hanging
-        });
-        
-        // Hide gif-detail when video finishes playing (after first cycle)
-        video.addEventListener('ended', () => {
-            console.log('Video finished playing - hiding gif-detail');
-            gifDetail.style.transition = 'opacity 0.5s ease-out';
-            gifDetail.style.opacity = '0';
-            
-            // Remove the element after fade transition completes
-            setTimeout(() => {
-                if (gifDetail && gifDetail.parentNode) {
-                    gifDetail.parentNode.removeChild(gifDetail);
-                }
-            }, 500); // Match the transition duration
-        });
-        
-        // Fallback: resolve after a reasonable time even if events don't fire
-        setTimeout(() => {
-            if (!hasResolved) {
-                console.log('Video loading timeout fallback');
-                resolveOnce();
-            }
-        }, 3000);
-        
-        // Add video to container
-			gifDetail.appendChild(video);
-			
-			// Store video reference for later playback after spinner finishes
-			this.gifDetailVideo = video;
-			
-			// Add the onmouseover-detail class for emphatic cursor
-        if (slideId === 'map') {
-			gifDetail.classList.add('onmouseover-detail');
-        }
-			
-        // Append to slide container
-        slideElement.append(gifDetail);
-			
-			// Force the OnMouseOverDetailAdder to process this element
-			if (window.onMouseOverDetailAdder) {
-				window.onMouseOverDetailAdder.addToElements([gifDetail]);
-			}
-			
-        // Add click handler
-			gifDetail.addEventListener('click', (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				console.log('gif-detail clicked!');
-            this.openCard({ divId: slideId });
-			});
-        
-        // Start loading the video immediately
-        video.load();
-		}
+    // Gif-detail functionality completely removed
 		
-	// Start gif-detail video playback after loading spinner is hidden
-	startGifDetailVideo() {
-		if (this.gifDetailVideo && this.gifDetailVideo.paused) {
-			console.log('Starting gif-detail video playback after spinner finished');
-			this.gifDetailVideo.play().catch(e => {
-				console.log('Gif-detail video playback failed:', e);
-			});
-		}
-	}
+	// Gif-detail functionality removed
 
-	addGifToMapBackground() {
-        // This method is now handled by loadGifDetailWithCallback
-        // Keeping for backward compatibility but it does nothing
-        console.log('addGifToMapBackground called - now handled by loadGifDetailWithCallback');
-	}
+	// Gif-detail functionality removed
 	
     getVisibleSlideInfo() {
         let visibleSlideIndex = -1;
@@ -1657,10 +1526,52 @@ class Navigation {
         this.currentCursorHint = cursorHint;
         this.currentCursorHintSlide = slideElement;
         
+        // Check if this is a first encounter and should show post content hint
+        const slideId = slideElement.id;
+        
+        // Define heavy slides that use image flash instead of card content flash
+        const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
+        const isHeavySlide = heavySlides.includes(slideId);
+        
+        // No slides are excluded anymore - heavy slides use image flash, others use card flash
+        const isExcludedSlide = false;
+        
+        const isFirstEncounter = !isExcludedSlide && 
+                                !this.isDirectUrlVisit &&
+                                !this.slideFirstEncounters.has(slideId) && 
+                                this.slideFirstEncounters.size < this.maxHintSlides;
+        
+        // Store the first encounter decision before any async operations
+        const shouldShowPostContentHint = isFirstEncounter;
+        
+        if (isFirstEncounter) {
+            console.log('Post content hint will show for slide:', slideId, 'Total encounters:', this.slideFirstEncounters.size);
+        } else if (this.isDirectUrlVisit) {
+            console.log('Post content hint skipped for slide:', slideId, '- direct URL visit detected');
+        } else {
+            console.log('Post content hint conditions not met for slide:', slideId, {
+                isExcludedSlide,
+                isDirectUrlVisit: this.isDirectUrlVisit,
+                hasBeenEncountered: this.slideFirstEncounters.has(slideId),
+                encountersSize: this.slideFirstEncounters.size,
+                maxHints: this.maxHintSlides
+            });
+        }
+        
         // Trigger the animation by adding the play class after a brief delay
         setTimeout(() => {
             if (cursorHint && cursorHint.parentNode) {
                 cursorHint.classList.add('play');
+                
+                // Use the stored decision to schedule the post content hint
+                if (shouldShowPostContentHint) {
+                    console.log('Scheduling post content hint for slide:', slideElement.id, '- Type:', isHeavySlide ? 'IMAGE FLASH' : 'CARD FLASH');
+                    this.schedulePostContentHint(slideElement, isHeavySlide);
+                    
+                    // Add to encounters AFTER scheduling the hint
+                    this.slideFirstEncounters.add(slideId);
+                    console.log('Added slide to encounters:', slideId, 'Total encounters:', this.slideFirstEncounters.size);
+                }
             }
         }, 100);
         
@@ -1717,6 +1628,296 @@ class Navigation {
             document.removeEventListener('touchstart', hideOnInteraction, { capture: true, passive: true });
             document.removeEventListener('keydown', hideOnInteraction, true);
         }, 3000);
+    }
+    
+    schedulePostContentHint(slideElement, isHeavySlide = false) {
+        // Calculate timing for midpoint of cursor hint animation
+        // hintTap animation is 1.3s total, midpoint is around 0.4s (30% of animation) for better timing
+        const hintMidpointDelay = 400; // milliseconds - earlier in the animation
+        
+        console.log('Scheduling post content hint for slide:', slideElement.id, 'in', hintMidpointDelay, 'ms', 
+                   '- Type:', isHeavySlide ? 'IMAGE FLASH' : 'CARD FLASH');
+        
+        setTimeout(() => {
+            // Verify the slide still exists and hasn't been opened
+            const slideStillExists = slideElement && slideElement.parentNode;
+            const slideNotOpened = !slideElement.classList.contains('opened');
+            const cardNotOpened = !this.cardopened;
+            
+            // Check if cursor hint is still active (but don't require it)
+            const cursorHintStillActive = this.currentCursorHintSlide === slideElement &&
+                                        this.currentCursorHint && this.currentCursorHint.parentNode;
+            
+            console.log('Post content hint check:', {
+                slideExists: slideStillExists,
+                cursorHintActive: cursorHintStillActive,
+                slideNotOpened: slideNotOpened,
+                cardNotOpened: cardNotOpened,
+                slideId: slideElement.id,
+                isHeavySlide: isHeavySlide,
+                currentCursorHintSlide: this.currentCursorHintSlide?.id,
+                currentCursorHint: !!this.currentCursorHint,
+                slideClasses: slideElement.className,
+                cardopened: this.cardopened
+            });
+            
+            // Only require slide to exist and not be opened - cursor hint can be gone
+            if (slideStillExists && slideNotOpened && cardNotOpened) {
+                if (isHeavySlide) {
+                    console.log('Triggering post content IMAGE FLASH for slide:', slideElement.id);
+                    this.performPostContentImageFlash(slideElement);
+                } else {
+                    console.log('Triggering post content CARD FLASH for slide:', slideElement.id);
+                    this.performPostContentFlash(slideElement);
+                }
+            } else {
+                console.log('Post content hint skipped - conditions not met for slide:', slideElement.id, {
+                    slideExists: slideStillExists,
+                    slideNotOpened: slideNotOpened,
+                    cardNotOpened: cardNotOpened
+                });
+            }
+        }, hintMidpointDelay);
+    }
+    
+    performPostContentFlash(slideElement) {
+        // Quick flash-open of the card to show content preview
+        const slideId = slideElement.id;
+        
+        // Ensure we have the card content to flash
+        const cardContent = slideElement.querySelector('.card-content');
+        if (!cardContent) {
+            console.log('No card content found for flash animation on slide:', slideId);
+            return;
+        }
+        
+        console.log('Starting flash animation for slide:', slideId);
+        
+        // Add flash-hint class to trigger the animation
+        slideElement.classList.add('flash-hint');
+        
+        // Force a reflow to ensure the class is applied
+        slideElement.offsetHeight;
+        
+        // Remove the class after animation completes
+        setTimeout(() => {
+            if (slideElement && slideElement.parentNode) {
+                slideElement.classList.remove('flash-hint');
+                console.log('Flash animation completed for slide:', slideId);
+            }
+        }, 450); // Slightly longer than CSS animation duration for safety
+    }
+    
+    performPostContentImageFlash(slideElement) {
+        // Flash a screenshot image for heavy slides instead of opening card content
+        const slideId = slideElement.id;
+        
+        // Detect current language and device type
+        const language = this.detectLanguage();
+        const deviceType = this.detectDeviceType();
+        
+        // Get the correct screenshot filename
+        const screenshotPath = this.getScreenshotPath(slideId, language, deviceType);
+        
+        if (!screenshotPath) {
+            console.log('No screenshot found for slide:', slideId, 'language:', language, 'device:', deviceType);
+            return;
+        }
+        
+        console.log('Starting image flash for slide:', slideId, 'screenshot:', screenshotPath);
+        
+        // Create image flash overlay with inline styles for maximum compatibility
+        const imageOverlay = document.createElement('div');
+        
+        // Detect if mobile for positioning
+        const isMobile = window.innerWidth <= 768;
+        const backgroundPosition = isMobile ? 'center top' : 'center';
+        
+        imageOverlay.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background-image: url(${screenshotPath}) !important;
+            background-size: cover !important;
+            background-position: ${backgroundPosition} !important;
+            background-repeat: no-repeat !important;
+            opacity: 0 !important;
+            z-index: 9999 !important;
+            pointer-events: none !important;
+            transition: opacity 0.05s ease-out !important;
+        `;
+        
+        // Add to document body
+        document.body.appendChild(imageOverlay);
+        
+        console.log('Image overlay created with inline styles:', {
+            element: imageOverlay,
+            backgroundImage: imageOverlay.style.backgroundImage,
+            parent: imageOverlay.parentNode,
+            computedStyle: window.getComputedStyle(imageOverlay)
+        });
+        
+        // Force a reflow and trigger flash immediately
+        imageOverlay.offsetHeight;
+        
+        // Trigger the flash animation immediately for faster response
+        setTimeout(() => {
+            imageOverlay.style.opacity = '1';
+            console.log('Image flash triggered - opacity set to 1');
+            
+            // Hold for 200ms then fade out (shorter duration)
+            setTimeout(() => {
+                imageOverlay.style.opacity = '0';
+                console.log('Image flash fading out');
+                
+                // Remove after fade completes
+                setTimeout(() => {
+                    if (imageOverlay && imageOverlay.parentNode) {
+                        imageOverlay.parentNode.removeChild(imageOverlay);
+                        console.log('Image overlay removed');
+                    }
+                }, 50);
+            }, 200);
+        }, 50);
+        
+        // Remove the overlay after animation completes
+        setTimeout(() => {
+            if (imageOverlay && imageOverlay.parentNode) {
+                imageOverlay.parentNode.removeChild(imageOverlay);
+                console.log('Image flash completed for slide:', slideId);
+            }
+        }, 450); // Match the CSS animation duration
+    }
+    
+    detectLanguage() {
+        // Detect current site language
+        // Check document language first
+        const docLang = document.documentElement.lang;
+        if (docLang) {
+            return docLang.startsWith('es') ? 'es' : 'en';
+        }
+        
+        // Check URL path for language indicators
+        const path = window.location.pathname;
+        if (path.includes('/es/') || path.includes('/español/') || path.includes('/espanol/')) {
+            return 'es';
+        }
+        
+        // Check for Spanish slide names in current context
+        const spanishSlides = ['mapa', 'calendario', 'galeria', 'artistas', 'contexto', 'nosotros'];
+        const currentSlide = this.slideVisibleId;
+        if (spanishSlides.includes(currentSlide)) {
+            return 'es';
+        }
+        
+        // Default to English
+        return 'en';
+    }
+    
+    detectDeviceType() {
+        // Detect if mobile or desktop
+        const isMobile = window.innerWidth <= 768 || 
+                        /Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent);
+        return isMobile ? 'mobiles' : 'desktop';
+    }
+    
+    getScreenshotPath(slideId, language, deviceType) {
+        // Map slide IDs to their screenshot filenames
+        const screenshotMap = {
+            // Map slides (English/Spanish)
+            'map': 'map',
+            'mapa': 'mapa',
+            
+            // Calendar slides (English/Spanish)
+            'calendar': language === 'es' ? 'calendario' : 'calendar',
+            'calendario': 'calendario',
+            
+            // Gallery slides (English/Spanish) 
+            'gallery': language === 'es' ? 'galeria' : 'gallery',
+            'galeria': 'galeria'
+        };
+        
+        const screenshotName = screenshotMap[slideId];
+        if (!screenshotName) {
+            return null;
+        }
+        
+        // Handle the typo in calendar mobile filename
+        let filename;
+        if (screenshotName === 'calendar' && deviceType === 'mobiles') {
+            filename = 'calemdar-post-hint-mobiles.webp'; // Use the typo filename as it exists
+        } else {
+            filename = `${screenshotName}-post-hint-${deviceType}.webp`;
+        }
+        
+        return `/wp-content/uploads/${filename}`;
+    }
+    
+    checkDirectUrlVisit() {
+        // Check if user came from a direct URL that maps to a specific slide
+        const currentPath = window.location.pathname;
+        const urlHash = window.location.hash;
+        
+        // URL path to slide ID mapping (same as in UrlVerif method)
+        const urlToSlideMap = {
+            '/about': 'contexto',
+            '/airbnb': 'huespedes', 
+            '/art': 'art',
+            '/artists': 'artistas',
+            '/artistas': 'artistas',
+            '/cal': 'calendario',
+            '/calendar': 'calendario',
+            '/calendario': 'calendario',
+            '/chat': 'chat',
+            '/context': 'contexto',
+            '/contexto': 'contexto',
+            '/estac': 'estacionamiento',
+            '/eventos': 'eventos',
+            '/events': 'eventos',
+            '/familiacamp': 'familiacamp',
+            '/galeria': 'galeria',
+            '/gallery': 'galeria',
+            '/guests': 'guests',
+            '/guia': 'guia',
+            '/guide': 'guia',
+            '/huespedes': 'huespedes',
+            '/logos': 'logos',
+            '/map': 'mapa',
+            '/nos': 'nosotros',
+            '/nosotros': 'nosotros',
+            '/nosotrxs': 'nosotros',
+            '/org': 'organizadores',
+            '/organiser': 'organizadores',
+            '/organisers': 'organizadores',
+            '/organizadores': 'organizadores',
+            '/organizadxr': 'organizadores',
+            '/organizer': 'organizadores',
+            '/organizers': 'organizadores',
+            '/park': 'estacionamiento',
+            '/pro': 'promotores',
+            '/promoters': 'promotores',
+            '/promotores': 'promotores',
+            '/promotorxs': 'promotores',
+            '/zipolite': 'zipolite',
+            '/tandp': 'eventos'
+        };
+        
+        // Check if current path maps to a specific slide
+        const isDirectSlideUrl = currentPath && urlToSlideMap[currentPath];
+        
+        // Check if there's a hash that would open a card
+        const isHashBasedOpen = urlHash && urlHash.length > 1;
+        
+        const isDirect = isDirectSlideUrl || isHashBasedOpen;
+        
+        if (isDirect) {
+            console.log('Direct URL visit detected - post content hints disabled');
+            console.log('Path:', currentPath, 'Hash:', urlHash);
+        }
+        
+        return isDirect;
     }
     
     // Force hide any current cursor hint
@@ -1825,6 +2026,189 @@ class Navigation {
             console.log('Current slide is opened, cursor hints are hidden by CSS');
         } else {
             console.log('No visible slide found');
+        }
+    }
+    
+    // Debug function to test post content hint functionality
+    testPostContentHint() {
+        console.log('=== Testing Post Content Hint ===');
+        console.log('First encounters so far:', Array.from(this.slideFirstEncounters));
+        console.log('Max hint slides:', this.maxHintSlides);
+        console.log('Is direct URL visit:', this.isDirectUrlVisit);
+        
+        const visibleSlide = document.getElementById(this.slideVisibleId);
+        if (visibleSlide) {
+            const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
+            const isHeavySlide = heavySlides.includes(visibleSlide.id);
+            
+            console.log('Testing flash hint on:', visibleSlide.id);
+            console.log('Is heavy slide (will use image flash):', isHeavySlide);
+            console.log('Has card content:', !!visibleSlide.querySelector('.card-content'));
+            console.log('Is opened:', visibleSlide.classList.contains('opened'));
+            console.log('Card opened state:', this.cardopened);
+            
+            if (isHeavySlide) {
+                console.log('Testing IMAGE FLASH for heavy slide:', visibleSlide.id);
+                this.performPostContentImageFlash(visibleSlide);
+            } else {
+                console.log('Testing CARD FLASH for normal slide:', visibleSlide.id);
+                this.performPostContentFlash(visibleSlide);
+            }
+        } else {
+            console.log('No visible slide to test on');
+        }
+    }
+    
+    // Reset first encounters for testing
+    resetFirstEncounters() {
+        this.slideFirstEncounters.clear();
+        console.log('First encounters reset - next 3 slides will show post content hints');
+    }
+    
+    // Toggle direct URL visit detection for testing
+    toggleDirectUrlVisit() {
+        this.isDirectUrlVisit = !this.isDirectUrlVisit;
+        console.log('Direct URL visit detection:', this.isDirectUrlVisit ? 'ENABLED (hints disabled)' : 'DISABLED (hints enabled)');
+        return this.isDirectUrlVisit;
+    }
+    
+    // Test image flash functionality specifically
+    testImageFlash() {
+        console.log('=== Testing Image Flash Functionality ===');
+        const visibleSlide = document.getElementById(this.slideVisibleId);
+        if (visibleSlide) {
+            const language = this.detectLanguage();
+            const deviceType = this.detectDeviceType();
+            const screenshotPath = this.getScreenshotPath(visibleSlide.id, language, deviceType);
+            
+            console.log('Current slide:', visibleSlide.id);
+            console.log('Detected language:', language);
+            console.log('Detected device type:', deviceType);
+            console.log('Screenshot path:', screenshotPath);
+            
+            if (screenshotPath) {
+                console.log('Triggering image flash test...');
+                this.performPostContentImageFlash(visibleSlide);
+            } else {
+                console.log('No screenshot available for this slide');
+            }
+        } else {
+            console.log('No visible slide to test on');
+        }
+    }
+    
+    // Simple test overlay for debugging visibility issues
+    testSimpleOverlay() {
+        console.log('=== Testing Simple Overlay ===');
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 0, 0, 0.8);
+            z-index: 9999;
+            pointer-events: none;
+        `;
+        document.body.appendChild(overlay);
+        
+        console.log('Simple red overlay added for 2 seconds');
+        console.log('Overlay element:', overlay);
+        console.log('Overlay parent:', overlay.parentNode);
+        console.log('Overlay computed style:', window.getComputedStyle(overlay));
+        
+        setTimeout(() => {
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+                console.log('Simple overlay removed');
+            }
+        }, 2000);
+    }
+    
+    // Force test cursor hint with post content hint on current slide
+    testFullCursorHintSequence() {
+        const visibleSlide = document.getElementById(this.slideVisibleId);
+        if (visibleSlide) {
+            console.log('=== Testing Full Cursor Hint Sequence ===');
+            console.log('Slide:', visibleSlide.id);
+            
+            // Temporarily reset encounters to ensure this slide gets the hint
+            const originalEncounters = new Set(this.slideFirstEncounters);
+            this.slideFirstEncounters.delete(visibleSlide.id);
+            
+            // Force show cursor hint which should trigger post content hint
+            this.showCursorHint(visibleSlide);
+            
+            // Restore original encounters after a delay
+            setTimeout(() => {
+                this.slideFirstEncounters = originalEncounters;
+                console.log('Encounters restored');
+            }, 2000);
+        } else {
+            console.log('No visible slide to test on');
+        }
+    }
+    
+    // Force test image flash during cursor hint animation
+    testImageFlashDuringCursorHint() {
+        const visibleSlide = document.getElementById(this.slideVisibleId);
+        if (visibleSlide) {
+            console.log('=== Testing Image Flash During Cursor Hint ===');
+            console.log('Slide:', visibleSlide.id);
+            
+            // Check if it's a heavy slide
+            const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
+            const isHeavySlide = heavySlides.includes(visibleSlide.id);
+            
+            if (isHeavySlide) {
+                console.log('Heavy slide detected - will test image flash');
+                
+                // Temporarily reset encounters and disable direct URL detection
+                const originalEncounters = new Set(this.slideFirstEncounters);
+                const originalDirectUrl = this.isDirectUrlVisit;
+                
+                this.slideFirstEncounters.delete(visibleSlide.id);
+                this.isDirectUrlVisit = false;
+                
+                // Force show cursor hint which should trigger image flash
+                this.showCursorHint(visibleSlide);
+                
+                // Restore original settings after a delay
+                setTimeout(() => {
+                    this.slideFirstEncounters = originalEncounters;
+                    this.isDirectUrlVisit = originalDirectUrl;
+                    console.log('Settings restored');
+                }, 3000);
+            } else {
+                console.log('Not a heavy slide - will test card flash instead');
+                this.testFullCursorHintSequence();
+            }
+        } else {
+            console.log('No visible slide to test on');
+        }
+    }
+    
+    // Force test image flash directly without cursor hint
+    forceTestImageFlash() {
+        const visibleSlide = document.getElementById(this.slideVisibleId);
+        if (visibleSlide) {
+            console.log('=== Force Testing Image Flash Directly ===');
+            console.log('Slide:', visibleSlide.id);
+            
+            // Check if it's a heavy slide
+            const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
+            const isHeavySlide = heavySlides.includes(visibleSlide.id);
+            
+            if (isHeavySlide) {
+                console.log('Heavy slide detected - forcing image flash directly');
+                this.performPostContentImageFlash(visibleSlide);
+            } else {
+                console.log('Not a heavy slide - forcing card flash directly');
+                this.performPostContentFlash(visibleSlide);
+            }
+        } else {
+            console.log('No visible slide to test on');
         }
     }
     
@@ -2564,6 +2948,8 @@ class Navigation {
                     currentMonth = targetMonth;
                     currentMonthIndex = months.indexOf(targetMonth);
                     monthText.textContent = currentMonth.textContent;
+                    // Update caret visibility immediately when month text changes
+                    updateCaretVisibility();
                     console.log(`Updated to month: ${monthName}, index: ${currentMonthIndex}`);
                     return true;
                 }
@@ -2795,9 +3181,12 @@ class Navigation {
                     // Start silent update before cross-year transition
                     const silentState = startCalendarSilentUpdate();
                     
-                    // Click year first, then wait for stable update before clicking month
+                    // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                     currentYear.click();
+                    console.log('Year clicked, waiting for year to load completely...');
+                    
                     waitForCalendarUpdate(() => {
+                        console.log('Year loaded successfully, now proceeding to month navigation...');
                         // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
                         hideOriginalNavigation();
 
@@ -2827,15 +3216,23 @@ class Navigation {
                                 currentMonth = target;
                                 currentMonthIndex = months.indexOf(target);
                                 monthText.textContent = (currentMonth.textContent || '').trim();
+                                // Update caret visibility immediately when month text changes
+                                updateCaretVisibility();
                                 
-                                // Extended delay before final click to ensure complete stability
+                                console.log('Month text updated to December, carets updated, now clicking month...');
+                                
+                                // Step 3: Click month and wait for MONTH to load completely before revealing grid
                                 setTimeout(() => {
                                     // Final verification before clicking
                                     if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
                                         currentMonth.click();
-                                        console.log('Successfully navigated to previous year and December');
-                                        // End after month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
+                                        console.log('Month clicked, waiting for month events to load...');
+                                        
+                                        // Step 4: Wait for month to load completely before revealing grid
+                                        waitForCalendarUpdate(() => {
+                                            console.log('Month loaded successfully, revealing grid...');
+                                            endCalendarSilentUpdate(silentState);
+                                        }, decemberName);
                                     } else {
                                         console.warn('Month element became invalid, attempting fallback click');
                                         // Fallback: re-find the December month and click
@@ -2846,7 +3243,9 @@ class Navigation {
                                             fallbackDecember.click();
                                         }
                                         // End after fallback month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
+                                        waitForCalendarUpdate(() => {
+                                            endCalendarSilentUpdate(silentState);
+                                        }, decemberName);
                                     }
                                 }, 300);
                             } else if (months.length) {
@@ -2863,7 +3262,7 @@ class Navigation {
                                 endCalendarSilentUpdate(silentState);
                             }
                         }
-                    }, decemberName); // Pass target month name for verification
+                    }, null); // No target month for year loading - just wait for year to stabilize
                 }
             };
             
@@ -2876,9 +3275,12 @@ class Navigation {
                     // Start silent update before cross-year transition
                     const silentState = startCalendarSilentUpdate();
                     
-                    // Click year first, then wait for stable update before clicking month
+                    // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                     currentYear.click();
+                    console.log('Year clicked, waiting for year to load completely...');
+                    
                     waitForCalendarUpdate(() => {
+                        console.log('Year loaded successfully, now proceeding to month navigation...');
                         // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
                         hideOriginalNavigation();
 
@@ -2908,15 +3310,23 @@ class Navigation {
                                 currentMonth = target;
                                 currentMonthIndex = months.indexOf(target);
                                 monthText.textContent = (currentMonth.textContent || '').trim();
+                                // Update caret visibility immediately when month text changes
+                                updateCaretVisibility();
                                 
-                                // Extended delay before final click to ensure complete stability
+                                console.log('Month text updated to January, carets updated, now clicking month...');
+                                
+                                // Step 3: Click month and wait for MONTH to load completely before revealing grid
                                 setTimeout(() => {
                                     // Final verification before clicking
                                     if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
                                         currentMonth.click();
-                                        console.log('Successfully navigated to next year and January');
-                                        // End after month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
+                                        console.log('Month clicked, waiting for month events to load...');
+                                        
+                                        // Step 4: Wait for month to load completely before revealing grid
+                                        waitForCalendarUpdate(() => {
+                                            console.log('Month loaded successfully, revealing grid...');
+                                            endCalendarSilentUpdate(silentState);
+                                        }, januaryName);
                                     } else {
                                         console.warn('Month element became invalid, attempting fallback click');
                                         // Fallback: re-find the January month and click
@@ -2927,7 +3337,9 @@ class Navigation {
                                             fallbackJanuary.click();
                                         }
                                         // End after fallback month finishes loading
-                                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
+                                        waitForCalendarUpdate(() => {
+                                            endCalendarSilentUpdate(silentState);
+                                        }, januaryName);
                                     }
                                 }, 300);
                             } else if (months.length) {
@@ -2938,15 +3350,46 @@ class Navigation {
                                     console.warn('Target month January not found; clicked fallback month:', fallback.textContent);
                                 }
                                 // End after fallback month finishes loading
-                                waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
+                                waitForCalendarUpdate(() => {
+                                    endCalendarSilentUpdate(silentState);
+                                    updateCaretVisibility();
+                                }, januaryName);
                             } else {
                                 // No months found at all - end silent update immediately
                                 endCalendarSilentUpdate(silentState);
                             }
                         }
-                    }, januaryName); // Pass target month name for verification
+                    }, null); // No target month for year loading - just wait for year to stabilize
                 }
             };
+            
+            // Function to update caret visibility based on current month
+            const updateCaretVisibility = () => {
+                const currentMonthName = currentMonth.textContent.toUpperCase();
+                
+                // Hide back caret on January
+                if (currentMonthName === januaryName.toUpperCase()) {
+                    monthLeft.style.visibility = 'hidden';
+                    monthLeft.style.pointerEvents = 'none';
+                } else {
+                    monthLeft.style.visibility = 'visible';
+                    monthLeft.style.pointerEvents = 'auto';
+                }
+                
+                // Hide forward caret on December
+                if (currentMonthName === decemberName.toUpperCase()) {
+                    monthRight.style.visibility = 'hidden';
+                    monthRight.style.pointerEvents = 'none';
+                } else {
+                    monthRight.style.visibility = 'visible';
+                    monthRight.style.pointerEvents = 'auto';
+                }
+                
+                console.log(`Caret visibility updated for month: ${currentMonthName}`);
+            };
+            
+            // Call initially to set correct visibility
+            updateCaretVisibility();
             
             // Enhanced month navigation with stability checking for cross-year transitions
             monthLeft.onclick = () => {
@@ -2962,9 +3405,12 @@ class Navigation {
                         // Start silent update before cross-year transition
                         const silentState = startCalendarSilentUpdate();
                         
-                        // Click year first, then wait for stable update before clicking month
+                        // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                         currentYear.click();
+                        console.log('Year clicked (from month left), waiting for year to load completely...');
+                        
                         waitForCalendarUpdate(() => {
+                            console.log('Year loaded successfully (from month left), now proceeding to month navigation...');
                             // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
                             hideOriginalNavigation();
 
@@ -2994,15 +3440,23 @@ class Navigation {
                                     currentMonth = target;
                                     currentMonthIndex = months.indexOf(target);
                                     monthText.textContent = (currentMonth.textContent || '').trim();
-                                    
-                                    // Extended delay before final click to ensure complete stability
-                                    setTimeout(() => {
-                                        // Final verification before clicking
-                                        if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
-                                            currentMonth.click();
-                                            console.log('Successfully navigated to previous year and December via month left');
-                                            // End after month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
+                                                                    // Update caret visibility immediately when month text changes
+                                updateCaretVisibility();
+                                
+                                console.log('Month text updated to December (from month left), carets updated, now clicking month...');
+                                
+                                // Step 3: Click month and wait for MONTH to load completely before revealing grid
+                                setTimeout(() => {
+                                    // Final verification before clicking
+                                    if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
+                                        currentMonth.click();
+                                        console.log('Month clicked (from month left), waiting for month events to load...');
+                                        
+                                        // Step 4: Wait for month to load completely before revealing grid
+                                        waitForCalendarUpdate(() => {
+                                            console.log('Month loaded successfully (from month left), revealing grid...');
+                                            endCalendarSilentUpdate(silentState);
+                                        }, decemberName);
                                         } else {
                                             console.warn('Month element became invalid, attempting fallback click');
                                             // Fallback: re-find the December month and click
@@ -3013,7 +3467,9 @@ class Navigation {
                                                 fallbackDecember.click();
                                             }
                                             // End after fallback month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
+                                            waitForCalendarUpdate(() => {
+                                                endCalendarSilentUpdate(silentState);
+                                            }, decemberName);
                                         }
                                     }, 300);
                                 } else if (months.length) {
@@ -3024,13 +3480,16 @@ class Navigation {
                                         console.warn('Target month December not found; clicked fallback month:', fallback.textContent);
                                     }
                                     // End after fallback month finishes loading
-                                    waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), decemberName);
+                                    waitForCalendarUpdate(() => {
+                                        endCalendarSilentUpdate(silentState);
+                                        updateCaretVisibility();
+                                    }, decemberName);
                                 } else {
                                     // No months found at all - end silent update immediately
                                     endCalendarSilentUpdate(silentState);
                                 }
                             }
-                        }, decemberName); // Pass target month name for verification
+                        }, null); // No target month for year loading - just wait for year to stabilize
                     }
                 } else {
                     // Normal previous month navigation using pattern-based approach
@@ -3040,16 +3499,22 @@ class Navigation {
                         if (previousMonthName && updateToMonth(previousMonthName)) {
                             const silentState = startCalendarSilentUpdate();
                             currentMonth.click();
-                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), previousMonthName);
+                            waitForCalendarUpdate(() => {
+                                endCalendarSilentUpdate(silentState);
+                            }, previousMonthName);
                         }
                     } else {
                         // Fallback to array-based navigation
                         currentMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
                         currentMonth = months[currentMonthIndex];
                         monthText.textContent = currentMonth.textContent;
+                        // Update caret visibility immediately when month text changes
+                        updateCaretVisibility();
                         const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
-                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState));
+                        waitForCalendarUpdate(() => {
+                            endCalendarSilentUpdate(silentState);
+                        });
                     }
                 }
             };
@@ -3067,9 +3532,12 @@ class Navigation {
                         // Start silent update before cross-year transition
                         const silentState = startCalendarSilentUpdate();
                         
-                        // Click year first, then wait for stable update before clicking month
+                        // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                         currentYear.click();
+                        console.log('Year clicked (from month right), waiting for year to load completely...');
+                        
                         waitForCalendarUpdate(() => {
+                            console.log('Year loaded successfully (from month right), now proceeding to month navigation...');
                             // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
                             hideOriginalNavigation();
 
@@ -3099,15 +3567,23 @@ class Navigation {
                                     currentMonth = target;
                                     currentMonthIndex = months.indexOf(target);
                                     monthText.textContent = (currentMonth.textContent || '').trim();
-                                    
-                                    // Extended delay before final click to ensure complete stability
-                                    setTimeout(() => {
-                                        // Final verification before clicking
-                                        if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
-                                            currentMonth.click();
-                                            console.log('Successfully navigated to next year and January via month right');
-                                            // End after month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
+                                                                    // Update caret visibility immediately when month text changes
+                                updateCaretVisibility();
+                                
+                                console.log('Month text updated to January (from month right), carets updated, now clicking month...');
+                                
+                                // Step 3: Click month and wait for MONTH to load completely before revealing grid
+                                setTimeout(() => {
+                                    // Final verification before clicking
+                                    if (currentMonth && currentMonth.click && !currentMonth.classList.contains('disabled')) {
+                                        currentMonth.click();
+                                        console.log('Month clicked (from month right), waiting for month events to load...');
+                                        
+                                        // Step 4: Wait for month to load completely before revealing grid
+                                        waitForCalendarUpdate(() => {
+                                            console.log('Month loaded successfully (from month right), revealing grid...');
+                                            endCalendarSilentUpdate(silentState);
+                                        }, januaryName);
                                         } else {
                                             console.warn('Month element became invalid, attempting fallback click');
                                             // Fallback: re-find the January month and click
@@ -3118,7 +3594,9 @@ class Navigation {
                                                 fallbackJanuary.click();
                                             }
                                             // End after fallback month finishes loading
-                                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
+                                            waitForCalendarUpdate(() => {
+                                                endCalendarSilentUpdate(silentState);
+                                            }, januaryName);
                                         }
                                     }, 300);
                                 } else if (months.length) {
@@ -3128,14 +3606,16 @@ class Navigation {
                                         fallback.click();
                                         console.warn('Target month January not found; clicked fallback month:', fallback.textContent);
                                     }
-                                    // End after fallback month finishes loading
-                                    waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), januaryName);
+                                                                    // End after fallback month finishes loading
+                                waitForCalendarUpdate(() => {
+                                    endCalendarSilentUpdate(silentState);
+                                }, januaryName);
                                 } else {
                                     // No months found at all - end silent update immediately
                                     endCalendarSilentUpdate(silentState);
                                 }
                             }
-                        }, januaryName); // Pass target month name for verification
+                        }, null); // No target month for year loading - just wait for year to stabilize
                     }
                 } else {
                     // Normal next month navigation using pattern-based approach
@@ -3145,16 +3625,22 @@ class Navigation {
                         if (nextMonthName && updateToMonth(nextMonthName)) {
                             const silentState = startCalendarSilentUpdate();
                             currentMonth.click();
-                            waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState), nextMonthName);
+                            waitForCalendarUpdate(() => {
+                                endCalendarSilentUpdate(silentState);
+                            }, nextMonthName);
                         }
                     } else {
                         // Fallback to array-based navigation
                         currentMonthIndex = currentMonthIndex < months.length - 1 ? currentMonthIndex + 1 : 0;
                         currentMonth = months[currentMonthIndex];
                         monthText.textContent = currentMonth.textContent;
+                        // Update caret visibility immediately when month text changes
+                        updateCaretVisibility();
                         const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
-                        waitForCalendarUpdate(() => endCalendarSilentUpdate(silentState));
+                        waitForCalendarUpdate(() => {
+                            endCalendarSilentUpdate(silentState);
+                        });
                     }
                 }
             };
