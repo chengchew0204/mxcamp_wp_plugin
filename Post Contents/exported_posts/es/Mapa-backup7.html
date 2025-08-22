@@ -1,5 +1,5 @@
-<!-- wp:html -->
-<style>
+ <!-- wp:html -->
+ <style>
   body.map {margin: 0;}
   @media screen and (max-width: 1050px) {
       body.bodycardopened.map header#header .ct-container-fluid>div:first-child {opacity: 1;}
@@ -59,7 +59,6 @@ z-index: 1;
           overflow: hidden;
           z-index: 20;
           position: absolute;
-          cursor: pointer;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent;
           -moz-user-select: -moz-none;
@@ -98,14 +97,14 @@ z-index: 1;
           width: 28%;
           height: 36%;
         }
+        .onmouseover-detail:hover{
+           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
+        }
         #focus-point {
           top:0;
           right: 0;
           height:1px;
           width:0;
-        }
-        .onmouseover-detail:hover{
-           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
         }
 .map-container {
   position: relative;
@@ -185,7 +184,7 @@ img {
       }
  .interactive-map {
   overflow-x: hidden;
-  overflow-y:scroll;
+  overflow-y: scroll;
   height: auto;
   width: 100dvw;
   }
@@ -425,7 +424,7 @@ img {
     resetMapToInitialState();
     
     // Close the map card
-    const mapHeader = document.querySelector("#map .card-header") || document.querySelector("#mapa .card-header");
+    const mapHeader = document.querySelector("#mapa .card-header") || document.querySelector("#map .card-header");
     if (mapHeader) {
       mapHeader.click();
     } else {
@@ -447,25 +446,26 @@ function clickOutside(event, ele, cb) {
 if (event.target.classList.contains('mapExit')) return;
 
 if (!ele.contains(event.target)) {
-      if (currentLayer) {
-        currentLayer.style.zIndex = -1
-      }
-      currentLayer = undefined
-      currentActiveBuilding = null; // Reset building tracker on click outside
-      event.preventDefault();
-      removeAllClickListeners()
-      setAllClickListeners()
-      cb();
-      document.removeEventListener('click', handleClickOutside);
-    }
+  if (currentLayer) {
+    currentLayer.style.zIndex = -1;
   }
+  currentLayer = undefined;
+  currentActiveBuilding = null; // Reset building tracker on click outside
+  event.preventDefault();
+  removeAllClickListeners();
+  setAllClickListeners();
+  cb();
+  document.removeEventListener('click', handleClickOutside);
+}
+}
+
   let handleClickOutside;
   
   function onClickOutside(event, ele, cb) {
-     console.log('clicked outside event:'+event+ ' ele:'+ele +' cb:'+cb);
-      handleClickOutside = (event) => clickOutside(event, ele, cb);
-      document.addEventListener('click', handleClickOutside);
-    };
+    handleClickOutside = (event) => clickOutside(event, ele, cb);
+    document.addEventListener('click', handleClickOutside);
+  }
+
   function openDetail(event, element, mapIds, prevMapId) {
     // Check if we're switching to a different building
     if (currentActiveBuilding && currentActiveBuilding !== element) {
@@ -486,7 +486,7 @@ if (!ele.contains(event.target)) {
     let currentMapIndex = 0;
     let nextMapId = mapIdsCopy[currentMapIndex];
     let nextNextMapId = mapIdsCopy[currentMapIndex + 1];
-         let map = document.querySelector("#mapa");
+    let map = document.querySelector("#mapa");
     let nextLayer = document.querySelector("#" + nextMapId);
     
     if (!nextLayer) {
@@ -503,7 +503,7 @@ if (!ele.contains(event.target)) {
       
       // Ensure image is ready and start transition
       if (nextLayer.complete && nextLayer.naturalWidth > 0) {
-                        // Hide ALL layers first to prevent any bleed-through
+                // Hide ALL layers first to prevent any bleed-through
         const allLayers = document.querySelectorAll('.layer');
         allLayers.forEach(layer => {
           layer.classList.remove('active');
@@ -544,7 +544,7 @@ if (!ele.contains(event.target)) {
       }
     };
 
-            const handleSequence = () => {
+        const handleSequence = () => {
       // Handle previous layer cleanup
         if (prevMapId) {
           let prevLayer = document.querySelector("#" + prevMapId);
@@ -601,7 +601,7 @@ if (!ele.contains(event.target)) {
   function setClickListeners(element, mapIds, prevMapId=undefined) {
     element.addEventListener("click", handleOpenDetail = (event) => openDetail(event, element, mapIds, prevMapId),{once: true})
   }
-     const map = document.querySelector("#mapa")
+  const map = document.querySelector("#mapa")
   
   function resetBuildingToLayer1(buildingElement) {
     // Remove any existing listeners from this building element
@@ -638,7 +638,7 @@ if (!ele.contains(event.target)) {
     setClickListeners(calleDetail, ["calle-down-1", "calle-down-2", "calle-down-3"])
     setClickListeners(jardinDetail, ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"])
     setClickListeners(cosinaDetail, ["central-down-1", "central-down-2", "central-down-3"])
-    addExitListeners() 
+      addExitListeners(); 
 }
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
@@ -860,7 +860,7 @@ if (!ele.contains(event.target)) {
       console.log('Contour engine reset complete');
     }
 
-            // Setup event listeners
+    // Setup event listeners
     setupEventListeners() {
       const mapContainer = document.getElementById('imap');
       if (!mapContainer) return;
@@ -871,30 +871,13 @@ if (!ele.contains(event.target)) {
       mapContainer.addEventListener('mouseover', (event) => {
         if (isClickAction) return; // Ignore hover during click processing
         
-        const detail = event.target.closest('.detail.onmouseover-detail');
+      const detail = event.target.closest('.detail.onmouseover-detail');
         if (!detail || !this.contourConfig[detail.id]) return;
         
         // Hide all other contours when hovering a new area
         this.hideAllContours();
         // Show the contour for this area
         this.showContour(detail.id);
-      });
-
-      // Handle mouseout events to hide contours when leaving building areas
-      mapContainer.addEventListener('mouseout', (event) => {
-        if (isClickAction) return; // Ignore mouseout during click processing
-        
-        const detail = event.target.closest('.detail.onmouseover-detail');
-        if (!detail || !this.contourConfig[detail.id]) return;
-        
-        // Check if we're actually leaving the detail area (not just moving within it)
-        const relatedTarget = event.relatedTarget;
-        if (relatedTarget && detail.contains(relatedTarget)) {
-          return; // Still within the same detail area
-        }
-        
-        // Hide the contour for this area when leaving it
-        this.hideContour(detail.id);
       });
 
       // Handle click events

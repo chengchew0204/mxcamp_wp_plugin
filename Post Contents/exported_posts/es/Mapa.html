@@ -28,7 +28,7 @@ height: 100%;
 object-fit: cover;
 display: none;
 z-index: -1;
-transition: opacity 0.15s ease-in-out;
+transition: opacity 0s ease-in-out;
 }
 
 .layer.active {
@@ -518,31 +518,22 @@ if (!ele.contains(event.target)) {
           oldLayer.style.zIndex = 0;
         }
         
-        // Make new layer visible but transparent for smooth transition
+        // Make new layer visible instantly - no transition
         nextLayer.style.display = 'block';
-        nextLayer.classList.add("transitioning");
+        nextLayer.classList.add("active");
         nextLayer.style.zIndex = 2; // Higher than old layer
-        
-        // Force reflow
-        nextLayer.offsetHeight;
-        
-        // Fade in new layer
-        requestAnimationFrame(() => {
-          nextLayer.classList.remove("transitioning");
-          nextLayer.classList.add("active");
           
-          // Hide old layer after transition starts
-          setTimeout(() => {
-            if (oldLayer && oldLayer !== nextLayer) {
-          oldLayer.classList.remove("active");
-          oldLayer.style.zIndex = -1;
-              oldLayer.style.display = 'none';
-        }
-        currentLayer = nextLayer;
-            nextLayer.style.zIndex = 0;
-            handleSequence();
-          }, 160); // Slightly longer than CSS transition (150ms)
-        });
+        // Hide old layer immediately after showing new layer
+        setTimeout(() => {
+          if (oldLayer && oldLayer !== nextLayer) {
+            oldLayer.classList.remove("active");
+            oldLayer.style.zIndex = -1;
+            oldLayer.style.display = 'none';
+          }
+          currentLayer = nextLayer;
+          nextLayer.style.zIndex = 0;
+          handleSequence();
+        }, 50); // Instant transition - minimal delay before hiding old layer
       } else {
         // Wait for image to load
         const onLoad = () => {
@@ -880,13 +871,30 @@ if (!ele.contains(event.target)) {
       mapContainer.addEventListener('mouseover', (event) => {
         if (isClickAction) return; // Ignore hover during click processing
         
-      const detail = event.target.closest('.detail.onmouseover-detail');
+        const detail = event.target.closest('.detail.onmouseover-detail');
         if (!detail || !this.contourConfig[detail.id]) return;
         
         // Hide all other contours when hovering a new area
         this.hideAllContours();
         // Show the contour for this area
         this.showContour(detail.id);
+      });
+
+      // Handle mouseout events to hide contours when leaving building areas
+      mapContainer.addEventListener('mouseout', (event) => {
+        if (isClickAction) return; // Ignore mouseout during click processing
+        
+        const detail = event.target.closest('.detail.onmouseover-detail');
+        if (!detail || !this.contourConfig[detail.id]) return;
+        
+        // Check if we're actually leaving the detail area (not just moving within it)
+        const relatedTarget = event.relatedTarget;
+        if (relatedTarget && detail.contains(relatedTarget)) {
+          return; // Still within the same detail area
+        }
+        
+        // Hide the contour for this area when leaving it
+        this.hideContour(detail.id);
       });
 
       // Handle click events

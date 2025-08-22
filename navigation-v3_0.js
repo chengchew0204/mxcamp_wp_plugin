@@ -76,9 +76,19 @@ class Navigation {
         this.currentCursorHintSlide = null;
         this.cleanupCurrentHint = null;
         
-        // Post Content Hint tracking - tracks first encounters per session
-        this.slideFirstEncounters = new Set();
-        this.maxHintSlides = 3; // Show hints on first 3 slides only
+        // Post Content Hint tracking - tracks slides that have shown hints this session
+        this.slideHintShown = new Set(); // Track which slides have already shown hints
+        
+        // Cursor Hint tracking - tracks slides that have shown cursor hints this session
+        this.cursorHintShown = new Set(); // Track which slides have already shown cursor hints
+        
+        // User scrolling detection for hint prevention
+        this.isUserScrolling = false;
+        this.scrollTimer = null;
+        
+        // Pending hint timers - to cancel hints when user scrolls away
+        this.pendingCursorHintTimer = null;
+        this.pendingContentHintTimer = null;
         
         // Check if this is a direct URL visit (card will open automatically)
         this.isDirectUrlVisit = this.checkDirectUrlVisit();
@@ -1195,6 +1205,9 @@ class Navigation {
     }
     //navigation to the slide
     gotoSlide(obj) {
+        // Cancel any pending hints when navigating to a new slide
+        this.cancelPendingHints();
+        
         // Close all previews when navigating to a slide
         if (typeof window.closeAllPreviews === 'function') {
             window.closeAllPreviews();
@@ -1232,6 +1245,17 @@ class Navigation {
                       this.desActivateMenu();
                       this.scrolling = false;
                       this.slider.removeEventListener('scroll', checkVisibility);
+                      
+                      // Show cursor hint for the destination slide after navigation completes
+                      // Only if the card is not going to open automatically
+                      if (!openCard) {
+                          setTimeout(() => {
+                              if (!element.classList.contains('opened')) {
+                                  this.showCursorHint(element);
+                              }
+                          }, 200); // Small delay to ensure scroll has fully stopped
+                      }
+                      
                       if(divId==='galeria' || divId==='gallery' || divId==='mapa' || divId==='map' || divId==='eventos' || divId==='events'){
                         console.log('stop');
                         return;
@@ -1509,6 +1533,14 @@ class Navigation {
     }
     
     showCursorHint(slideElement) {
+        const slideId = slideElement.id;
+        
+        // Check if cursor hint has already been shown for this slide this session
+        if (this.cursorHintShown.has(slideId)) {
+            console.log('Cursor hint skipped for slide:', slideId, '- already shown this session');
+            return; // Don't show cursor hint again
+        }
+        
         // Remove any existing cursor hint to allow fresh animation
         const existingHint = slideElement.querySelector('.cursor-hint');
         if (existingHint) {
@@ -1527,53 +1559,58 @@ class Navigation {
         this.currentCursorHintSlide = slideElement;
         
         // Check if this is a first encounter and should show post content hint
-        const slideId = slideElement.id;
         
         // Define heavy slides that use image flash instead of card content flash
         const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
         const isHeavySlide = heavySlides.includes(slideId);
         
-        // No slides are excluded anymore - heavy slides use image flash, others use card flash
+        // Show post content hint on every slide (no longer limited to first 3)
         const isExcludedSlide = false;
         
-        const isFirstEncounter = !isExcludedSlide && 
-                                !this.isDirectUrlVisit &&
-                                !this.slideFirstEncounters.has(slideId) && 
-                                this.slideFirstEncounters.size < this.maxHintSlides;
+        // Show post content hint if not excluded, not direct URL visit, and not already shown this session
+        const shouldShowPostContentHint = !isExcludedSlide && 
+                                         !this.isDirectUrlVisit && 
+                                         !this.slideHintShown.has(slideId);
         
-        // Store the first encounter decision before any async operations
-        const shouldShowPostContentHint = isFirstEncounter;
-        
-        if (isFirstEncounter) {
-            console.log('Post content hint will show for slide:', slideId, 'Total encounters:', this.slideFirstEncounters.size);
+        if (shouldShowPostContentHint) {
+            console.log('Post content hint will show for slide:', slideId, '- first time this session');
         } else if (this.isDirectUrlVisit) {
             console.log('Post content hint skipped for slide:', slideId, '- direct URL visit detected');
+        } else if (this.slideHintShown.has(slideId)) {
+            console.log('Post content hint skipped for slide:', slideId, '- already shown this session');
         } else {
             console.log('Post content hint conditions not met for slide:', slideId, {
                 isExcludedSlide,
                 isDirectUrlVisit: this.isDirectUrlVisit,
-                hasBeenEncountered: this.slideFirstEncounters.has(slideId),
-                encountersSize: this.slideFirstEncounters.size,
-                maxHints: this.maxHintSlides
+                alreadyShown: this.slideHintShown.has(slideId)
             });
         }
         
+        // Cancel any existing pending hints before starting new ones
+        this.cancelPendingHints();
+        
         // Trigger the animation by adding the play class after a brief delay
-        setTimeout(() => {
+        this.pendingCursorHintTimer = setTimeout(() => {
+            // Clear the timer reference since it's now executing
+            this.pendingCursorHintTimer = null;
             if (cursorHint && cursorHint.parentNode) {
                 cursorHint.classList.add('play');
+                
+                // Mark this slide as having shown its cursor hint
+                this.cursorHintShown.add(slideId);
+                console.log('Added slide to cursor hint tracking:', slideId, 'Total slides with cursor hints shown:', this.cursorHintShown.size);
                 
                 // Use the stored decision to schedule the post content hint
                 if (shouldShowPostContentHint) {
                     console.log('Scheduling post content hint for slide:', slideElement.id, '- Type:', isHeavySlide ? 'IMAGE FLASH' : 'CARD FLASH');
                     this.schedulePostContentHint(slideElement, isHeavySlide);
                     
-                    // Add to encounters AFTER scheduling the hint
-                    this.slideFirstEncounters.add(slideId);
-                    console.log('Added slide to encounters:', slideId, 'Total encounters:', this.slideFirstEncounters.size);
+                    // Mark this slide as having shown its content hint
+                    this.slideHintShown.add(slideId);
+                    console.log('Added slide to content hint tracking:', slideId, 'Total slides with content hints shown:', this.slideHintShown.size);
                 }
             }
-        }, 100);
+        }, 1100);
         
         // Create cleanup function with smooth fade-out
         const cleanupHint = () => {
@@ -1587,7 +1624,7 @@ class Navigation {
                     if (cursorHint && cursorHint.parentNode) {
                         cursorHint.parentNode.removeChild(cursorHint);
                     }
-                }, 100); // Match CSS transition time
+                }, 2600); // Match CSS animation duration (2.5s) plus small buffer
             }
             this.currentCursorHint = null;
             this.currentCursorHintSlide = null;
@@ -1638,7 +1675,10 @@ class Navigation {
         console.log('Scheduling post content hint for slide:', slideElement.id, 'in', hintMidpointDelay, 'ms', 
                    '- Type:', isHeavySlide ? 'IMAGE FLASH' : 'CARD FLASH');
         
-        setTimeout(() => {
+        this.pendingContentHintTimer = setTimeout(() => {
+            // Clear the timer reference since it's now executing
+            this.pendingContentHintTimer = null;
+            
             // Verify the slide still exists and hasn't been opened
             const slideStillExists = slideElement && slideElement.parentNode;
             const slideNotOpened = !slideElement.classList.contains('opened');
@@ -1704,8 +1744,11 @@ class Navigation {
             if (slideElement && slideElement.parentNode) {
                 slideElement.classList.remove('flash-hint');
                 console.log('Flash animation completed for slide:', slideId);
+                
+                // Restart video on video background slides after hint animation
+                this.restartVideoOnHintComplete(slideId);
             }
-        }, 450); // Slightly longer than CSS animation duration for safety
+        }, 2100); // Slightly longer than CSS animation duration for safety
     }
     
     performPostContentImageFlash(slideElement) {
@@ -1731,7 +1774,7 @@ class Navigation {
         
         // Detect if mobile for positioning
         const isMobile = window.innerWidth <= 768;
-        const backgroundPosition = isMobile ? 'center top' : 'center';
+        const backgroundPosition = 'center top'; // Align to top for both desktop and mobile
         
         imageOverlay.style.cssText = `
             position: fixed !important;
@@ -1746,7 +1789,7 @@ class Navigation {
             opacity: 0 !important;
             z-index: 9999 !important;
             pointer-events: none !important;
-            transition: opacity 0.05s ease-out !important;
+            transition: opacity 0.5s ease-out !important;
         `;
         
         // Add to document body
@@ -1767,7 +1810,7 @@ class Navigation {
             imageOverlay.style.opacity = '1';
             console.log('Image flash triggered - opacity set to 1');
             
-            // Hold for 200ms then fade out (shorter duration)
+            // Hold for 1000ms then fade out (1s fade-in, 1s fade-out)
             setTimeout(() => {
                 imageOverlay.style.opacity = '0';
                 console.log('Image flash fading out');
@@ -1778,8 +1821,8 @@ class Navigation {
                         imageOverlay.parentNode.removeChild(imageOverlay);
                         console.log('Image overlay removed');
                     }
-                }, 50);
-            }, 200);
+                }, 1000);
+            }, 1000);
         }, 50);
         
         // Remove the overlay after animation completes
@@ -1787,8 +1830,55 @@ class Navigation {
             if (imageOverlay && imageOverlay.parentNode) {
                 imageOverlay.parentNode.removeChild(imageOverlay);
                 console.log('Image flash completed for slide:', slideId);
+                
+                // Restart video on video background slides after hint animation
+                this.restartVideoOnHintComplete(slideId);
             }
-        }, 450); // Match the CSS animation duration
+        }, 2100); // Match the CSS animation duration
+    }
+    
+    // Cancel any pending hint timers to prevent hints from appearing on wrong slides
+    cancelPendingHints() {
+        if (this.pendingCursorHintTimer) {
+            clearTimeout(this.pendingCursorHintTimer);
+            this.pendingCursorHintTimer = null;
+            console.log('Cancelled pending cursor hint timer');
+        }
+        
+        if (this.pendingContentHintTimer) {
+            clearTimeout(this.pendingContentHintTimer);
+            this.pendingContentHintTimer = null;
+            console.log('Cancelled pending content hint timer');
+        }
+    }
+    
+    // Restart video on video background slides after hint animation completes
+    restartVideoOnHintComplete(slideId) {
+        // Check if this is a video background slide
+        const videoBackgroundSlides = ['calendario', 'calendar'];
+        
+        if (videoBackgroundSlides.includes(slideId)) {
+            console.log('Restarting video for video background slide:', slideId);
+            
+            // Find the video element in the slide
+            const slideElement = document.getElementById(slideId);
+            if (slideElement) {
+                const video = slideElement.querySelector('.thefrontvideo');
+                if (video) {
+                    // Reset video to beginning and play
+                    video.currentTime = 0;
+                    video.play().then(() => {
+                        console.log('Video restarted successfully for slide:', slideId);
+                    }).catch(err => {
+                        console.log('Could not restart video for slide:', slideId, 'Error:', err);
+                    });
+                } else {
+                    console.log('No video element found in slide:', slideId);
+                }
+            } else {
+                console.log('Slide element not found:', slideId);
+            }
+        }
     }
     
     detectLanguage() {
@@ -1960,8 +2050,8 @@ class Navigation {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
                         const slideId = entry.target.id;
-                    // Only show hint if site is fully loaded and slide is not opened
-                    if (this.isFullyLoaded && !entry.target.classList.contains('opened')) {
+                        // Only show hint if site is fully loaded, slide is not opened, not during programmatic scrolling, and not during user scrolling
+                        if (this.isFullyLoaded && !entry.target.classList.contains('opened') && !this.scrolling && !this.isUserScrolling) {
                             this.showCursorHint(entry.target);
                         }
                     }
@@ -1982,7 +2072,7 @@ class Navigation {
                 console.log('Showing initial cursor hint as ready signal');
                 this.showCursorHint(currentSlide);
             }
-        }, 100); // Brief delay to ensure everything is set up
+        }, 1100); // Brief delay to ensure everything is set up
     }
     
     // Debug function to test cursor hints manually
@@ -1990,9 +2080,13 @@ class Navigation {
         console.log('=== Cursor Hint Debug ===');
         const slides = document.querySelectorAll('.slide_10');
         console.log('Found slides:', slides.length);
+        console.log('Slides with content hints shown this session:', Array.from(this.slideHintShown));
+        console.log('Slides with cursor hints shown this session:', Array.from(this.cursorHintShown));
         
         slides.forEach((slide, index) => {
-            console.log(`Slide ${index}: ID="${slide.id}", Classes="${slide.className}"`);
+            const hasShownContentHint = this.slideHintShown.has(slide.id);
+            const hasShownCursorHint = this.cursorHintShown.has(slide.id);
+            console.log(`Slide ${index}: ID="${slide.id}", Classes="${slide.className}", Content hint shown: ${hasShownContentHint}, Cursor hint shown: ${hasShownCursorHint}`);
         });
         
         if (slides.length > 0) {
@@ -2059,10 +2153,11 @@ class Navigation {
         }
     }
     
-    // Reset first encounters for testing
-    resetFirstEncounters() {
-        this.slideFirstEncounters.clear();
-        console.log('First encounters reset - next 3 slides will show post content hints');
+    // Reset session hint tracking for testing
+    resetSessionHints() {
+        this.slideHintShown.clear();
+        this.cursorHintShown.clear();
+        console.log('Session hint tracking reset - all slides will show hints again');
     }
     
     // Toggle direct URL visit detection for testing
@@ -2369,6 +2464,28 @@ class Navigation {
     initScrollEvent(){
       this.slider.addEventListener("scroll", (event) => {
 		//console.log("------ SCROLLING ----")
+        
+        // Mark as user scrolling and clear any existing timer
+        this.isUserScrolling = true;
+        if (this.scrollTimer) {
+            clearTimeout(this.scrollTimer);
+        }
+        
+        // Cancel any pending hints when user starts scrolling
+        this.cancelPendingHints();
+        
+        // Set a timer to detect when scrolling stops
+        this.scrollTimer = setTimeout(() => {
+            this.isUserScrolling = false;
+            // Only show hint for the final destination slide after scrolling stops
+            const currentSlide = document.getElementById(this.slideVisibleId);
+            if (currentSlide && !currentSlide.classList.contains('opened') && !this.scrolling) {
+                setTimeout(() => {
+                    this.showCursorHint(currentSlide);
+                }, 200); // Small delay to ensure we're at the final destination
+            }
+        }, 300); // Wait 300ms after scrolling stops before showing hints
+        
         if(this.cardopened === true && this.scrolling === false && !document.fullscreenElement){
             let divcardopened=document.getElementById(this.targetSlide)
             var topLen = divcardopened.getBoundingClientRect().top;

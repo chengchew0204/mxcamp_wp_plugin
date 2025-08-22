@@ -1480,7 +1480,7 @@ input[type="button"],
 
 /* Cursor Hint – short, single tap, longer fade-in (1.3s total) */
 .cursor-hint {
-	position: absolute;
+	position: fixed;
 	width: 68px;
 	height: 68px;
 	background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
@@ -1488,8 +1488,8 @@ input[type="button"],
 	z-index: 10000; /* Higher than image flash overlay (9999) */
 	pointer-events: none !important;
 	opacity: 0;
-	top: 59px;
-	left: 153px;
+	top: 55%;
+	left: 50%;
 	transform: translate(-50%, -50%) scale(0.96);
 	will-change: transform, opacity;
 	/* smooth hide if you manually toggle opacity */
@@ -1501,7 +1501,7 @@ input[type="button"],
   
   /* Add .play to start the sequence */
   .cursor-hint.play {
-	animation: hintTap 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	animation: hintTap 2.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
   }
   
   /* Optional: subtle ripple near the pointer tip to visualize the tap */
@@ -1517,17 +1517,16 @@ input[type="button"],
 	will-change: transform, opacity;
   }
   
-  /* Sequence: longer fade-in → press → release → short hold → fade-out */
+  /* Sequence: longer fade-in → single press → release → long hold → fade-out */
   @keyframes hintTap {
-	/* fade-in (relatively longer) */
 	0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
-	36%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+	22%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
 	/* press */
-	44%  { opacity: 1; transform: translate(-50%, -50%) scale(0.92); }
+	28%  { opacity: 0.9; transform: translate(-50%, -50%) scale(0.92); }
 	/* release */
-	56%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+	56%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
 	/* short hold then fade out */
-	68%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+	68%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
 	100% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
   }
   
@@ -1539,7 +1538,7 @@ input[type="button"],
 /* Post Content Hint - Flash-open animation for first encounters */
 .slide_10.flash-hint .card-content {
 	display: block !important;
-	animation: flashOpen 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	animation: flashOpen 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 	opacity: 0;
 	z-index: 5;
 	pointer-events: none; /* Prevent interference during flash */
@@ -1557,11 +1556,11 @@ input[type="button"],
 		opacity: 0;
 		transform: translateY(-5px);
 	}
-	25% { 
-		opacity: 0.9;
-		transform: translateY(0);
+	33%{
+		opacity: 0;
 	}
-	75% { 
+	/* Flash starts at 35% to sync with hintTap press */
+	55% { 
 		opacity: 0.9;
 		transform: translateY(0);
 	}
@@ -1576,6 +1575,40 @@ input[type="button"],
 	pointer-events: none;
 }
 
+/* Background shadow overlay for normal slide card content hints */
+.slide_10.flash-hint::before {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(32, 16, 16, 0.50);
+	z-index: 1; /* Much lower than card content (z-index: 5) to ensure it's behind text */
+	opacity: 0;
+	animation: backgroundShadowFlash 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	pointer-events: none;
+}
+
+@keyframes backgroundShadowFlash {
+	0% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+	33%{
+		opacity: 0;
+	}
+	/* Flash starts at 35% to sync with hintTap press */
+	55% { 
+		opacity: 0.9;
+		transform: translateY(0);
+	}
+	100% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+}
+
 /* Accessibility for flash hint */
 @media (prefers-reduced-motion: reduce) {
 	.slide_10.flash-hint .card-content {
@@ -1583,9 +1616,19 @@ input[type="button"],
 		opacity: 0.6 !important;
 	}
 	
+	.slide_10.flash-hint::before {
+		animation: none !important;
+		opacity: 0.3 !important;
+	}
+	
 	@keyframes flashOpen {
 		0%, 100% { opacity: 0; }
 		50% { opacity: 0.6; }
+	}
+	
+	@keyframes backgroundShadowFlash {
+		0%, 100% { opacity: 0; }
+		50% { opacity: 0.3; }
 	}
 }
 
@@ -1597,7 +1640,7 @@ input[type="button"],
 	width: 100vw;
 	height: 100vh;
 	background-size: cover;
-	background-position: center;
+	background-position: center top; /* Align to top for both desktop and mobile */
 	background-repeat: no-repeat;
 	opacity: 0;
 	z-index: 9999; /* Very high z-index to ensure visibility */
@@ -1606,7 +1649,7 @@ input[type="button"],
 }
 
 .post-hint-image-overlay.flash-active {
-	animation: imageFlash 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	animation: imageFlash 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
 
 @keyframes imageFlash {
@@ -1614,11 +1657,11 @@ input[type="button"],
 		opacity: 0;
 		transform: scale(1);
 	}
-	20% { 
-		opacity: 1;
-		transform: scale(1);
+	10%{
+		opacity: 0;
 	}
-	80% { 
+	/* Flash starts at 40% to sync with hintTap press */
+	40% { 
 		opacity: 1;
 		transform: scale(1);
 	}
@@ -1685,17 +1728,15 @@ input[type="button"],
     }
 }
 
+/* Desktop background positioning for meditators slide */
+#meditators.slide_10 {
+	background-position: center top !important;
+}
+
 /* Mobile background positioning for meditadores slide */
 @media screen and (max-width: 768px) {
     #meditators.slide_10 {
         background-position: left top !important;
-    }
-}
-
-/* Desktop background positioning for meditators slide */
-@media screen and (min-width: 769px) {
-    #meditators.slide_10 {
-        background-position: center top !important;
     }
 }
 

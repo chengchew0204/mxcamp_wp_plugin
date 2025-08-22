@@ -62,8 +62,8 @@ function mxcamp_get_posts_cb_v3($atts) {
         $output .= '
         <link rel="stylesheet" type="text/css" href="/wp-content/plugins/mxcamp_V3/css/mxcamp_style-v3_0.css">
         <div class="slides" id="slides">
-        <div id="loading-spinner-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px); touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;">
-            <div class="loading-spinner" style="width: 50px; height: 50px; border: 3px solid rgba(245, 245, 245, 0.3); border-top: 3px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <div id="loading-spinner-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 10000; display: flex; align-items: center; justify-content: center; touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;">
+            <div class="loading-spinner" style="width: 75px; height: 75px; border: 4.5px solid rgba(245, 245, 245, 0.3); border-top: 4.5px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite;"></div>
         </div>
         <style>
             @keyframes spin {
