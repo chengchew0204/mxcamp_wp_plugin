@@ -1,5 +1,5 @@
-<!-- wp:html -->
-<style>
+ <!-- wp:html -->
+ <style>
   body.map {margin: 0;}
   @media screen and (max-width: 1050px) {
       body.bodycardopened.map header#header .ct-container-fluid>div:first-child {opacity: 1;}
@@ -59,7 +59,6 @@ z-index: 1;
           overflow: hidden;
           z-index: 20;
           position: absolute;
-          cursor: pointer;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent;
           -moz-user-select: -moz-none;
@@ -98,14 +97,14 @@ z-index: 1;
           width: 28%;
           height: 36%;
         }
+        .onmouseover-detail:hover{
+           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
+        }
         #focus-point {
           top:0;
           right: 0;
           height:1px;
           width:0;
-        }
-        .onmouseover-detail:hover{
-           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
         }
 .map-container {
   position: relative;
@@ -185,7 +184,7 @@ img {
       }
  .interactive-map {
   overflow-x: hidden;
-  overflow-y:scroll;
+  overflow-y: scroll;
   height: auto;
   width: 100dvw;
   }
@@ -306,43 +305,7 @@ img {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.8);
   }
-}
-
-/* Video Overlay Styles */
-#video-overlay {
-  position: absolute;
-  top: 25.8%;
-  right: 33.6%;
-  width: 11%;
-  height: 17.5%;
-  z-index: 10;
-  display: none;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  pointer-events: none;
-  object-fit: cover;
-  border-radius: 5px;
-}
-
-/* Responsive video overlay */
-@media (max-width: 1200px) {
-  #video-overlay {
-    top: 25.8%;
-    right: 33.6%;
-    width: 11%;
-    height: 17.5%;
-  }
-}
-
-@media (max-width: 768px) {
-  #video-overlay {
-    width: 11%;
-    height: 17%;
-    top: 25.8%;
-    right: 33.6%;
-  }
-}
-
+} 
 </style>
 <div class="interactive-map" ID="imap">
 <div class="map-container">
@@ -358,11 +321,8 @@ img {
 <img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
 <img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
 <img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
-<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4-box.webp" alt="Map" />
+<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
 <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" /> 
-<video id="video-overlay" autoplay loop muted playsinline>
-  <source src="https://camp.mx/wp-content/uploads/14-foro-down-4.mp4" type="video/mp4">
-</video>
 <div id="central-detail" class="detail onmouseover-detail"> </div>
 <div id="casita-detail" class="detail onmouseover-detail"> </div>
 <div id="chozas-detail" class="detail onmouseover-detail"> </div>
@@ -432,13 +392,6 @@ img {
       baseMap.style.opacity = '1';
     }
     
-    // Hide video overlay when resetting to initial state
-    const videoOverlay = document.getElementById('video-overlay');
-    if (videoOverlay) {
-      videoOverlay.style.display = 'none';
-      console.log('Video overlay hidden during map reset');
-    }
-    
     // Clear all event listeners and reset click handlers
     removeAllClickListeners();
     
@@ -471,7 +424,7 @@ img {
     resetMapToInitialState();
     
     // Close the map card
-    const mapHeader = document.querySelector("#map .card-header") || document.querySelector("#mapa .card-header");
+    const mapHeader = document.querySelector("#mapa .card-header") || document.querySelector("#map .card-header");
     if (mapHeader) {
       mapHeader.click();
     } else {
@@ -493,33 +446,26 @@ function clickOutside(event, ele, cb) {
 if (event.target.classList.contains('mapExit')) return;
 
 if (!ele.contains(event.target)) {
-      if (currentLayer) {
-        currentLayer.style.zIndex = -1
-      }
-      currentLayer = undefined
-      currentActiveBuilding = null; // Reset building tracker on click outside
-      
-      // Hide video overlay when clicking outside
-      const videoOverlay = document.getElementById('video-overlay');
-      if (videoOverlay) {
-        videoOverlay.style.display = 'none';
-        console.log('Video overlay hidden due to click outside');
-      }
-      
-      event.preventDefault();
-      removeAllClickListeners()
-      setAllClickListeners()
-      cb();
-      document.removeEventListener('click', handleClickOutside);
-    }
+  if (currentLayer) {
+    currentLayer.style.zIndex = -1;
   }
+  currentLayer = undefined;
+  currentActiveBuilding = null; // Reset building tracker on click outside
+  event.preventDefault();
+  removeAllClickListeners();
+  setAllClickListeners();
+  cb();
+  document.removeEventListener('click', handleClickOutside);
+}
+}
+
   let handleClickOutside;
   
   function onClickOutside(event, ele, cb) {
-     console.log('clicked outside event:'+event+ ' ele:'+ele +' cb:'+cb);
-      handleClickOutside = (event) => clickOutside(event, ele, cb);
-      document.addEventListener('click', handleClickOutside);
-    };
+    handleClickOutside = (event) => clickOutside(event, ele, cb);
+    document.addEventListener('click', handleClickOutside);
+  }
+
   function openDetail(event, element, mapIds, prevMapId) {
     // Check if we're switching to a different building
     if (currentActiveBuilding && currentActiveBuilding !== element) {
@@ -540,7 +486,7 @@ if (!ele.contains(event.target)) {
     let currentMapIndex = 0;
     let nextMapId = mapIdsCopy[currentMapIndex];
     let nextNextMapId = mapIdsCopy[currentMapIndex + 1];
-         let map = document.querySelector("#mapa");
+    let map = document.querySelector("#mapa");
     let nextLayer = document.querySelector("#" + nextMapId);
     
     if (!nextLayer) {
@@ -555,21 +501,9 @@ if (!ele.contains(event.target)) {
     const performTransition = () => {
       console.log(`Switching to layer: ${nextMapId}`);
       
-      // Show/hide video overlay based on layer
-      const videoOverlay = document.getElementById('video-overlay');
-      if (videoOverlay) {
-        if (nextMapId === 'jardin-down-4') {
-          videoOverlay.style.display = 'block';
-          console.log('Video overlay shown for jardin-down-4');
-        } else {
-          videoOverlay.style.display = 'none';
-          console.log('Video overlay hidden');
-        }
-      }
-      
       // Ensure image is ready and start transition
       if (nextLayer.complete && nextLayer.naturalWidth > 0) {
-                        // Hide ALL layers first to prevent any bleed-through
+                // Hide ALL layers first to prevent any bleed-through
         const allLayers = document.querySelectorAll('.layer');
         allLayers.forEach(layer => {
           layer.classList.remove('active');
@@ -610,7 +544,7 @@ if (!ele.contains(event.target)) {
       }
     };
 
-            const handleSequence = () => {
+        const handleSequence = () => {
       // Handle previous layer cleanup
         if (prevMapId) {
           let prevLayer = document.querySelector("#" + prevMapId);
@@ -645,14 +579,6 @@ if (!ele.contains(event.target)) {
               }
               currentLayer = undefined;
               currentActiveBuilding = null; // Clear active building tracker
-              
-              // Hide video overlay when returning to base from final layer
-              const videoOverlay = document.getElementById('video-overlay');
-              if (videoOverlay) {
-                videoOverlay.style.display = 'none';
-                console.log('Video overlay hidden when returning to base');
-              }
-              
               removeAllClickListeners();
               document.removeEventListener("click", handleClickOutside);
               setTimeout(() => {
@@ -675,7 +601,7 @@ if (!ele.contains(event.target)) {
   function setClickListeners(element, mapIds, prevMapId=undefined) {
     element.addEventListener("click", handleOpenDetail = (event) => openDetail(event, element, mapIds, prevMapId),{once: true})
   }
-     const map = document.querySelector("#mapa")
+  const map = document.querySelector("#mapa")
   
   function resetBuildingToLayer1(buildingElement) {
     // Remove any existing listeners from this building element
@@ -712,7 +638,7 @@ if (!ele.contains(event.target)) {
     setClickListeners(calleDetail, ["calle-down-1", "calle-down-2", "calle-down-3"])
     setClickListeners(jardinDetail, ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"])
     setClickListeners(cosinaDetail, ["central-down-1", "central-down-2", "central-down-3"])
-    addExitListeners() 
+      addExitListeners(); 
 }
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
@@ -934,7 +860,7 @@ if (!ele.contains(event.target)) {
       console.log('Contour engine reset complete');
     }
 
-            // Setup event listeners
+    // Setup event listeners
     setupEventListeners() {
       const mapContainer = document.getElementById('imap');
       if (!mapContainer) return;

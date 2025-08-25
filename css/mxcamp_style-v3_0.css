@@ -339,7 +339,7 @@ button.ct-header-trigger.ct-toggle {
 	/*top: 102px;*/
 	top: 21px;
 	position: absolute;
-	z-index: 10;
+	z-index: 100000;
 	left: 77px;
 }
 
@@ -357,6 +357,7 @@ button.ct-header-trigger.ct-toggle {
 	position: fixed;
 	width: fit-content;
 	left: 77px;
+	z-index: 100000;
 	/*margin-top: 102px*/
 }
 
@@ -1556,11 +1557,11 @@ input[type="button"],
 		opacity: 0;
 		transform: translateY(-5px);
 	}
-	33%{
+	17%{
 		opacity: 0;
 	}
 	/* Flash starts at 35% to sync with hintTap press */
-	55% { 
+	28% { 
 		opacity: 0.9;
 		transform: translateY(0);
 	}
@@ -1674,6 +1675,7 @@ input[type="button"],
 /* Mobile adjustments for image flash */
 @media screen and (max-width: 768px) {
 	.post-hint-image-overlay {
+		width: 100vw;
 		background-size: cover;
 		background-position: center top;
 		background-repeat: no-repeat;
@@ -1724,7 +1726,7 @@ input[type="button"],
         height: 80px;
         top: 32%;
 		left: 50%;
-		z-index: 10000; /* Higher than image flash overlay (9999) */
+		z-index: 100000; /* Higher than image flash overlay (9999) - same as desktop */
     }
 }
 

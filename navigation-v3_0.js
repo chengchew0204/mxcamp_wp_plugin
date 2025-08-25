@@ -1551,8 +1551,8 @@ class Navigation {
         const cursorHint = document.createElement('div');
         cursorHint.className = 'cursor-hint';
         
-        // Add to slide
-        slideElement.appendChild(cursorHint);
+        // Add to document body to ensure proper z-index stacking
+        document.body.appendChild(cursorHint);
         
         // Store reference for immediate cleanup
         this.currentCursorHint = cursorHint;
@@ -1791,6 +1791,77 @@ class Navigation {
             pointer-events: none !important;
             transition: opacity 0.5s ease-out !important;
         `;
+        
+        // Get the card header title to display on the overlay
+        const cardHeader = slideElement.querySelector('.card-header h2');
+        let titleText = slideId.toUpperCase(); // Default to slide ID
+        if (cardHeader && cardHeader.textContent) {
+            titleText = cardHeader.textContent;
+        }
+        
+        // Create exact duplicate of card-header div
+        const overlayCardHeader = document.createElement('div');
+        overlayCardHeader.style.cssText = `
+            position: absolute !important;
+            top: 21px !important;
+            left: 77px !important;
+            z-index: 10000 !important;
+            pointer-events: none !important;
+        `;
+        
+        // Create exact duplicate of h2 element
+        const overlayH2 = document.createElement('h2');
+        overlayH2.style.cssText = `
+            background-color: rgba(245, 245, 245, 0.95) !important;
+            color: rgba(0, 0, 0, 0.85) !important;
+            display: inline-block !important;
+            font-size: 24px !important;
+            line-height: 26px !important;
+            margin-top: 0.5px !important;
+            padding: 2px 9px 3px 9px !important;
+            position: relative !important;
+            white-space: pre !important;
+            cursor: pointer !important;
+            font-weight: 500 !important;
+        `;
+        overlayH2.textContent = titleText;
+        
+        // Add the ::after pseudo-element for the caret with down rotation
+        overlayH2.style.cssText += `
+            --caret-rotation: 0deg !important;
+        `;
+        
+        // Add the ::after pseudo-element using CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            .overlay-h2-caret::after {
+                background-image: url(https://camp.mx/img/caret28.svg) !important;
+                background-repeat: no-repeat !important;
+                background-size: 19px !important;
+                content: '' !important;
+                display: inline-block !important;
+                filter: invert(1) !important;
+                height: 19px !important;
+                left: 3px !important;
+                position: relative !important;
+                top: 9px !important;
+                transform-origin: 9px 6px !important;
+                transform: rotate(0deg) !important;
+                transition: transform 0.5s ease !important;
+                vertical-align: top !important;
+                width: 19px !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add the class to enable the ::after pseudo-element
+        overlayH2.classList.add('overlay-h2-caret');
+        
+        // Add h2 to card-header div
+        overlayCardHeader.appendChild(overlayH2);
+        
+        // Add card-header to overlay
+        imageOverlay.appendChild(overlayCardHeader);
         
         // Add to document body
         document.body.appendChild(imageOverlay);

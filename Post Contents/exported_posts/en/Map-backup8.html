@@ -310,19 +310,19 @@ img {
 </style>
 <div class="interactive-map" ID="imap">
 <div class="map-container">
-<img id="central-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
-<img id="central-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
-<img id="central-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
-<img id="chozas-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
-<img id="casita-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
-<img id="casita-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
-<img id="calle-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
-<img id="calle-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
-<img id="calle-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
-<img id="jardin-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
-<img id="jardin-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
-<img id="jardin-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
-<img id="jardin-down-4" class="map layer" src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
+<img id="central-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
+<img id="central-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
+<img id="central-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
+<img id="chozas-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
+<img id="casita-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
+<img id="casita-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
+<img id="calle-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
+<img id="calle-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
+<img id="calle-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
+<img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
+<img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
+<img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
+<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
 <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" /> 
 <div id="central-detail" class="detail onmouseover-detail"> </div>
 <div id="casita-detail" class="detail onmouseover-detail"> </div>
@@ -871,13 +871,30 @@ if (!ele.contains(event.target)) {
       mapContainer.addEventListener('mouseover', (event) => {
         if (isClickAction) return; // Ignore hover during click processing
         
-      const detail = event.target.closest('.detail.onmouseover-detail');
+        const detail = event.target.closest('.detail.onmouseover-detail');
         if (!detail || !this.contourConfig[detail.id]) return;
         
         // Hide all other contours when hovering a new area
         this.hideAllContours();
         // Show the contour for this area
         this.showContour(detail.id);
+      });
+
+      // Handle mouseout events to hide contours when leaving building areas
+      mapContainer.addEventListener('mouseout', (event) => {
+        if (isClickAction) return; // Ignore mouseout during click processing
+        
+        const detail = event.target.closest('.detail.onmouseover-detail');
+        if (!detail || !this.contourConfig[detail.id]) return;
+        
+        // Check if we're actually leaving the detail area (not just moving within it)
+        const relatedTarget = event.relatedTarget;
+        if (relatedTarget && detail.contains(relatedTarget)) {
+          return; // Still within the same detail area
+        }
+        
+        // Hide the contour for this area when leaving it
+        this.hideContour(detail.id);
       });
 
       // Handle click events
@@ -927,7 +944,7 @@ if (!ele.contains(event.target)) {
   const contourEngine = new SimpleContourEngine();
   
   // Start preloading images immediately for smooth transitions
-  imagePreloader.preloadAllMapLayers();
+  //imagePreloader.preloadAllMapLayers();
 
   // DEMO CURSOR SYSTEM
   class MapDemo {

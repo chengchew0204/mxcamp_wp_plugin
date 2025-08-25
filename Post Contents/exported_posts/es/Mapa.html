@@ -305,24 +305,62 @@ img {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.8);
   }
+}
+
+/* Video Overlay Styles */
+#video-overlay {
+  position: absolute;
+  top: 25.8%;
+  right: 33.6%;
+  width: 11%;
+  height: 17.5%;
+  z-index: 10;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  pointer-events: none;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* Responsive video overlay */
+@media (max-width: 1200px) {
+  #video-overlay {
+    top: 25.8%;
+    right: 33.6%;
+    width: 11%;
+    height: 17.5%;
+  }
+}
+
+@media (max-width: 768px) {
+  #video-overlay {
+    width: 11%;
+    height: 17%;
+    top: 25.8%;
+    right: 33.6%;
+  }
 } 
 </style>
 <div class="interactive-map" ID="imap">
 <div class="map-container">
-<img id="central-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
-<img id="central-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
-<img id="central-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
-<img id="chozas-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
-<img id="casita-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
-<img id="casita-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
-<img id="calle-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
-<img id="calle-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
-<img id="calle-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
-<img id="jardin-down-1" class="map layer" src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
-<img id="jardin-down-2" class="map layer" src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
-<img id="jardin-down-3" class="map layer" src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
-<img id="jardin-down-4" class="map layer" src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
+<img id="central-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
+<img id="central-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
+<img id="central-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
+<img id="chozas-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
+<img id="casita-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
+<img id="casita-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
+<img id="calle-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
+<img id="calle-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
+<img id="calle-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
+<img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
+<img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
+<img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
+<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4-box.webp" alt="Map" />
 <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" /> 
+<video id="video-overlay" autoplay loop muted playsinline>
+  <source src="https://camp.mx/wp-content/uploads/14-foro-down-4.mp4" type="video/mp4">
+</video>
 <div id="central-detail" class="detail onmouseover-detail"> </div>
 <div id="casita-detail" class="detail onmouseover-detail"> </div>
 <div id="chozas-detail" class="detail onmouseover-detail"> </div>
@@ -392,6 +430,13 @@ img {
       baseMap.style.opacity = '1';
     }
     
+    // Hide video overlay when resetting to initial state
+    const videoOverlay = document.getElementById('video-overlay');
+    if (videoOverlay) {
+      videoOverlay.style.display = 'none';
+      console.log('Video overlay hidden during map reset');
+    }
+    
     // Clear all event listeners and reset click handlers
     removeAllClickListeners();
     
@@ -451,6 +496,14 @@ if (!ele.contains(event.target)) {
   }
   currentLayer = undefined;
   currentActiveBuilding = null; // Reset building tracker on click outside
+  
+  // Hide video overlay when clicking outside
+  const videoOverlay = document.getElementById('video-overlay');
+  if (videoOverlay) {
+    videoOverlay.style.display = 'none';
+    console.log('Video overlay hidden due to click outside');
+  }
+  
   event.preventDefault();
   removeAllClickListeners();
   setAllClickListeners();
@@ -500,6 +553,18 @@ if (!ele.contains(event.target)) {
         // Function to perform smooth layer transition
     const performTransition = () => {
       console.log(`Switching to layer: ${nextMapId}`);
+      
+      // Show/hide video overlay based on layer
+      const videoOverlay = document.getElementById('video-overlay');
+      if (videoOverlay) {
+        if (nextMapId === 'jardin-down-4') {
+          videoOverlay.style.display = 'block';
+          console.log('Video overlay shown for jardin-down-4');
+        } else {
+          videoOverlay.style.display = 'none';
+          console.log('Video overlay hidden');
+        }
+      }
       
       // Ensure image is ready and start transition
       if (nextLayer.complete && nextLayer.naturalWidth > 0) {
@@ -579,6 +644,14 @@ if (!ele.contains(event.target)) {
               }
               currentLayer = undefined;
               currentActiveBuilding = null; // Clear active building tracker
+              
+              // Hide video overlay when returning to base from final layer
+              const videoOverlay = document.getElementById('video-overlay');
+              if (videoOverlay) {
+                videoOverlay.style.display = 'none';
+                console.log('Video overlay hidden when returning to base');
+              }
+              
               removeAllClickListeners();
               document.removeEventListener("click", handleClickOutside);
               setTimeout(() => {
@@ -944,7 +1017,7 @@ if (!ele.contains(event.target)) {
   const contourEngine = new SimpleContourEngine();
   
   // Start preloading images immediately for smooth transitions
-  imagePreloader.preloadAllMapLayers();
+  //imagePreloader.preloadAllMapLayers();
 
   // DEMO CURSOR SYSTEM
   class MapDemo {
