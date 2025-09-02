@@ -648,7 +648,7 @@ body.ajde_events-template-default div#main-container > * {
   margin-left:1px; margin-top:2px}
   .ajde_evcal_calendar.boxy .evo_lightbox, .evo_lightbox  {background:rgba(32,16,16,0.70)!important;}
   .evo_lightbox.eventcard .evo_lightbox_body, .evo_lightbox .evo_lightbox_body, .evo_lightbox .evolb_content {border-radius:0!important}
-  .evo_lightbox_content, .evolb_box {max-width:500px; margin-top:32px!important}
+  .evo_lightbox_content, .evolb_box {max-width:500px !important; margin-top:32px!important}
   
   /* Move event card higher to align with title top position */
   .evo_lightbox_content, .evolb_box {

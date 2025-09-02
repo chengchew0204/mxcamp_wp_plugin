@@ -108,13 +108,24 @@ function replaceByVideo(){
                     }, 3000);
                 }
                 
+                // Hide spinner when video starts playing
+                thisvideo.addEventListener('play', function () {
+                    spinnerContainer.style.display="none";
+                    console.log('Video started playing - spinner hidden');
+                });
+                
+                // Additional safety - hide spinner when video is actually playing
+                thisvideo.addEventListener('playing', function () {
+                    spinnerContainer.style.display="none";
+                    console.log('Video is playing - spinner hidden');
+                });
+                
                 // Handle timeupdate for showing controls
                 thisvideo.addEventListener('timeupdate', function () {
                     if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
                         thisvideo.controls = true;
                         controlsVisible = true; // Fixed: was set to false
-                        spinnerContainer.style.display="none";
-                        console.log('Controls shown and spinner hidden');
+                        console.log('Controls shown');
                     }
                 });
                 

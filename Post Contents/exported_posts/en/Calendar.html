@@ -170,11 +170,22 @@
                     setTimeout(() => {
                 thisvideo.play();
             }, 1000);
+                    // Hide spinner when video starts playing
+                    thisvideo.addEventListener('play', function () {
+                        spinnerContainer.style.display="none";
+                        console.log('Video started playing - spinner hidden');
+                    });
+                    
+                    // Additional safety - hide spinner when video is actually playing
+                    thisvideo.addEventListener('playing', function () {
+                        spinnerContainer.style.display="none";
+                        console.log('Video is playing - spinner hidden');
+                    });
+                    
                     var controlsVisible = false;
                     thisvideo.addEventListener('timeupdate', function () {
                         if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
-                            controlsVisible = false;
-                            spinnerContainer.style.display="none";
+                            controlsVisible = true;
                           }
                     });
                     thisHeader.appendChild(fullScreenDiv);
