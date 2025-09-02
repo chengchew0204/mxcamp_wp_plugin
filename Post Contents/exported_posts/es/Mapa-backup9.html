@@ -1,5 +1,5 @@
-<!-- wp:html -->
-<style>
+ <!-- wp:html -->
+ <style>
   body.map {margin: 0;}
   @media screen and (max-width: 1050px) {
       body.bodycardopened.map header#header .ct-container-fluid>div:first-child {opacity: 1;}
@@ -59,7 +59,6 @@ z-index: 1;
           overflow: hidden;
           z-index: 20;
           position: absolute;
-          cursor: pointer;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent;
           -moz-user-select: -moz-none;
@@ -98,14 +97,14 @@ z-index: 1;
           width: 28%;
           height: 36%;
         }
+        .onmouseover-detail:hover{
+           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
+        }
         #focus-point {
           top:0;
           right: 0;
           height:1px;
           width:0;
-        }
-        .onmouseover-detail:hover{
-           cursor: url('https://camp.mx/wp-content/uploads/custom-cursor.png'), auto;
         }
 .map-container {
   position: relative;
@@ -185,7 +184,7 @@ img {
       }
  .interactive-map {
   overflow-x: hidden;
-  overflow-y:scroll;
+  overflow-y: scroll;
   height: auto;
   width: 100dvw;
   }
@@ -308,53 +307,39 @@ img {
   }
 }
 
-/* === Generic media overlay system === */
-#media-overlay {
+/* Video Overlay Styles */
+#video-overlay {
   position: absolute;
-  inset: 0;
-  z-index: 10;             /* above map layers, below demo cursor(99999) */
-  pointer-events: none;     /* let clicks pass through unless you enable it */
+  top: 25.8%;
+  right: 33.55%;
+  width: 11%;
+  height: 17.5%;
+  z-index: 10;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  pointer-events: none;
+  object-fit: cover;
 }
 
-.media-item {
-  position: absolute;       /* position by % rect */
-  display: none;            /* only show when matched layer is active */
-  overflow: visible;
-  /* box-shadow and border-radius removed to let video_grid_box.webp handle the styling */
+/* Responsive video overlay */
+@media (max-width: 1200px) {
+  #video-overlay {
+    top: 25.8%;
+    right: 33.6%;
+    width: 11%;
+    height: 17.5%;
+  }
 }
 
-.media-item .frame {
-  position: absolute;
-  inset: 0;
-  background-image: url('https://camp.mx/wp-content/uploads/video_grid_box.webp');
-  background-size: contain;    /* use contain to show full frame image */
-  background-position: center;
-  background-repeat: no-repeat;
-  border: none;                /* remove border since image provides the frame */
-  border-radius: inherit;
-  z-index: 1;                  /* frame over video to show the grid box */
-  pointer-events: none;        /* allow clicks to pass through to video */
-  transform: scale(1.10);  
-  transform-origin: center; 
-}
-
-.media-item video,
-.media-item img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;           /* fill the box */
-  z-index: 3;                  /* video on top of the frame */
-  border-radius: inherit;      /* match container border radius if any */
-  transform: translateX(-0.8%);  /* move video left by 0.8% while keeping frame position unchanged */
-}
-
-/* Optional: quick helpers if you want responsive tweaks later */
 @media (max-width: 768px) {
-  .media-item { border-radius: 0px; }
-}
-
+  #video-overlay {
+    width: 11.1%;
+    height: 17%;
+    top: 26%;
+    right: 33.5%;
+  }
+} 
 </style>
 <div class="interactive-map" ID="imap">
 <div class="map-container">
@@ -370,10 +355,11 @@ img {
 <img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
 <img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
 <img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
-<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
+<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4-box.webp" alt="Map" />
 <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" /> 
-<!-- Multi-media overlay mount -->
-<div id="media-overlay" aria-hidden="true"></div>
+<video id="video-overlay" autoplay loop muted playsinline>
+  <source src="https://camp.mx/wp-content/uploads/14-foro-down-4.mp4" type="video/mp4">
+</video>
 <div id="central-detail" class="detail onmouseover-detail"> </div>
 <div id="casita-detail" class="detail onmouseover-detail"> </div>
 <div id="chozas-detail" class="detail onmouseover-detail"> </div>
@@ -443,8 +429,12 @@ img {
       baseMap.style.opacity = '1';
     }
     
-    // Hide all media overlays when resetting to initial state
-    overlayManager.hideAll();
+    // Hide video overlay when resetting to initial state
+    const videoOverlay = document.getElementById('video-overlay');
+    if (videoOverlay) {
+      videoOverlay.style.display = 'none';
+      console.log('Video overlay hidden during map reset');
+    }
     
     // Clear all event listeners and reset click handlers
     removeAllClickListeners();
@@ -478,7 +468,7 @@ img {
     resetMapToInitialState();
     
     // Close the map card
-    const mapHeader = document.querySelector("#map .card-header") || document.querySelector("#mapa .card-header");
+    const mapHeader = document.querySelector("#mapa .card-header") || document.querySelector("#map .card-header");
     if (mapHeader) {
       mapHeader.click();
     } else {
@@ -500,29 +490,34 @@ function clickOutside(event, ele, cb) {
 if (event.target.classList.contains('mapExit')) return;
 
 if (!ele.contains(event.target)) {
-      if (currentLayer) {
-        currentLayer.style.zIndex = -1
-      }
-      currentLayer = undefined
-      currentActiveBuilding = null; // Reset building tracker on click outside
-      
-      // Hide all media overlays when clicking outside
-      overlayManager.hideAll();
-      
-      event.preventDefault();
-      removeAllClickListeners()
-      setAllClickListeners()
-      cb();
-      document.removeEventListener('click', handleClickOutside);
-    }
+  if (currentLayer) {
+    currentLayer.style.zIndex = -1;
   }
+  currentLayer = undefined;
+  currentActiveBuilding = null; // Reset building tracker on click outside
+  
+  // Hide video overlay when clicking outside
+  const videoOverlay = document.getElementById('video-overlay');
+  if (videoOverlay) {
+    videoOverlay.style.display = 'none';
+    console.log('Video overlay hidden due to click outside');
+  }
+  
+  event.preventDefault();
+  removeAllClickListeners();
+  setAllClickListeners();
+  cb();
+  document.removeEventListener('click', handleClickOutside);
+}
+}
+
   let handleClickOutside;
   
   function onClickOutside(event, ele, cb) {
-     console.log('clicked outside event:'+event+ ' ele:'+ele +' cb:'+cb);
-      handleClickOutside = (event) => clickOutside(event, ele, cb);
-      document.addEventListener('click', handleClickOutside);
-    };
+    handleClickOutside = (event) => clickOutside(event, ele, cb);
+    document.addEventListener('click', handleClickOutside);
+  }
+
   function openDetail(event, element, mapIds, prevMapId) {
     // Check if we're switching to a different building
     if (currentActiveBuilding && currentActiveBuilding !== element) {
@@ -543,7 +538,7 @@ if (!ele.contains(event.target)) {
     let currentMapIndex = 0;
     let nextMapId = mapIdsCopy[currentMapIndex];
     let nextNextMapId = mapIdsCopy[currentMapIndex + 1];
-         let map = document.querySelector("#mapa");
+    let map = document.querySelector("#mapa");
     let nextLayer = document.querySelector("#" + nextMapId);
     
     if (!nextLayer) {
@@ -558,12 +553,21 @@ if (!ele.contains(event.target)) {
     const performTransition = () => {
       console.log(`Switching to layer: ${nextMapId}`);
       
-      // Show/hide media overlays based on layer using OverlayManager
-      overlayManager.showForLayer(nextMapId);
+      // Show/hide video overlay based on layer
+      const videoOverlay = document.getElementById('video-overlay');
+      if (videoOverlay) {
+        if (nextMapId === 'jardin-down-4') {
+          videoOverlay.style.display = 'block';
+          console.log('Video overlay shown for jardin-down-4');
+        } else {
+          videoOverlay.style.display = 'none';
+          console.log('Video overlay hidden');
+        }
+      }
       
       // Ensure image is ready and start transition
       if (nextLayer.complete && nextLayer.naturalWidth > 0) {
-                        // Hide ALL layers first to prevent any bleed-through
+                // Hide ALL layers first to prevent any bleed-through
         const allLayers = document.querySelectorAll('.layer');
         allLayers.forEach(layer => {
           layer.classList.remove('active');
@@ -604,7 +608,7 @@ if (!ele.contains(event.target)) {
       }
     };
 
-            const handleSequence = () => {
+        const handleSequence = () => {
       // Handle previous layer cleanup
         if (prevMapId) {
           let prevLayer = document.querySelector("#" + prevMapId);
@@ -640,8 +644,12 @@ if (!ele.contains(event.target)) {
               currentLayer = undefined;
               currentActiveBuilding = null; // Clear active building tracker
               
-              // Hide all media overlays when returning to base from final layer
-              overlayManager.hideAll();
+              // Hide video overlay when returning to base from final layer
+              const videoOverlay = document.getElementById('video-overlay');
+              if (videoOverlay) {
+                videoOverlay.style.display = 'none';
+                console.log('Video overlay hidden when returning to base');
+              }
               
               removeAllClickListeners();
               document.removeEventListener("click", handleClickOutside);
@@ -665,7 +673,7 @@ if (!ele.contains(event.target)) {
   function setClickListeners(element, mapIds, prevMapId=undefined) {
     element.addEventListener("click", handleOpenDetail = (event) => openDetail(event, element, mapIds, prevMapId),{once: true})
   }
-     const map = document.querySelector("#mapa")
+  const map = document.querySelector("#mapa")
   
   function resetBuildingToLayer1(buildingElement) {
     // Remove any existing listeners from this building element
@@ -702,7 +710,7 @@ if (!ele.contains(event.target)) {
     setClickListeners(calleDetail, ["calle-down-1", "calle-down-2", "calle-down-3"])
     setClickListeners(jardinDetail, ["jardin-down-1", "jardin-down-2", "jardin-down-3", "jardin-down-4"])
     setClickListeners(cosinaDetail, ["central-down-1", "central-down-2", "central-down-3"])
-    addExitListeners() 
+      addExitListeners(); 
 }
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
@@ -924,7 +932,7 @@ if (!ele.contains(event.target)) {
       console.log('Contour engine reset complete');
     }
 
-            // Setup event listeners
+    // Setup event listeners
     setupEventListeners() {
       const mapContainer = document.getElementById('imap');
       if (!mapContainer) return;
@@ -1002,179 +1010,6 @@ if (!ele.contains(event.target)) {
       }
     }
   }
-
-  /* ===============================
-     OverlayManager: multi video+box
-     =============================== */
-  class OverlayManager {
-    /**
-     * @param {Object} opts
-     * @param {string} opts.mount   - CSS selector to mount into (e.g., '.map-container' or '#media-overlay' parent)
-     * @param {Array}  opts.items   - List of media overlays config
-     */
-    constructor(opts) {
-      this.items = opts.items || [];
-      this.mountSelector = opts.mount || '#media-overlay';
-      this.mountEl = document.querySelector(this.mountSelector) || document.getElementById('media-overlay');
-      if (!this.mountEl) {
-        // Fallback: create one under .map-container
-        const container = document.querySelector('.map-container');
-        this.mountEl = document.createElement('div');
-        this.mountEl.id = 'media-overlay';
-        container.appendChild(this.mountEl);
-      }
-      this.dom = new Map(); // id -> element
-      console.log('OverlayManager initializing with', this.items.length, 'items');
-      this.build();
-      this.hideAll();
-    }
-
-    // Build DOM for all items once
-    build() {
-      this.items.forEach(item => {
-        const root = document.createElement('div');
-        root.className = 'media-item';
-        root.id = item.id;
-
-        // Position by % rect (top/right/left/width/height)
-        // You can use any combination; here we set inline styles from config.
-        const s = root.style;
-        if (item.rect) {
-          // Prefer using {top,left,width,height}; support right if provided
-          if (item.rect.top  != null)  s.top = item.rect.top;
-          if (item.rect.left != null)  s.left = item.rect.left;
-          if (item.rect.right!= null)  s.right = item.rect.right;
-          if (item.rect.width!= null)  s.width = item.rect.width;
-          if (item.rect.height!= null) s.height = item.rect.height;
-        }
-
-        // Frame (box) behind video
-        const frame = document.createElement('div');
-        frame.className = 'frame';
-        // Allow per-item frame overrides
-        if (item.box) {
-          if (item.box.background) frame.style.background = item.box.background;
-          if (item.box.border)     frame.style.border = item.box.border;
-          if (item.box.radius)     frame.style.borderRadius = item.box.radius;
-          if (item.box.shadow)     frame.style.boxShadow = item.box.shadow;
-        }
-
-        // Media (video or image)
-        let mediaEl;
-        if (item.type === 'image') {
-          mediaEl = document.createElement('img');
-          mediaEl.src = item.src;
-          mediaEl.alt = item.alt || '';
-        } else {
-          mediaEl = document.createElement('video');
-          mediaEl.autoplay = true;
-          mediaEl.loop = true;
-          mediaEl.muted = true;
-          mediaEl.playsInline = true;
-          if (item.poster) mediaEl.poster = item.poster;
-          const source = document.createElement('source');
-          source.src = item.src;
-          source.type = item.mime || 'video/mp4';
-          mediaEl.appendChild(source);
-        }
-
-        // Keep pointer-events off by default (follows container); enable if needed:
-        root.style.pointerEvents = 'none';
-
-        root.appendChild(frame);
-        root.appendChild(mediaEl);
-        this.mountEl.appendChild(root);
-        this.dom.set(item.id, root);
-        console.log(`Built media item: ${item.id} with frame background and ${item.type}`);
-      });
-      
-      console.log('OverlayManager build complete. Mount element:', this.mountEl);
-    }
-
-    // Show overlays that match a given layerId
-    showForLayer(layerId) {
-      // Hide overlays that should not be shown for this layer
-      this.items.forEach(item => {
-        const el = this.dom.get(item.id);
-        if (!el) return;
-        
-        if (item.showOn && item.showOn.includes(layerId)) {
-          // Show this item
-          console.log(`Showing media overlay: ${item.id} for layer: ${layerId}`);
-          el.style.display = 'block';
-          el.style.transition = 'opacity 160ms ease';
-          el.style.opacity = '1';
-        } else {
-          // Hide this item
-          if (el.style.display !== 'none') {
-            console.log(`Hiding media overlay: ${item.id} (not for layer: ${layerId})`);
-          }
-          el.style.transition = 'opacity 120ms ease';
-          el.style.opacity = '0';
-          setTimeout(() => { 
-            if (el.style.opacity === '0') {
-              el.style.display = 'none'; 
-            }
-          }, 120);
-        }
-      });
-    }
-
-    // Hide everything
-    hideAll() {
-      this.dom.forEach(el => {
-        el.style.transition = 'opacity 120ms ease';
-        el.style.opacity = '0';
-        // Delay display none until after fade
-        setTimeout(() => { el.style.display = 'none'; }, 120);
-      });
-    }
-  }
-
-  /* ===============================
-     Initialize OverlayManager
-     - Uses default position as default rect
-     - To add new videos later, just add an item in the items array
-     =============================== */
-  const overlayManager = new OverlayManager({
-    mount: '#media-overlay',
-    items: [
-      {
-        id: 'vid-foro-1',
-        type: 'video',
-        src: 'https://camp.mx/wp-content/uploads/14-foro-down-4.mp4',
-        poster: '',      // optional
-        mime: 'video/mp4',
-        // Position: Uses your current #video-overlay % parameters
-        rect: {
-          top: '25.8%',
-          right: '33.55%',
-          width: '11%',
-          height: '17.5%'
-        },
-        // Which layers this video should appear on
-        showOn: ['jardin-down-4']
-        // box settings removed, using video_grid_box.webp in CSS as universal frame
-      }
-
-      // ⬇ You can continue adding second, third, etc...
-      // Example: Central area second layer also has a video
-      // {
-      //   id: 'vid-central-2',
-      //   type: 'video',
-      //   src: 'https://camp.mx/wp-content/uploads/central-demo-2.mp4',
-      //   rect: {
-      //     top: '41%',
-      //     left: '39%',
-      //     width: '16%',
-      //     height: '18%'
-      //   },
-      //   showOn: ['central-down-2']
-      // }
-
-      // ...more items as needed
-    ]
-  });
 
   // Initialize the Image Preloader and Contour Engine
   const imagePreloader = new ImagePreloader();

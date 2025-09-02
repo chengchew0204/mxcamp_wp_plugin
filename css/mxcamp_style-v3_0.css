@@ -1486,7 +1486,7 @@ input[type="button"],
 	height: 68px;
 	background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
 	background-size: contain;
-	z-index: 10000; /* Higher than image flash overlay (9999) */
+	z-index: 99999999; /* Higher than image flash overlay (9999) */
 	pointer-events: none !important;
 	opacity: 0;
 	top: 55%;

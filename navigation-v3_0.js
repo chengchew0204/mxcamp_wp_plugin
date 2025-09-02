@@ -1560,7 +1560,7 @@ class Navigation {
         
         // Check if this is a first encounter and should show post content hint
         
-        // Define heavy slides that use image flash instead of card content flash
+        // Define heavy slides that use text hints instead of card content flash
         const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
         const isHeavySlide = heavySlides.includes(slideId);
         
@@ -1602,7 +1602,7 @@ class Navigation {
                 
                 // Use the stored decision to schedule the post content hint
                 if (shouldShowPostContentHint) {
-                    console.log('Scheduling post content hint for slide:', slideElement.id, '- Type:', isHeavySlide ? 'IMAGE FLASH' : 'CARD FLASH');
+                    console.log('Scheduling post content hint for slide:', slideElement.id, '- Type:', isHeavySlide ? 'TEXT HINT' : 'CARD FLASH');
                     this.schedulePostContentHint(slideElement, isHeavySlide);
                     
                     // Mark this slide as having shown its content hint
@@ -1673,7 +1673,7 @@ class Navigation {
         const hintMidpointDelay = 400; // milliseconds - earlier in the animation
         
         console.log('Scheduling post content hint for slide:', slideElement.id, 'in', hintMidpointDelay, 'ms', 
-                   '- Type:', isHeavySlide ? 'IMAGE FLASH' : 'CARD FLASH');
+                   '- Type:', isHeavySlide ? 'TEXT HINT' : 'CARD FLASH');
         
         this.pendingContentHintTimer = setTimeout(() => {
             // Clear the timer reference since it's now executing
@@ -1704,8 +1704,8 @@ class Navigation {
             // Only require slide to exist and not be opened - cursor hint can be gone
             if (slideStillExists && slideNotOpened && cardNotOpened) {
                 if (isHeavySlide) {
-                    console.log('Triggering post content IMAGE FLASH for slide:', slideElement.id);
-                    this.performPostContentImageFlash(slideElement);
+                    console.log('Triggering post content TEXT HINT for slide:', slideElement.id);
+                    this.performPostContentTextHint(slideElement);
                 } else {
                     console.log('Triggering post content CARD FLASH for slide:', slideElement.id);
                     this.performPostContentFlash(slideElement);
@@ -1752,8 +1752,21 @@ class Navigation {
     }
     
     performPostContentImageFlash(slideElement) {
+        // COMMENTED OUT: Disruptive background image flash functionality
         // Flash a screenshot image for heavy slides instead of opening card content
         const slideId = slideElement.id;
+        
+        console.log('Background image flash disabled for slide:', slideId, '- using text hint instead');
+        
+        // Use the new text-based hint system instead
+        this.performPostContentTextHint(slideElement);
+        
+        // Still restart video on video background slides after hint animation
+        setTimeout(() => {
+            this.restartVideoOnHintComplete(slideId);
+        }, 2100);
+        
+        /* COMMENTED OUT: Original disruptive image flash code
         
         // Detect current language and device type
         const language = this.detectLanguage();
@@ -1906,6 +1919,134 @@ class Navigation {
                 this.restartVideoOnHintComplete(slideId);
             }
         }, 2100); // Match the CSS animation duration
+        
+        END COMMENTED OUT */
+    }
+    
+    // NEW: Text-based hint system - lightweight and non-disruptive
+    performPostContentTextHint(slideElement) {
+        const slideId = slideElement.id;
+        
+        console.log('Starting text-based hint for slide:', slideId);
+        
+        // Get hint messages based on slide and language
+        const hintData = this.getHintMessages(slideId);
+        
+        if (!hintData) {
+            console.log('No hint data available for slide:', slideId);
+            return;
+        }
+        
+        // Create the text hint overlay
+        const textHint = document.createElement('div');
+        textHint.className = 'text-hint-overlay';
+        
+        // Position the hint in the center of the screen
+        textHint.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            text-align: center;
+            max-width: 90%;
+            padding: 20px;
+        `;
+        
+        // Create message element with post content styling (matching .card-content)
+        const messageElement = document.createElement('div');
+        messageElement.className = 'text-hint-message';
+        messageElement.textContent = hintData.message;
+        messageElement.style.cssText = `
+            font-family: 'ClearSans', helvetica, sans-serif;
+            font-weight: 500;
+            font-stretch: 80%;
+            letter-spacing: -0.2px;
+            color: rgba(245, 245, 245, 0.9);
+            font-size: 16px;
+            line-height: 1.4;
+        `;
+        
+        // Add message element to hint container
+        textHint.appendChild(messageElement);
+        
+        // Add to document body
+        document.body.appendChild(textHint);
+        
+        // Force reflow and trigger animation
+        textHint.offsetHeight;
+        
+        // Fade in
+        setTimeout(() => {
+            textHint.style.opacity = '1';
+            console.log('Text hint faded in for slide:', slideId);
+        }, 50);
+        
+        // Hold for 1.5 seconds then fade out
+        setTimeout(() => {
+            textHint.style.opacity = '0';
+            console.log('Text hint fading out for slide:', slideId);
+            
+            // Remove after fade completes
+            setTimeout(() => {
+                if (textHint && textHint.parentNode) {
+                    textHint.parentNode.removeChild(textHint);
+                    console.log('Text hint removed for slide:', slideId);
+                }
+            }, 400); // Match transition duration
+        }, 1500);
+        
+        // Safety cleanup after total animation time
+        setTimeout(() => {
+            if (textHint && textHint.parentNode) {
+                textHint.parentNode.removeChild(textHint);
+                console.log('Text hint safety cleanup for slide:', slideId);
+            }
+        }, 2100);
+    }
+    
+    // Get hint messages for different slides and languages
+    getHintMessages(slideId) {
+        // Detect current language
+        const language = this.detectLanguage();
+        const isEnglish = language === 'en';
+        
+        // Detect device type for click vs tap
+        const isTouchDevice = this.isMobileDevice();
+        const actionWord = isTouchDevice ? 
+            (isEnglish ? 'tap' : 'toque') : 
+            (isEnglish ? 'click' : 'clic');
+        
+        const hintMessages = {
+            // Map slides
+            'mapa': {
+                message: isEnglish ? `(${actionWord} to open map)` : `(${actionWord} para abrir el mapa)`
+            },
+            'map': {
+                message: isEnglish ? `(${actionWord} to open map)` : `(${actionWord} para abrir el mapa)`
+            },
+            
+            // Calendar slides
+            'calendario': {
+                message: isEnglish ? `(${actionWord} to open calendar)` : `(${actionWord} para abrir el calendario)`
+            },
+            'calendar': {
+                message: isEnglish ? `(${actionWord} to open calendar)` : `(${actionWord} para abrir el calendario)`
+            },
+            
+            // Gallery slides
+            'galeria': {
+                message: isEnglish ? `(${actionWord} to open gallery)` : `(${actionWord} para abrir la galería)`
+            },
+            'gallery': {
+                message: isEnglish ? `(${actionWord} to open gallery)` : `(${actionWord} para abrir la galería)`
+            }
+        };
+        
+        return hintMessages[slideId] || null;
     }
     
     // Cancel any pending hint timers to prevent hints from appearing on wrong slides
@@ -2197,8 +2338,7 @@ class Navigation {
     // Debug function to test post content hint functionality
     testPostContentHint() {
         console.log('=== Testing Post Content Hint ===');
-        console.log('First encounters so far:', Array.from(this.slideFirstEncounters));
-        console.log('Max hint slides:', this.maxHintSlides);
+        console.log('Slide hint shown so far:', Array.from(this.slideHintShown));
         console.log('Is direct URL visit:', this.isDirectUrlVisit);
         
         const visibleSlide = document.getElementById(this.slideVisibleId);
@@ -2206,15 +2346,15 @@ class Navigation {
             const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
             const isHeavySlide = heavySlides.includes(visibleSlide.id);
             
-            console.log('Testing flash hint on:', visibleSlide.id);
-            console.log('Is heavy slide (will use image flash):', isHeavySlide);
+            console.log('Testing hint on:', visibleSlide.id);
+            console.log('Is heavy slide (will use text hint):', isHeavySlide);
             console.log('Has card content:', !!visibleSlide.querySelector('.card-content'));
             console.log('Is opened:', visibleSlide.classList.contains('opened'));
             console.log('Card opened state:', this.cardopened);
             
             if (isHeavySlide) {
-                console.log('Testing IMAGE FLASH for heavy slide:', visibleSlide.id);
-                this.performPostContentImageFlash(visibleSlide);
+                console.log('Testing TEXT HINT for heavy slide:', visibleSlide.id);
+                this.performPostContentTextHint(visibleSlide);
             } else {
                 console.log('Testing CARD FLASH for normal slide:', visibleSlide.id);
                 this.performPostContentFlash(visibleSlide);
@@ -2238,25 +2378,23 @@ class Navigation {
         return this.isDirectUrlVisit;
     }
     
-    // Test image flash functionality specifically
-    testImageFlash() {
-        console.log('=== Testing Image Flash Functionality ===');
+    // Test text hint functionality specifically
+    testTextHint() {
+        console.log('=== Testing Text Hint Functionality ===');
         const visibleSlide = document.getElementById(this.slideVisibleId);
         if (visibleSlide) {
             const language = this.detectLanguage();
-            const deviceType = this.detectDeviceType();
-            const screenshotPath = this.getScreenshotPath(visibleSlide.id, language, deviceType);
+            const hintData = this.getHintMessages(visibleSlide.id);
             
             console.log('Current slide:', visibleSlide.id);
             console.log('Detected language:', language);
-            console.log('Detected device type:', deviceType);
-            console.log('Screenshot path:', screenshotPath);
+            console.log('Hint data:', hintData);
             
-            if (screenshotPath) {
-                console.log('Triggering image flash test...');
-                this.performPostContentImageFlash(visibleSlide);
+            if (hintData) {
+                console.log('Triggering text hint test...');
+                this.performPostContentTextHint(visibleSlide);
             } else {
-                console.log('No screenshot available for this slide');
+                console.log('No hint data available for this slide');
             }
         } else {
             console.log('No visible slide to test on');
@@ -2316,11 +2454,11 @@ class Navigation {
         }
     }
     
-    // Force test image flash during cursor hint animation
-    testImageFlashDuringCursorHint() {
+    // Force test text hint during cursor hint animation
+    testTextHintDuringCursorHint() {
         const visibleSlide = document.getElementById(this.slideVisibleId);
         if (visibleSlide) {
-            console.log('=== Testing Image Flash During Cursor Hint ===');
+            console.log('=== Testing Text Hint During Cursor Hint ===');
             console.log('Slide:', visibleSlide.id);
             
             // Check if it's a heavy slide
@@ -2328,21 +2466,21 @@ class Navigation {
             const isHeavySlide = heavySlides.includes(visibleSlide.id);
             
             if (isHeavySlide) {
-                console.log('Heavy slide detected - will test image flash');
+                console.log('Heavy slide detected - will test text hint');
                 
                 // Temporarily reset encounters and disable direct URL detection
-                const originalEncounters = new Set(this.slideFirstEncounters);
+                const originalHintShown = new Set(this.slideHintShown);
                 const originalDirectUrl = this.isDirectUrlVisit;
                 
-                this.slideFirstEncounters.delete(visibleSlide.id);
+                this.slideHintShown.delete(visibleSlide.id);
                 this.isDirectUrlVisit = false;
                 
-                // Force show cursor hint which should trigger image flash
+                // Force show cursor hint which should trigger text hint
                 this.showCursorHint(visibleSlide);
                 
                 // Restore original settings after a delay
                 setTimeout(() => {
-                    this.slideFirstEncounters = originalEncounters;
+                    this.slideHintShown = originalHintShown;
                     this.isDirectUrlVisit = originalDirectUrl;
                     console.log('Settings restored');
                 }, 3000);
@@ -2355,11 +2493,11 @@ class Navigation {
         }
     }
     
-    // Force test image flash directly without cursor hint
-    forceTestImageFlash() {
+    // Force test text hint directly without cursor hint
+    forceTestTextHint() {
         const visibleSlide = document.getElementById(this.slideVisibleId);
         if (visibleSlide) {
-            console.log('=== Force Testing Image Flash Directly ===');
+            console.log('=== Force Testing Text Hint Directly ===');
             console.log('Slide:', visibleSlide.id);
             
             // Check if it's a heavy slide
@@ -2367,8 +2505,8 @@ class Navigation {
             const isHeavySlide = heavySlides.includes(visibleSlide.id);
             
             if (isHeavySlide) {
-                console.log('Heavy slide detected - forcing image flash directly');
-                this.performPostContentImageFlash(visibleSlide);
+                console.log('Heavy slide detected - forcing text hint directly');
+                this.performPostContentTextHint(visibleSlide);
             } else {
                 console.log('Not a heavy slide - forcing card flash directly');
                 this.performPostContentFlash(visibleSlide);
