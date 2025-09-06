@@ -102,6 +102,31 @@
             }
         }
     );
+
+    // Add ESC key functionality to close calendar event cards
+    function closeEventCardWithEsc() {
+        let active_card = document.getElementsByClassName('eventcard eventon_events_list show')[0];
+        if (active_card) {
+            let closeButton = active_card.getElementsByClassName('evolb_close_btn')[0];
+            if (closeButton) {
+                console.log("Closing event card with ESC key");
+                closeButton.click();
+                return true; // Indicate that we handled the ESC key
+            }
+        }
+        return false; // No active event card found
+    }
+
+    // Listen for ESC key presses
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            // Try to close calendar event card first
+            if (closeEventCardWithEsc()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    });
     
     function goToJan() {
         let janEl = document.querySelector(`.legend.evo_jumper_months a`)
@@ -328,6 +353,128 @@
         monthElements.forEach((el) => el.removeAttribute("title"))
     }
     removeMonthTitles()
+    
+    // Simple and direct arrow key navigation for calendar months
+    console.log('Setting up simple arrow key navigation...');
+    
+    function handleCalendarArrowKeys(event) {
+        console.log('KEY PRESSED:', event.key, 'Code:', event.code);
+        
+        // Only handle left/right arrows
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+            return;
+        }
+        
+        // Don't interfere with typing
+        if (event.target.tagName === 'INPUT' || 
+            event.target.tagName === 'TEXTAREA' || 
+            event.target.isContentEditable) {
+            console.log('User is typing, ignoring arrow key');
+            return;
+        }
+        
+        // Don't interfere with open event cards
+        const lightboxOpen = document.querySelector('#evo_lightboxes .eventcard.show');
+        if (lightboxOpen) {
+            console.log('Event card is open, ignoring arrow key');
+            return;
+        }
+        
+        console.log('ARROW KEY DETECTED:', event.key);
+        
+        // Find the compact calendar navigation
+        const compactNav = document.querySelector('.compact-calendar-nav');
+        if (!compactNav) {
+            console.log('No compact calendar navigation found');
+            return;
+        }
+        
+        console.log('Found compact navigation:', compactNav);
+        
+        // Find all navigation divs
+        const navDivs = compactNav.querySelectorAll('div.onmouseover-detail');
+        console.log('Found navigation divs:', navDivs.length);
+        
+        if (navDivs.length < 4) {
+            console.log('Not enough navigation divs found');
+            return;
+        }
+        
+        // Select the correct navigation button
+        // Structure: [year-prev, year-next, month-prev, month-next]
+        let targetButton = null;
+        if (event.key === 'ArrowLeft') {
+            targetButton = navDivs[2]; // Month previous
+            console.log('LEFT ARROW: Selecting month previous button');
+        } else {
+            targetButton = navDivs[3]; // Month next  
+            console.log('RIGHT ARROW: Selecting month next button');
+        }
+        
+        if (!targetButton) {
+            console.log('No target button found');
+            return;
+        }
+        
+        console.log('Target button found:', targetButton);
+        console.log('Target button style:', targetButton.style.cssText);
+        console.log('Target button visibility:', targetButton.style.visibility);
+        console.log('Target button pointer events:', targetButton.style.pointerEvents);
+        
+        // Check if button is visible and clickable
+        const isHidden = targetButton.style.visibility === 'hidden' || 
+                        targetButton.style.pointerEvents === 'none';
+        
+        if (isHidden) {
+            console.log('Target button is hidden/disabled, cannot navigate');
+            event.preventDefault(); // Still prevent scrolling
+            return;
+        }
+        
+        console.log('CLICKING TARGET BUTTON...');
+        
+        // Try to click the button
+        try {
+            if (targetButton.onclick) {
+                console.log('Calling onclick handler directly...');
+                targetButton.onclick();
+            } else {
+                console.log('No onclick handler, trying click event...');
+                targetButton.click();
+            }
+            
+            console.log('BUTTON CLICKED SUCCESSFULLY');
+            event.preventDefault();
+            event.stopPropagation();
+            
+        } catch (error) {
+            console.error('Error clicking button:', error);
+        }
+    }
+    
+    // Add multiple event listeners to ensure it works
+    console.log('Adding arrow key event listeners...');
+    
+    // Method 1: Standard event listener
+    document.addEventListener('keydown', handleCalendarArrowKeys);
+    
+    // Method 2: Capture phase
+    document.addEventListener('keydown', handleCalendarArrowKeys, true);
+    
+    // Method 3: Window level
+    window.addEventListener('keydown', handleCalendarArrowKeys);
+    
+    // Method 4: Direct assignment (will override any existing)
+    const originalKeyHandler = document.onkeydown;
+    document.onkeydown = function(event) {
+        handleCalendarArrowKeys(event);
+        // Call original handler if it exists
+        if (originalKeyHandler) {
+            originalKeyHandler(event);
+        }
+    };
+    
+    console.log('Arrow key navigation setup complete - 4 methods added');
     
     </script>
     <style>

@@ -9,6 +9,7 @@ class VideoSound {
     this.videoIsMuted = true;
     this.loadedVideos = new Set(); // Track which videos have been loaded
     this.initialLoad = true; // Flag to track initial page load
+    this.videoSpinners = new Map(); // Track video loading spinners
     this.init();
   }
 
@@ -18,76 +19,116 @@ class VideoSound {
     this.setupIntersectionObserver();
     this.setupLazyLoading();
     
-    // Don't automatically play videos on page load
-    // Instead, wait for first user scroll or interaction
-    this.preloadVisibleVideos();
+    // Aggressively preload and prepare videos for immediate playback
+    this.preloadAllVideos();
     
-    // Set initial load to false after a delay
+    // Set initial load to false much sooner for faster video activation
     setTimeout(() => {
       this.initialLoad = false;
-    }, 1000);
+      // Immediately try to play the first visible video
+      this.playInitialVisibleVideo();
+    }, 200);
   }
   
-  // Preload visible videos without playing them on initial load
-  preloadVisibleVideos() {
-    // Short delay to ensure DOM is fully processed
+  // Aggressively preload ALL videos for immediate playback
+  preloadAllVideos() {
+    // Shorter delay for faster activation
     setTimeout(() => {
-      // Find all visible slides
-      this.slider.querySelectorAll('.slide_10').forEach(slide => {
-        const rect = slide.getBoundingClientRect();
-        const isVisible = (
-          rect.top >= 0 &&
-          rect.left >= 0 &&
-          rect.bottom <= window.innerHeight &&
-          rect.right <= window.innerWidth
-        );
+      // Preload ALL videos, not just visible ones
+      this.slider.querySelectorAll('.thefrontvideo').forEach(video => {
+        // Set additional attributes for faster loading first
+        video.setAttribute('preload', 'auto');
+        video.setAttribute('playsinline', 'true');
         
-        if (isVisible) {
-          // This is a visible slide
-          const video = slide.querySelector('.thefrontvideo');
-          if (video) {
-            this.preloadVideo(video);
-            this.visibleDivId = slide.id;
-            console.log('Preloaded video on slide', slide.id);
-          }
-        }
+        // Now preload with spinner
+        this.preloadVideo(video);
+        console.log('Aggressively preloaded video with spinner');
       });
-    }, 500);
+      
+      // Also identify the initially visible slide
+      this.updateVisibleSlideInfo();
+    }, 100);
+  }
+  
+  // Play the initial visible video immediately after preload
+  playInitialVisibleVideo() {
+    const visibleSlide = document.getElementById(this.visibleDivId);
+    if (visibleSlide) {
+      const video = visibleSlide.querySelector('.thefrontvideo');
+      if (video) {
+        this.playVideoImmediately(video);
+        console.log('Playing initial video on slide:', this.visibleDivId);
+      }
+    }
   }
   
   // Helper function to play a video immediately
   playVideoImmediately(video) {
-    if (!video || !video.paused || this.isCardOpen()) return;
+    if (!video || this.isCardOpen()) return;
     
-    // Don't play video on initial page load
-    if (this.initialLoad) {
-      console.log('Skipping autoplay during initial page load');
-      return;
-    }
+    // Allow video playback even during initial load for immediate activation
+    // Only skip if explicitly paused by user or card is open
+    
+    // Always show loading spinner first - videos often take time to load
+    this.showVideoSpinner(video);
+    console.log('Video loading spinner shown for readyState:', video.readyState);
+    
+    // Set up event listeners for video loading states with more reliable cleanup
+    const hideSpinnerAndCleanup = () => {
+      console.log('Video ready - hiding spinner and cleaning up listeners');
+      this.hideVideoSpinner(video);
+      // Clean up all listeners
+      video.removeEventListener('canplay', hideSpinnerAndCleanup);
+      video.removeEventListener('canplaythrough', hideSpinnerAndCleanup);
+      video.removeEventListener('loadeddata', hideSpinnerAndCleanup);
+      video.removeEventListener('playing', hideSpinnerAndCleanup);
+      video.removeEventListener('error', hideSpinnerAndCleanup);
+    };
+    
+    // Listen for video ready events
+    video.addEventListener('canplay', hideSpinnerAndCleanup, { once: true });
+    video.addEventListener('canplaythrough', hideSpinnerAndCleanup, { once: true });
+    video.addEventListener('loadeddata', hideSpinnerAndCleanup, { once: true });
+    video.addEventListener('playing', hideSpinnerAndCleanup, { once: true });
+    video.addEventListener('error', hideSpinnerAndCleanup, { once: true });
     
     // Ensure video has preload set to auto
     video.preload = "auto";
     
     // Try to play the video
-    video.play()
-      .then(() => {
-        console.log('Video started playing automatically');
-      })
-      .catch(err => {
-        console.error('Error playing video:', err);
-        
-        // Try again with muted option, as browsers allow autoplay for muted videos
-        if (!video.muted) {
-          video.muted = true;
-          video.play()
-            .then(() => {
-              console.log('Video playing muted due to autoplay restrictions');
-            })
-            .catch(innerErr => {
-              console.error('Still cannot play video even when muted:', innerErr);
-            });
-        }
-      });
+    const playPromise = video.play();
+    
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          console.log('Video play() promise resolved successfully');
+        })
+        .catch(err => {
+          console.error('Error playing video:', err);
+          
+          // Try again with muted option, as browsers allow autoplay for muted videos
+          if (!video.muted) {
+            console.log('Retrying with muted video...');
+            video.muted = true;
+            const mutedPlayPromise = video.play();
+            
+            if (mutedPlayPromise !== undefined) {
+              mutedPlayPromise
+                .then(() => {
+                  console.log('Video playing muted due to autoplay restrictions');
+                })
+                .catch(innerErr => {
+                  console.error('Still cannot play video even when muted:', innerErr);
+                  this.hideVideoSpinner(video);
+                });
+            }
+          } else {
+            this.hideVideoSpinner(video);
+          }
+        });
+    } else {
+      console.log('Video play() returned undefined - older browser');
+    }
   }
 
   // Setup lazy loading for videos
@@ -105,6 +146,10 @@ class VideoSound {
   preloadVideo(video) {
     if (!video || this.loadedVideos.has(video)) return;
     
+    // Don't show spinner during preload - only during actual play attempts
+    // This prevents conflicts with the playVideoImmediately spinner
+    console.log('Preloading video for readyState:', video.readyState);
+    
     // Set preload attribute to auto
     video.preload = "auto";
     
@@ -112,6 +157,100 @@ class VideoSound {
     this.loadedVideos.add(video);
     
     console.log('Video preloaded');
+  }
+
+  // Create video loading spinner for a specific video
+  createVideoSpinner(video) {
+    if (!video) {
+      console.error('Cannot create spinner - no video provided');
+      return;
+    }
+    
+    if (this.videoSpinners.has(video)) {
+      console.log('Spinner already exists for this video');
+      return this.videoSpinners.get(video);
+    }
+    
+    const slide = video.closest('.slide_10');
+    if (!slide) {
+      console.error('Cannot create spinner - video not inside slide_10');
+      return;
+    }
+    
+    // Create spinner container
+    const spinnerContainer = document.createElement('div');
+    spinnerContainer.className = 'video-loading-spinner';
+    
+    // Create spinner element
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    
+    spinnerContainer.appendChild(spinner);
+    slide.appendChild(spinnerContainer);
+    
+    // Store reference
+    this.videoSpinners.set(video, spinnerContainer);
+    
+    console.log('Video loading spinner created for slide:', slide.id);
+    return spinnerContainer;
+  }
+
+  // Show video loading spinner
+  showVideoSpinner(video) {
+    if (!video) return;
+    
+    let spinner = this.videoSpinners.get(video);
+    if (!spinner) {
+      spinner = this.createVideoSpinner(video);
+    }
+    
+    if (spinner) {
+      spinner.classList.remove('hide');
+      spinner.style.display = 'block';
+      spinner.style.opacity = '1';
+      const slide = video.closest('.slide_10');
+      console.log('Video loading spinner shown for slide:', slide ? slide.id : 'unknown');
+      
+      // Safety timeout to hide spinner if video events don't fire
+      setTimeout(() => {
+        if (spinner && !spinner.classList.contains('hide')) {
+          console.log('Safety timeout: hiding video spinner after 10 seconds');
+          this.hideVideoSpinner(video);
+        }
+      }, 10000);
+      
+    } else {
+      console.error('Failed to show video spinner - spinner not created');
+    }
+  }
+
+  // Hide video loading spinner
+  hideVideoSpinner(video) {
+    if (!video) return;
+    
+    const spinner = this.videoSpinners.get(video);
+    if (spinner) {
+      spinner.classList.add('hide');
+      // Remove after transition
+      setTimeout(() => {
+        if (spinner.classList.contains('hide')) {
+          spinner.style.display = 'none';
+        }
+      }, 300);
+      console.log('Video loading spinner hidden');
+    }
+  }
+
+  // Remove video loading spinner
+  removeVideoSpinner(video) {
+    if (!video) return;
+    
+    const spinner = this.videoSpinners.get(video);
+    if (spinner && spinner.parentNode) {
+      spinner.parentNode.removeChild(spinner);
+      this.videoSpinners.delete(video);
+      console.log('Video loading spinner removed');
+    }
   }
 
   // Pause all videos and reset their playback position
@@ -124,6 +263,9 @@ class VideoSound {
         
         // Then reset its playback position to the beginning
         video.currentTime = 0;
+        
+        // Hide any loading spinner
+        this.hideVideoSpinner(video);
         
         console.log('Video stopped and reset to beginning');
       } catch (err) {
@@ -142,6 +284,9 @@ class VideoSound {
       
       // Then reset its playback position to the beginning
       video.currentTime = 0;
+      
+      // Hide any loading spinner
+      this.hideVideoSpinner(video);
       
       console.log('Video stopped and reset to beginning');
     } catch (err) {
@@ -310,8 +455,8 @@ class VideoSound {
       // Get intersection ratio to determine how much of element is visible
       const ratio = entry.intersectionRatio || 0;
       
-      // Only play if HIGHLY visible (ratio >= 0.5 or visibility >= 70%)
-      if (entry.isIntersecting && isVideoVisible && (ratio >= 0.5 || visibilityPercentage >= 0.7)) {
+      // Play if moderately visible (lowered threshold for faster activation)
+      if (entry.isIntersecting && isVideoVisible && (ratio >= 0.3 || visibilityPercentage >= 0.4)) {
         // Stocke l'ID de la div visible dans visibleDivId
         this.visibleDivId = entry.target.id;
         
@@ -332,11 +477,8 @@ class VideoSound {
             }
           }
           
-          // Only play if not in initial page load
-          if (!this.initialLoad) {
-            // Play the video immediately without delay when it becomes visible
-            this.playVideoImmediately(video);
-          }
+          // Play the video immediately when it becomes visible (removed initial load restriction)
+          this.playVideoImmediately(video);
           
           this.checkForVideo(entry.target);
         } else {
@@ -427,6 +569,71 @@ class VideoSound {
     if (playButton) {
       playButton.remove();
       console.log('playbutton enleve');
+    }
+  }
+
+  // Debug function to test video spinner visibility
+  testVideoSpinner() {
+    console.log('=== Testing Video Spinner ===');
+    const videos = document.querySelectorAll('.thefrontvideo');
+    console.log('Found videos:', videos.length);
+    
+    if (videos.length > 0) {
+      const firstVideo = videos[0];
+      const slide = firstVideo.closest('.slide_10');
+      console.log('Testing spinner on slide:', slide ? slide.id : 'unknown');
+      
+      // Show spinner for 5 seconds
+      this.showVideoSpinner(firstVideo);
+      console.log('Spinner should now be visible on the first video slide');
+      
+      setTimeout(() => {
+        this.hideVideoSpinner(firstVideo);
+        console.log('Spinner hidden after 5 seconds');
+      }, 5000);
+    } else {
+      console.log('No videos found to test spinner on');
+    }
+  }
+
+  // Debug function to diagnose video playback issues
+  debugVideoPlayback() {
+    console.log('=== Debugging Video Playback ===');
+    const videos = document.querySelectorAll('.thefrontvideo');
+    console.log('Total videos found:', videos.length);
+    
+    videos.forEach((video, index) => {
+      const slide = video.closest('.slide_10');
+      console.log(`Video ${index + 1}:`);
+      console.log('  - Slide ID:', slide ? slide.id : 'unknown');
+      console.log('  - Video src:', video.src || video.currentSrc || 'no source');
+      console.log('  - Ready state:', video.readyState);
+      console.log('  - Paused:', video.paused);
+      console.log('  - Muted:', video.muted);
+      console.log('  - Preload:', video.preload);
+      console.log('  - Autoplay:', video.autoplay);
+      console.log('  - Current time:', video.currentTime);
+      console.log('  - Duration:', video.duration);
+      console.log('  - Network state:', video.networkState);
+      console.log('  - Error:', video.error);
+      console.log('  - Card opened:', this.isCardOpen());
+      console.log('  ---');
+    });
+    
+    console.log('Current visible div ID:', this.visibleDivId);
+    console.log('Is initial load:', this.initialLoad);
+  }
+
+  // Debug function to manually try playing a video
+  forcePlayVideo() {
+    console.log('=== Force Playing First Video ===');
+    const videos = document.querySelectorAll('.thefrontvideo');
+    if (videos.length > 0) {
+      const firstVideo = videos[0];
+      console.log('Attempting to force play first video...');
+      this.playVideoImmediately(firstVideo);
+    } else {
+      console.log('No videos found to force play');
     }
   }
 }

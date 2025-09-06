@@ -90,6 +90,10 @@ class Navigation {
         this.pendingCursorHintTimer = null;
         this.pendingContentHintTimer = null;
         
+        // Active text hints tracking - to hide them immediately when needed
+        this.activeTextHints = new Set(); // Track active text hint elements
+        this.activeTextHintTimers = new Set(); // Track active text hint timers
+        
         // Check if this is a direct URL visit (card will open automatically)
         this.isDirectUrlVisit = this.checkDirectUrlVisit();
         
@@ -1208,6 +1212,12 @@ class Navigation {
         // Cancel any pending hints when navigating to a new slide
         this.cancelPendingHints();
         
+        // Hide any active cursor hint immediately when navigating to a new slide
+        this.hideCurrentCursorHint();
+        
+        // Hide any active text hints immediately when navigating to a new slide
+        this.hideAllActiveTextHints();
+        
         // Close all previews when navigating to a slide
         if (typeof window.closeAllPreviews === 'function') {
             window.closeAllPreviews();
@@ -1334,6 +1344,9 @@ class Navigation {
         // Hide any active cursor hint when menu is activated
         this.hideCurrentCursorHint();
         
+        // Hide any active text hints when menu is activated
+        this.hideAllActiveTextHints();
+        
         if(this.cardopened===true){this.closeCards()};
         this.slider.classList.add('menuactive');
         this.body.style.overflow = "hidden";
@@ -1387,6 +1400,9 @@ class Navigation {
         
         // Immediately hide any active cursor hint to prevent interference
         this.hideCurrentCursorHint();
+        
+        // Hide any active text hints immediately when opening a card
+        this.hideAllActiveTextHints();
         
         // Force close any open card immediately to ensure clean state before opening new card
         // This prevents crashes when cards aren't properly closed
@@ -1560,9 +1576,10 @@ class Navigation {
         
         // Check if this is a first encounter and should show post content hint
         
-        // Define heavy slides that use text hints instead of card content flash
-        const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
-        const isHeavySlide = heavySlides.includes(slideId);
+        // ALL slides now use text hints instead of card content flash
+        // const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
+        // const isHeavySlide = heavySlides.includes(slideId);
+        const isHeavySlide = true; // All slides are now treated as "heavy" slides (text hints only)
         
         // Show post content hint on every slide (no longer limited to first 3)
         const isExcludedSlide = false;
@@ -1573,7 +1590,7 @@ class Navigation {
                                          !this.slideHintShown.has(slideId);
         
         if (shouldShowPostContentHint) {
-            console.log('Post content hint will show for slide:', slideId, '- first time this session');
+            console.log('Post content TEXT HINT will show for slide:', slideId, '- first time this session');
         } else if (this.isDirectUrlVisit) {
             console.log('Post content hint skipped for slide:', slideId, '- direct URL visit detected');
         } else if (this.slideHintShown.has(slideId)) {
@@ -1602,7 +1619,7 @@ class Navigation {
                 
                 // Use the stored decision to schedule the post content hint
                 if (shouldShowPostContentHint) {
-                    console.log('Scheduling post content hint for slide:', slideElement.id, '- Type:', isHeavySlide ? 'TEXT HINT' : 'CARD FLASH');
+                    console.log('Scheduling post content TEXT HINT for slide:', slideElement.id);
                     this.schedulePostContentHint(slideElement, isHeavySlide);
                     
                     // Mark this slide as having shown its content hint
@@ -1668,9 +1685,9 @@ class Navigation {
     }
     
     schedulePostContentHint(slideElement, isHeavySlide = false) {
-        // Calculate timing for midpoint of cursor hint animation
-        // hintTap animation is 1.3s total, midpoint is around 0.4s (30% of animation) for better timing
-        const hintMidpointDelay = 400; // milliseconds - earlier in the animation
+        // Start text hint simultaneously with cursor hint for synchronized timing
+        // Both hints now start at the same time (0ms delay)
+        const hintMidpointDelay = 0; // milliseconds - start immediately with cursor hint
         
         console.log('Scheduling post content hint for slide:', slideElement.id, 'in', hintMidpointDelay, 'ms', 
                    '- Type:', isHeavySlide ? 'TEXT HINT' : 'CARD FLASH');
@@ -1703,13 +1720,9 @@ class Navigation {
             
             // Only require slide to exist and not be opened - cursor hint can be gone
             if (slideStillExists && slideNotOpened && cardNotOpened) {
-                if (isHeavySlide) {
+                // All slides now use text hints
                     console.log('Triggering post content TEXT HINT for slide:', slideElement.id);
                     this.performPostContentTextHint(slideElement);
-                } else {
-                    console.log('Triggering post content CARD FLASH for slide:', slideElement.id);
-                    this.performPostContentFlash(slideElement);
-                }
             } else {
                 console.log('Post content hint skipped - conditions not met for slide:', slideElement.id, {
                     slideExists: slideStillExists,
@@ -1720,6 +1733,7 @@ class Navigation {
         }, hintMidpointDelay);
     }
     
+    /* COMMENTED OUT: Card flash functionality - all slides now use text hints
     performPostContentFlash(slideElement) {
         // Quick flash-open of the card to show content preview
         const slideId = slideElement.id;
@@ -1745,11 +1759,11 @@ class Navigation {
                 slideElement.classList.remove('flash-hint');
                 console.log('Flash animation completed for slide:', slideId);
                 
-                // Restart video on video background slides after hint animation
-                this.restartVideoOnHintComplete(slideId);
+                // Video playback is now handled automatically by BgVideoSound.js - no restart needed
             }
         }, 2100); // Slightly longer than CSS animation duration for safety
     }
+    END COMMENTED OUT */
     
     performPostContentImageFlash(slideElement) {
         // COMMENTED OUT: Disruptive background image flash functionality
@@ -1761,10 +1775,7 @@ class Navigation {
         // Use the new text-based hint system instead
         this.performPostContentTextHint(slideElement);
         
-        // Still restart video on video background slides after hint animation
-        setTimeout(() => {
-            this.restartVideoOnHintComplete(slideId);
-        }, 2100);
+        // Video playback is now handled automatically by BgVideoSound.js - no restart needed
         
         /* COMMENTED OUT: Original disruptive image flash code
         
@@ -1915,8 +1926,7 @@ class Navigation {
                 imageOverlay.parentNode.removeChild(imageOverlay);
                 console.log('Image flash completed for slide:', slideId);
                 
-                // Restart video on video background slides after hint animation
-                this.restartVideoOnHintComplete(slideId);
+                // Video playback is now handled automatically by BgVideoSound.js - no restart needed
             }
         }, 2100); // Match the CSS animation duration
         
@@ -1942,33 +1952,96 @@ class Navigation {
         textHint.className = 'text-hint-overlay';
         
         // Position the hint in the center of the screen
+        // Check if mobile device for different positioning
+        const isMobile = window.innerWidth <= 768;
+        const topPosition = isMobile ? '35%' : '50%'; // Move text hints higher on mobile
+        
+        // Check text length to determine if we need special positioning for longer hints
+        const textLength = hintData.message.length;
+        const isLongText = textLength > 15;
+        const isVeryLongText = textLength > 30; // Special handling for very long texts like ORGANIZADORXS
+        
+        // For longer text hints, use different positioning to ensure proper centering
+        const maxWidth = isVeryLongText ? '100%' : (isLongText ? '95%' : '90%');
+        
+        // Specific slide adjustments for mobile positioning
+        let leftAdjustment = 0; // Default no adjustment
+        if (isMobile) {
+            switch(slideId.toLowerCase()) {
+                case 'orientacion':
+                case 'orientation':
+                    leftAdjustment = -10; // Move left 10px
+                    break;
+                case 'organizadorxs':
+                case 'organizers':
+                    leftAdjustment = -14; // Move left 20px
+                    break;
+                case 'meditadorxs':
+                    leftAdjustment = -10; // Move left 10px
+                    break;
+                case 'meditators':
+                case 'restaurant':
+                    leftAdjustment = -6; // Move left 6px
+                    break;
+                case 'restaurante':
+                    leftAdjustment = -10; // Move left 10px
+                    break;
+            }
+        }
+        
+        const leftPosition = '50%';
+        const transformValue = `translate(calc(-50% + ${leftAdjustment}px), -50%)`;
+        
         textHint.style.cssText = `
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: ${topPosition};
+            left: ${leftPosition};
+            transform: ${transformValue};
             z-index: 9999;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s ease-in-out;
             text-align: center;
-            max-width: 90%;
+            max-width: ${maxWidth};
             padding: 20px;
+            box-sizing: border-box;
+            width: ${isVeryLongText ? 'max-content' : (isLongText ? 'max-content' : 'auto')};
         `;
         
         // Create message element with post content styling (matching .card-content)
         const messageElement = document.createElement('div');
         messageElement.className = 'text-hint-message';
         messageElement.textContent = hintData.message;
+        
+        // Adjust styling based on text length
+        const fontSize = (isMobile && textLength > 20) ? '20px' : (isMobile ? '22px' : '24px');
+        const lineHeight = (isMobile && textLength > 20) ? '22px' : (isMobile ? '25px' : '26px');
+        
         messageElement.style.cssText = `
             font-family: 'ClearSans', helvetica, sans-serif;
             font-weight: 500;
-            font-stretch: 80%;
-            letter-spacing: -0.2px;
-            color: rgba(245, 245, 245, 0.9);
-            font-size: 16px;
-            line-height: 1.4;
+            font-stretch: 70%;
+            letter-spacing: 0px;
+            color: rgba(245, 245, 245, 0.95);
+            display: inline-block;
+            font-size: ${fontSize};
+            line-height: ${lineHeight};
+            margin-top: 0.5px;
+            padding: 2px 9px 3px 9px;
+            white-space: ${isLongText ? 'nowrap' : 'pre'};
+            text-align: center;
+            max-width: 100%;
+            overflow: visible;
         `;
+        
+        // Apply mobile responsive styling to match h2 mobile styles
+        if (window.innerWidth <= 1200) {
+            messageElement.style.fontSize = '22px';
+            messageElement.style.lineHeight = '25px';
+            messageElement.style.paddingTop = '3px';
+            messageElement.style.paddingBottom = '4px';
+            messageElement.style.marginTop = '0';
+        }
         
         // Add message element to hint container
         textHint.appendChild(messageElement);
@@ -1976,36 +2049,49 @@ class Navigation {
         // Add to document body
         document.body.appendChild(textHint);
         
+        // Track this text hint as active
+        this.activeTextHints.add(textHint);
+        
         // Force reflow and trigger animation
         textHint.offsetHeight;
         
         // Fade in
-        setTimeout(() => {
-            textHint.style.opacity = '1';
-            console.log('Text hint faded in for slide:', slideId);
+        const fadeInTimer = setTimeout(() => {
+            if (textHint && textHint.parentNode) {
+                textHint.style.opacity = '1';
+                console.log('Text hint faded in for slide:', slideId);
+            }
         }, 50);
+        this.activeTextHintTimers.add(fadeInTimer);
         
-        // Hold for 1.5 seconds then fade out
-        setTimeout(() => {
-            textHint.style.opacity = '0';
-            console.log('Text hint fading out for slide:', slideId);
-            
-            // Remove after fade completes
-            setTimeout(() => {
-                if (textHint && textHint.parentNode) {
-                    textHint.parentNode.removeChild(textHint);
-                    console.log('Text hint removed for slide:', slideId);
-                }
-            }, 400); // Match transition duration
-        }, 1500);
+        // Hold for 0.85 seconds then fade out (total 1.5s for shorter text hint display)
+        const fadeOutTimer = setTimeout(() => {
+            if (textHint && textHint.parentNode) {
+                textHint.style.opacity = '0';
+                console.log('Text hint fading out for slide:', slideId);
+                
+                // Remove after fade completes
+                const removeTimer = setTimeout(() => {
+                    if (textHint && textHint.parentNode) {
+                        textHint.parentNode.removeChild(textHint);
+                        this.activeTextHints.delete(textHint);
+                        console.log('Text hint removed for slide:', slideId);
+                    }
+                }, 400); // Match transition duration
+                this.activeTextHintTimers.add(removeTimer);
+            }
+        }, 1350);
+        this.activeTextHintTimers.add(fadeOutTimer);
         
-        // Safety cleanup after total animation time
-        setTimeout(() => {
+        // Safety cleanup after total animation time (matches cursor hint duration)
+        const safetyTimer = setTimeout(() => {
             if (textHint && textHint.parentNode) {
                 textHint.parentNode.removeChild(textHint);
+                this.activeTextHints.delete(textHint);
                 console.log('Text hint safety cleanup for slide:', slideId);
             }
-        }, 2100);
+        }, 2000);
+        this.activeTextHintTimers.add(safetyTimer);
     }
     
     // Get hint messages for different slides and languages
@@ -2023,27 +2109,127 @@ class Navigation {
         const hintMessages = {
             // Map slides
             'mapa': {
-                message: isEnglish ? `(${actionWord} to open map)` : `(${actionWord} para abrir el mapa)`
+                message: isEnglish ? `(${actionWord} to open MAP)` : `(${actionWord} para abrir MAPA)`
             },
             'map': {
-                message: isEnglish ? `(${actionWord} to open map)` : `(${actionWord} para abrir el mapa)`
+                message: isEnglish ? `(${actionWord} to open MAP)` : `(${actionWord} para abrir MAPA)`
             },
             
             // Calendar slides
             'calendario': {
-                message: isEnglish ? `(${actionWord} to open calendar)` : `(${actionWord} para abrir el calendario)`
+                message: isEnglish ? `(${actionWord} to open CALENDAR)` : `(${actionWord} para abrir CALENDARIO)`
             },
             'calendar': {
-                message: isEnglish ? `(${actionWord} to open calendar)` : `(${actionWord} para abrir el calendario)`
+                message: isEnglish ? `(${actionWord} to open CALENDAR)` : `(${actionWord} para abrir CALENDARIO)`
             },
             
             // Gallery slides
             'galeria': {
-                message: isEnglish ? `(${actionWord} to open gallery)` : `(${actionWord} para abrir la galería)`
+                message: isEnglish ? `(${actionWord} to open GALLERY)` : `(${actionWord} para abrir GALERÍA)`
             },
             'gallery': {
-                message: isEnglish ? `(${actionWord} to open gallery)` : `(${actionWord} para abrir la galería)`
-            }
+                message: isEnglish ? `(${actionWord} to open GALLERY)` : `(${actionWord} para abrir GALERÍA)`
+            },
+            
+            // Orientation slides
+            'orientation': {
+                message: isEnglish ? `(${actionWord} to open ORIENTATION)` : `(${actionWord} para abrir ORIENTACIÓN)`
+            },
+            'orientacion': {
+                message: isEnglish ? `(${actionWord} to open ORIENTATION)` : `(${actionWord} para abrir ORIENTACIÓN)`
+            },
+            
+            // Guests slides
+            'huespedes': {
+                message: isEnglish ? `(${actionWord} to open GUESTS)` : `(${actionWord} para abrir HUÉSPEDES)`
+            },
+            'guests': {
+                message: isEnglish ? `(${actionWord} to open GUESTS)` : `(${actionWord} para abrir HUÉSPEDES)`
+            },
+            
+            // Organizers slides
+            'organizadores': {
+                message: isEnglish ? `(${actionWord} to open ORGANISERS)` : `(${actionWord} para abrir ORGANIZADORXS)`
+            },
+            'organizadorxs': {
+                message: isEnglish ? `(${actionWord} to open ORGANISERS)` : `(${actionWord} para abrir ORGANIZADORXS)`
+            },
+            'organizers': {
+                message: isEnglish ? `(${actionWord} to open ORGANISERS)` : `(${actionWord} para abrir ORGANIZADORXS)`
+            },
+            'organisers': {
+                message: isEnglish ? `(${actionWord} to open ORGANISERS)` : `(${actionWord} para abrir ORGANIZADORXS)`
+            },
+            
+            // Artists slides
+            'artistas': {
+                message: isEnglish ? `(${actionWord} to open ARTISTS)` : `(${actionWord} para abrir ARTISTAS)`
+            },
+            'artists': {
+                message: isEnglish ? `(${actionWord} to open ARTISTS)` : `(${actionWord} para abrir ARTISTAS)`
+            },
+            
+            
+            // Meditators slides
+            'meditadorxs': {
+                message: isEnglish ? `(${actionWord} to open MEDITATORS)` : `(${actionWord} para abrir MEDITADORXS)`
+            },
+            'meditators': {
+                message: isEnglish ? `(${actionWord} to open MEDITATORS)` : `(${actionWord} para abrir MEDITADORXS)`
+            },
+            
+            'nosotrxs': {
+                message: isEnglish ? `(${actionWord} to open ABOUT)` : `(${actionWord} para abrir NOSOTRXS)`
+            },
+            'about': {
+                message: isEnglish ? `(${actionWord} to open ABOUT)` : `(${actionWord} para abrir NOSOTRXS)`
+            },
+            
+            // Context slides
+            'contexto': {
+                message: isEnglish ? `(${actionWord} to open CONTEXT)` : `(${actionWord} para abrir CONTEXTO)`
+            },
+            'context': {
+                message: isEnglish ? `(${actionWord} to open CONTEXT)` : `(${actionWord} para abrir CONTEXTO)`
+            },
+            
+            // Restaurant slides
+            'restaurante': {
+                message: isEnglish ? `(${actionWord} to open RESTAURANT)` : `(${actionWord} para abrir RESTAURANTE)`
+            },
+            'restaurant': {
+                message: isEnglish ? `(${actionWord} to open RESTAURANT)` : `(${actionWord} para abrir RESTAURANTE)`
+            },
+            
+            // Giving/Contribuir slides
+            'contribuir': {
+                message: isEnglish ? `(${actionWord} to open GIVING)` : `(${actionWord} para abrir CONTRIBUIR)`
+            },
+            'giving': {
+                message: isEnglish ? `(${actionWord} to open GIVING)` : `(${actionWord} para abrir CONTRIBUIR)`
+            },
+            
+            // Events slides
+            'eventos': {
+                message: isEnglish ? `(${actionWord} to open EVENTS)` : `(${actionWord} para abrir EVENTOS)`
+            },
+            'events': {
+                message: isEnglish ? `(${actionWord} to open EVENTS)` : `(${actionWord} para abrir EVENTOS)`
+            },
+            
+            
+            
+            // Promoters slides
+            'promotores': {
+                message: isEnglish ? `(${actionWord} to open PROMOTERS)` : `(${actionWord} para abrir PROMOTORES)`
+            },
+            'promoters': {
+                message: isEnglish ? `(${actionWord} to open PROMOTERS)` : `(${actionWord} para abrir PROMOTORES)`
+            },
+            'promotorxs': {
+                message: isEnglish ? `(${actionWord} to open PROMOTERS)` : `(${actionWord} para abrir PROMOTORES)`
+            },
+            
         };
         
         return hintMessages[slideId] || null;
@@ -2064,34 +2250,7 @@ class Navigation {
         }
     }
     
-    // Restart video on video background slides after hint animation completes
-    restartVideoOnHintComplete(slideId) {
-        // Check if this is a video background slide
-        const videoBackgroundSlides = ['calendario', 'calendar'];
-        
-        if (videoBackgroundSlides.includes(slideId)) {
-            console.log('Restarting video for video background slide:', slideId);
-            
-            // Find the video element in the slide
-            const slideElement = document.getElementById(slideId);
-            if (slideElement) {
-                const video = slideElement.querySelector('.thefrontvideo');
-                if (video) {
-                    // Reset video to beginning and play
-                    video.currentTime = 0;
-                    video.play().then(() => {
-                        console.log('Video restarted successfully for slide:', slideId);
-                    }).catch(err => {
-                        console.log('Could not restart video for slide:', slideId, 'Error:', err);
-                    });
-                } else {
-                    console.log('No video element found in slide:', slideId);
-                }
-            } else {
-                console.log('Slide element not found:', slideId);
-            }
-        }
-    }
+    // Video restart functionality removed - BgVideoSound.js now handles all video playback automatically
     
     detectLanguage() {
         // Detect current site language
@@ -2235,6 +2394,26 @@ class Navigation {
         }
     }
     
+    // Force hide all active text hints immediately
+    hideAllActiveTextHints() {
+        console.log('Hiding all active text hints immediately');
+        
+        // Clear all active timers
+        this.activeTextHintTimers.forEach(timerId => {
+            clearTimeout(timerId);
+        });
+        this.activeTextHintTimers.clear();
+        
+        // Remove all active text hint elements
+        this.activeTextHints.forEach(textHint => {
+            if (textHint && textHint.parentNode) {
+                textHint.parentNode.removeChild(textHint);
+                console.log('Removed active text hint element');
+            }
+        });
+        this.activeTextHints.clear();
+    }
+    
     // Emergency method to remove all cursor hints from the page
     forceRemoveAllCursorHints() {
         const allHints = document.querySelectorAll('.cursor-hint');
@@ -2343,22 +2522,14 @@ class Navigation {
         
         const visibleSlide = document.getElementById(this.slideVisibleId);
         if (visibleSlide) {
-            const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
-            const isHeavySlide = heavySlides.includes(visibleSlide.id);
-            
             console.log('Testing hint on:', visibleSlide.id);
-            console.log('Is heavy slide (will use text hint):', isHeavySlide);
+            console.log('All slides now use TEXT HINTS (no more card flash)');
             console.log('Has card content:', !!visibleSlide.querySelector('.card-content'));
             console.log('Is opened:', visibleSlide.classList.contains('opened'));
             console.log('Card opened state:', this.cardopened);
             
-            if (isHeavySlide) {
-                console.log('Testing TEXT HINT for heavy slide:', visibleSlide.id);
+            console.log('Testing TEXT HINT for slide:', visibleSlide.id);
                 this.performPostContentTextHint(visibleSlide);
-            } else {
-                console.log('Testing CARD FLASH for normal slide:', visibleSlide.id);
-                this.performPostContentFlash(visibleSlide);
-            }
         } else {
             console.log('No visible slide to test on');
         }
@@ -2389,12 +2560,13 @@ class Navigation {
             console.log('Current slide:', visibleSlide.id);
             console.log('Detected language:', language);
             console.log('Hint data:', hintData);
+            console.log('All slides now use text hints');
             
             if (hintData) {
                 console.log('Triggering text hint test...');
                 this.performPostContentTextHint(visibleSlide);
             } else {
-                console.log('No hint data available for this slide');
+                console.log('No hint data available for this slide - may need to add to getHintMessages()');
             }
         } else {
             console.log('No visible slide to test on');
@@ -2460,13 +2632,7 @@ class Navigation {
         if (visibleSlide) {
             console.log('=== Testing Text Hint During Cursor Hint ===');
             console.log('Slide:', visibleSlide.id);
-            
-            // Check if it's a heavy slide
-            const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
-            const isHeavySlide = heavySlides.includes(visibleSlide.id);
-            
-            if (isHeavySlide) {
-                console.log('Heavy slide detected - will test text hint');
+            console.log('All slides now use text hints');
                 
                 // Temporarily reset encounters and disable direct URL detection
                 const originalHintShown = new Set(this.slideHintShown);
@@ -2484,10 +2650,6 @@ class Navigation {
                     this.isDirectUrlVisit = originalDirectUrl;
                     console.log('Settings restored');
                 }, 3000);
-            } else {
-                console.log('Not a heavy slide - will test card flash instead');
-                this.testFullCursorHintSequence();
-            }
         } else {
             console.log('No visible slide to test on');
         }
@@ -2499,18 +2661,8 @@ class Navigation {
         if (visibleSlide) {
             console.log('=== Force Testing Text Hint Directly ===');
             console.log('Slide:', visibleSlide.id);
-            
-            // Check if it's a heavy slide
-            const heavySlides = ['mapa', 'map', 'calendar', 'calendario', 'gallery', 'galeria'];
-            const isHeavySlide = heavySlides.includes(visibleSlide.id);
-            
-            if (isHeavySlide) {
-                console.log('Heavy slide detected - forcing text hint directly');
+            console.log('All slides now use text hints - forcing text hint directly');
                 this.performPostContentTextHint(visibleSlide);
-            } else {
-                console.log('Not a heavy slide - forcing card flash directly');
-                this.performPostContentFlash(visibleSlide);
-            }
         } else {
             console.log('No visible slide to test on');
         }
@@ -2683,6 +2835,12 @@ class Navigation {
         // Cancel any pending hints when user starts scrolling
         this.cancelPendingHints();
         
+        // Hide any active cursor hint immediately when scrolling
+        this.hideCurrentCursorHint();
+        
+        // Hide any active text hints immediately when scrolling
+        this.hideAllActiveTextHints();
+        
         // Set a timer to detect when scrolling stops
         this.scrollTimer = setTimeout(() => {
             this.isUserScrolling = false;
@@ -2718,17 +2876,30 @@ class Navigation {
             isEscape = (evt.keyCode === 27);
         }
         if (isEscape) {
-		  let currentSlide = this.targetSlide
-		  if (currentSlide == "eventos" || currentSlide == "events"){
-			  let activeCard = document.getElementsByClassName('eventcard eventon_events_list show')[0];
-			  if (activeCard) {
-				  let closeButton = activeCard.getElementsByClassName('evolb_close_btn')[0]
-                  closeButton.click()
-			      return
-			  }
-		  }
-			  
-          if (!document.fullscreenElement) {
+          // Always check for active calendar event cards first, regardless of current slide
+          let activeCard = document.getElementsByClassName('eventcard eventon_events_list show')[0];
+          if (activeCard) {
+            let closeButton = activeCard.getElementsByClassName('evolb_close_btn')[0];
+            if (closeButton) {
+              console.log("ESC key: Closing calendar event card");
+              closeButton.click();
+              return;
+            }
+          }
+          
+          // Also check for single event pages with the custom close button
+          let eventCloseButton = document.querySelector('.event-close-button.evolbclose');
+          if (eventCloseButton) {
+            console.log("ESC key: Closing single event page");
+            eventCloseButton.click();
+            return;
+          }
+		  
+          // Only close the entire card if we're not on a calendar page
+          // Calendar pages should stay open when ESC is pressed (matching X button behavior)
+          const isCalendarPage = this.targetSlide === 'calendar' || this.targetSlide === 'calendario';
+          
+          if (!document.fullscreenElement && !isCalendarPage) {
             this.forceCloseCards();
           }
         }
@@ -2767,6 +2938,20 @@ class Navigation {
     }
     initArrowKeyNavigation() {
         document.addEventListener('keydown', (event) => {
+            // Check if user is typing in an input field
+            const isTyping = event.target && (
+                event.target.tagName === 'INPUT' ||
+                event.target.tagName === 'TEXTAREA' ||
+                event.target.isContentEditable
+            );
+            
+            if (isTyping) return;
+            
+            // Check if EventON lightbox is open
+            const lightboxIsOpen = !!document.querySelector('#evo_lightboxes .eventcard.show');
+            
+            // Left/Right arrows are now handled by calendar-specific scripts
+            
             if (event.key === "ArrowUp") {
                 if (this.slideVisibleIndex > 0) {
                     let previousSlideIndex = this.slideVisibleIndex - 1;

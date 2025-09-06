@@ -1201,9 +1201,5 @@ body.single-ajde_events {
 }
 
 .evo_lightbox .evopop_top{	
-	margin: 0px !important;
-}
-
-.evocard_row{
-	padding-bottom: 0px !important;
+	margin: 0;
 }
