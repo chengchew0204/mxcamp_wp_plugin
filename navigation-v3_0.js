@@ -1970,21 +1970,21 @@ class Navigation {
             switch(slideId.toLowerCase()) {
                 case 'orientacion':
                 case 'orientation':
-                    leftAdjustment = -10; // Move left 10px
+                    leftAdjustment = -14; // Move left 10px
                     break;
                 case 'organizadorxs':
                 case 'organizers':
-                    leftAdjustment = -14; // Move left 20px
+                    leftAdjustment = -18; // Move left 20px
                     break;
                 case 'meditadorxs':
-                    leftAdjustment = -10; // Move left 10px
+                    leftAdjustment = -14; // Move left 10px
                     break;
                 case 'meditators':
                 case 'restaurant':
-                    leftAdjustment = -6; // Move left 6px
+                    leftAdjustment = -10; // Move left 6px
                     break;
                 case 'restaurante':
-                    leftAdjustment = -10; // Move left 10px
+                    leftAdjustment = -14; // Move left 10px
                     break;
             }
         }
@@ -2032,6 +2032,7 @@ class Navigation {
             text-align: center;
             max-width: 100%;
             overflow: visible;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.8), 0px 0px 20px rgba(0, 0, 0, 0.6);
         `;
         
         // Apply mobile responsive styling to match h2 mobile styles

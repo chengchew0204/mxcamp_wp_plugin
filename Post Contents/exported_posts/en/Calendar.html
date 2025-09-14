@@ -75,6 +75,15 @@
     </style>
     <script>
     
+    /*
+     * CHANGES SUMMARY:
+     * - Fixed blank gaps before video render with robust poster + CSS fallback approach
+     * - Added Safari/iOS autoplay compatibility (muted + playsinline by default)
+     * - Replaced brittle poster logic with reliable image detection
+     * - Added error handling and spinner cleanup for failed video loads
+     * - Maintained existing UX: spinner, custom controls, conditional native controls
+     */
+    
     function setOnClickOutside(ele, cb) {
         document.addEventListener('click', callback = (event) => {
             event.stopPropagation()
@@ -90,6 +99,67 @@
     
         });
     };
+    
+    /**
+     * Sets up normal event behavior for video events - show featured image, hide video until ready
+     * @param {HTMLVideoElement} videoEl - The video element
+     * @param {HTMLElement} headerEl - The header container element
+     * @param {HTMLElement} containerEl - The fullscreen container element
+     */
+    function setupNormalEventBehavior(videoEl, headerEl, containerEl) {
+        // Find the original header image
+        const headerImg = headerEl.querySelector('img');
+        if (!headerImg) {
+            console.log('No header image found, video will show immediately');
+            return;
+        }
+        
+        // Keep the original header image visible (like normal events)
+        headerImg.style.display = 'block';
+        console.log('Keeping featured image visible like normal events');
+        
+        // Hide the video initially
+        videoEl.style.display = 'none';
+        console.log('Video hidden initially - will show when ready');
+        
+        // Set video poster for when it becomes visible
+        const posterUrl = headerImg.currentSrc || headerImg.src;
+        if (posterUrl && !videoEl.poster) {
+            videoEl.poster = posterUrl;
+        }
+        
+        // Show video and hide image when video is ready to play
+        const showVideo = () => {
+            headerImg.style.display = 'none';
+            videoEl.style.display = 'block';
+            // Unmute video immediately when it becomes visible and starts playing
+            videoEl.muted = false;
+            console.log('Video ready - hiding featured image, showing video with audio');
+        };
+        
+        // Listen for video ready events
+        const events = ['loadeddata', 'canplay', 'playing'];
+        const cleanup = () => {
+            events.forEach(event => videoEl.removeEventListener(event, handleReady));
+        };
+        
+        const handleReady = () => {
+            showVideo();
+            cleanup();
+        };
+        
+        events.forEach(event => videoEl.addEventListener(event, handleReady, { once: true }));
+        
+        // On error, keep the featured image visible (like normal events)
+        videoEl.addEventListener('error', () => {
+            headerImg.style.display = 'block';
+            videoEl.style.display = 'none';
+            cleanup();
+            console.log('Video error - keeping featured image visible like normal event');
+        }, { once: true });
+        
+        videoEl.addEventListener('stalled', cleanup, { once: true });
+    }
     
     setOnClickOutside(
         'evolb_content evo_lightbox_body eventon_list_event',
@@ -159,11 +229,11 @@
         
         function replaceNow(){
             function searchAndReplace(){
-    gtag('event', 'click', {
-            'event_category': 'Event Card',
-            'event_label': 'Event Card opened',
-            'value': 1
-          });
+        gtag('event', 'click', {
+                'event_category': 'Event Card',
+                'event_label': 'Event Card opened',
+                'value': 1
+              });
     
     
                 let eventLightBox = document.getElementById('evo_lightboxes');
@@ -178,23 +248,39 @@
                     
                     thisvideo.removeAttribute("controls");
     
-                    //thisvideo.controls = "controls";
+                    // Safari/iOS autoplay compatibility setup
+                    thisvideo.setAttribute('playsinline', '');
+                    thisvideo.preload = thisvideo.preload || 'metadata';
+                    thisvideo.muted = true; // Required for autoplay on Safari/iOS
+                    thisvideo.volume = 0.5; // Will be applied when unmuted
     
-                    //thisvideo.classList.remove('video-events-grid');
-                    //onprepare son parent fullscreen
-                  //  thisvideo.controls = false;
                     let fullScreenDiv = document.createElement('div');
                     fullScreenDiv.classList.add('fullscreen', 'videoplaying');
     
-                    //oncherche son futur emplacement
+                    // Find header container for normal event behavior setup
                     let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div');
                     fullScreenDiv.appendChild(thisvideo);
                     fullScreenDiv.appendChild(spinnerContainer);
-                    thisvideo.volume = 0.5;
-                    thisvideo.muted = false;
+                    
+                    // Setup normal event behavior - show featured image, hide video until ready
+                    setupNormalEventBehavior(thisvideo, thisHeader, fullScreenDiv);
+                    
+                    // Attempt autoplay (will be muted on Safari/iOS)
                     setTimeout(() => {
-                thisvideo.play();
-            }, 1000);
+                        thisvideo.play().catch(error => {
+                            console.log('Autoplay failed (expected on some browsers):', error.message);
+                        });
+                    }, 1000);
+                    
+                    // Additional autoplay attempt for long videos after controls are added
+                    setTimeout(() => {
+                        if (thisvideo.paused && thisvideo.duration > 120) {
+                            console.log('Attempting autoplay for long video in calendar');
+                            thisvideo.play().catch(error => {
+                                console.log('Long video autoplay retry failed:', error.message);
+                            });
+                        }
+                    }, 2000);
                     // Hide spinner when video starts playing
                     thisvideo.addEventListener('play', function () {
                         spinnerContainer.style.display="none";
@@ -207,6 +293,17 @@
                         console.log('Video is playing - spinner hidden');
                     });
                     
+                    // Hide spinner on error or stalled - keep CSS fallback visible
+                    thisvideo.addEventListener('error', function () {
+                        spinnerContainer.style.display="none";
+                        console.log('Video error - spinner hidden, fallback background retained');
+                    });
+                    
+                    thisvideo.addEventListener('stalled', function () {
+                        spinnerContainer.style.display="none";
+                        console.log('Video stalled - spinner hidden');
+                    });
+                    
                     var controlsVisible = false;
                     thisvideo.addEventListener('timeupdate', function () {
                         if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
@@ -214,38 +311,31 @@
                           }
                     });
                     thisHeader.appendChild(fullScreenDiv);
-    
-     //a add preview image to the poster
-         if(thisvideo.poster.length<20)
-    {
-           thisvideo.poster=thisHeader.childNodes[0].src;
-           console.log("replacing empty poster with "+thisvideo.poster);
-     }
-      // replacing main image with poster image so that video take fullscreen view
-         if(thisvideo.poster.length>20)
-           {
-               setTimeout(() => {
-                  thisHeader.childNodes[0].style.display='none'; //hide image
-        }, 1000);
-              fullScreenDiv.style.position='relative';
-              console.log("hiding image, displaying poster:"+thisvideo.poster);
-           } 
+                    
+                    // Old brittle poster logic removed - now handled by setupNormalEventBehavior()
                     let playbut = document.createElement('img');
                     playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
                     playbut.classList.add('playbut');
                     playbut.style.position = 'absolute';
+                    playbut.setAttribute('aria-label', 'Play video');
                    
                 let pausebut= document.createElement('img');
                     pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
                     pausebut.classList.add('pausebut');
+                    pausebut.setAttribute('aria-label', 'Pause video');
                    
                 function playVideo() {
                 let divplaying = document.querySelectorAll('.videoplaying');
-                        // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
+                        // Stop other playing videos
                         divplaying.forEach(div => {
                             div.classList.remove('videoplaying');
                         });
-                        thisvideo.play();
+                        
+                        // Unmute on user gesture (enables audio on Safari/iOS)
+                        thisvideo.muted = false;
+                        thisvideo.play().catch(error => {
+                            console.log('Play failed:', error.message);
+                        });
                         thisvideo.closest(".fullscreen").classList.add('videoplaying');
             }
     
@@ -274,12 +364,56 @@
                 fullScreenDiv.appendChild(timeDisplay);
                 fullScreenDiv.appendChild(playbut);
                 fullScreenDiv.appendChild(pausebut);
+                
+                // Add click-to-pause/play functionality to the video element
+                thisvideo.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Don't interfere if native controls are visible (long videos)
+                    if (thisvideo.controls && thisvideo.duration > 120) {
+                        console.log('Native controls active, letting default video click behavior handle it');
+                        return;
+                    }
+                    
+                    if (thisvideo.paused) {
+                        console.log('Video clicked - playing');
+                        playVideo();
+                    } else {
+                        console.log('Video clicked - pausing');
+                        pauseVideo();
+                    }
+                });
+                
+                // Also make the fullscreen container clickable (but not the buttons)
+                fullScreenDiv.addEventListener('click', function(event) {
+                    // Don't trigger if clicking on play/pause buttons or time display
+                    if (event.target === playbut || event.target === pausebut || event.target === timeDisplay) {
+                        return;
+                    }
+                    
+                    // Don't interfere if native controls are visible (long videos)
+                    if (thisvideo.controls && thisvideo.duration > 120) {
+                        return;
+                    }
+                    
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    if (thisvideo.paused) {
+                        console.log('Video container clicked - playing');
+                        playVideo();
+                    } else {
+                        console.log('Video container clicked - pausing');
+                        pauseVideo();
+                    }
+                });
     
                 // Affiche la durée totale lorsque les métadonnées de la vidéo sont chargées
                 thisvideo.addEventListener('loadedmetadata', function() {
                     const durationMinutes = Math.floor(thisvideo.duration / 60);
                     const durationSeconds = Math.floor(thisvideo.duration % 60);
-    
+
                     timeDisplay.textContent = `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
                    console.log("Video duration:"+thisvideo.duration);
                    //add video controls for large videos
@@ -290,7 +424,16 @@
                                //hide our video controls
                                document.querySelector('.timevideo').style.display='none'
                                document.querySelector('.pausebut').style.display='none';
-                               console.log("Activating Video controls");
+                               console.log("Activating Video controls for long video");
+                               
+                               // Ensure long videos still autoplay even with native controls
+                               setTimeout(() => {
+                                   if (thisvideo.paused) {
+                                       thisvideo.play().catch(error => {
+                                           console.log('Long video autoplay failed:', error.message);
+                                       });
+                                   }
+                               }, 100);
                              }
                 });
     
@@ -515,6 +658,20 @@
     .evoet_tags.evo_above_title .evo_event_headers.repeating,
     .evo_event_headers.repeating {
         display: none !important;
+    }
+    
+    /* Make videos clearly clickable for play/pause in calendar */
+    .fullscreen video {
+        cursor: pointer;
+    }
+    
+    .fullscreen {
+        cursor: pointer;
+    }
+    
+    /* Don't show pointer cursor when native controls are active */
+    .fullscreen video[controls] {
+        cursor: default;
     }
     </style>
     <div class="tap-bottom" style="height:400px;width:120%; margin-left:-10%; margin-right:-10%; position:relative"></div>

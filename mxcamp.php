@@ -281,6 +281,133 @@ function mxcamp_inject_background_redirect() {
             position: relative !important;
         }
         
+        /* Video styles for single event pages */
+        body.single-ajde_events .fullscreen img.playbut {
+            left: -10px;
+            bottom: -7px;
+            width: 100px;
+            cursor: pointer;
+        }
+        
+        @media screen and (max-width:600px) {
+            body.single-ajde_events .fullscreen img.playbut {
+                left: 0;
+                bottom: 0;
+                width: 50px;
+            }
+        }
+        
+        body.single-ajde_events .videoplaying .playbut {
+            display: none;
+        }
+        
+        body.single-ajde_events .fullscreen .pausebut {
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+            width: 30px;
+            cursor: pointer;
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            padding: 7px;
+        }
+        
+        body.single-ajde_events .videoplaying.fullscreen:hover .pausebut {
+            display: block;
+        }
+        
+        body.single-ajde_events .evocard_row .fullscreen .timevideo {
+            margin-top: 5px !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            top: unset !important;
+            right: 0 !important;
+            font-size: 15px !important;
+            z-index: 10 !important;
+            display: none;
+        }
+        
+        body.single-ajde_events .fullscreen .timevideo {
+            color: #F5f5f5 !important;
+        }
+        
+        body.single-ajde_events .videoplaying:hover .timevideo {
+            display: block;
+        }
+        
+        body.single-ajde_events .ajde_evcal_calendar.boxy .eventon_list_event.event {
+            aspect-ratio: 4/5 !important;
+            width: auto !important;
+            min-height: unset !important;
+            background-repeat: no-repeat;
+        }
+        
+        body.single-ajde_events .evo_metarow_directimg.evcal_evdata_row {
+            padding: 0 !important;
+            height: auto;
+        }
+        
+        body.single-ajde_events .desc_trig_outter {
+            background-repeat: no-repeat;
+            background-size: cover !important;
+            background-position-x: center;
+        }
+        
+        body.single-ajde_events .evcal_evdata_img, 
+        body.single-ajde_events .ftimage {
+            aspect-ratio: auto !important;
+        }
+        
+        body.single-ajde_events div.fullscreen {
+            aspect-ratio: auto !important;
+            height: 100%;
+        }
+        
+        body.single-ajde_events .fullscreen video {
+            height: auto !important;
+            left: 0;
+            object-fit: cover;
+            top: 0;
+            position: relative;
+            transform: none;
+            transition: none;
+            width: 100%;
+            z-index: 0;
+        }
+        
+        /* Hide repeating event tags on single event pages */
+        body.single-ajde_events .evoet_tags.evo_above_title .evo_event_headers.repeating,
+        body.single-ajde_events .evo_event_headers.repeating {
+            display: none !important;
+        }
+        
+        /* Video loader spinner for single event pages */
+        body.single-ajde_events .card-video-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Make videos clearly clickable for play/pause */
+        body.single-ajde_events .fullscreen video {
+            cursor: pointer;
+        }
+        
+        body.single-ajde_events .fullscreen {
+            cursor: pointer;
+        }
+        
+        /* Don't show pointer cursor when native controls are active */
+        body.single-ajde_events .fullscreen video[controls] {
+            cursor: default;
+        }
+        
         @media screen and (max-width: 600px) {
             body.single-ajde_events .event-close-button,
             body.single-ajde_events .event-close-button.evolbclose {
@@ -577,6 +704,334 @@ function mxcamp_inject_background_redirect() {
             }
             
             setTimeout(initBackgroundRedirect, 1000);
+            
+        })();
+        </script>
+        
+        <script type="text/javascript">
+        // Video handling for single event pages
+        (function() {
+            'use strict';
+            
+            function initSingleEventVideo() {
+                // Only run on single event pages
+                if (!document.body.classList.contains('single-ajde_events')) {
+                    return;
+                }
+                
+                console.log('Initializing video for single event page...');
+                
+                // Look for video elements on single event pages
+                const thisvideo = document.querySelector('body.single-ajde_events .eventon_full_description video.video-events-grid');
+                
+                if (!thisvideo) {
+                    console.log('No video found on single event page');
+                    return;
+                }
+                
+                console.log('Video element found on single event page:', thisvideo);
+                
+                // Find the header container - different selector for single event pages
+                const thisHeader = document.querySelector('body.single-ajde_events .evocard_box.ftimage > div');
+                
+                if (!thisHeader) {
+                    console.log('No header container found for video placement');
+                    return;
+                }
+                
+                // Initialize spinner
+                const spinnerContainer = document.createElement('div');
+                const spinner = '<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">';
+                spinnerContainer.innerHTML = spinner;
+                spinnerContainer.classList.add('card-video-loader');
+                
+                // Remove default controls
+                thisvideo.removeAttribute("controls");
+                
+                // Safari/iOS autoplay compatibility setup
+                thisvideo.setAttribute('playsinline', '');
+                thisvideo.preload = thisvideo.preload || 'metadata';
+                thisvideo.muted = true; // Required for autoplay on Safari/iOS
+                thisvideo.volume = 0.5; // Will be applied when unmuted
+                
+                // Create fullscreen container
+                const fullScreenDiv = document.createElement('div');
+                fullScreenDiv.classList.add('fullscreen', 'videoplaying');
+                
+                // Move video and spinner to fullscreen container
+                fullScreenDiv.appendChild(thisvideo);
+                fullScreenDiv.appendChild(spinnerContainer);
+                
+                // Setup normal event behavior - show featured image, hide video until ready
+                setupNormalEventBehaviorSingle(thisvideo, thisHeader, fullScreenDiv);
+                
+                // Attempt autoplay (will be muted on Safari/iOS)
+                setTimeout(() => {
+                    thisvideo.play().catch(error => {
+                        console.log('Autoplay failed (expected on some browsers):', error.message);
+                    });
+                }, 1000);
+                
+                // Additional autoplay attempt for long videos after controls are added
+                setTimeout(() => {
+                    if (thisvideo.paused && thisvideo.duration > 120) {
+                        console.log('Attempting autoplay for long video on single event page');
+                        thisvideo.play().catch(error => {
+                            console.log('Long video autoplay retry failed:', error.message);
+                        });
+                    }
+                }, 2000);
+                
+                // Hide spinner when video starts playing
+                thisvideo.addEventListener('play', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video started playing - spinner hidden');
+                });
+                
+                // Additional safety - hide spinner when video is actually playing
+                thisvideo.addEventListener('playing', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video is playing - spinner hidden');
+                });
+                
+                // Hide spinner on error or stalled
+                thisvideo.addEventListener('error', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video error - spinner hidden, fallback background retained');
+                });
+                
+                thisvideo.addEventListener('stalled', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video stalled - spinner hidden');
+                });
+                
+                var controlsVisible = false;
+                thisvideo.addEventListener('timeupdate', function () {
+                    if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
+                        controlsVisible = true;
+                    }
+                });
+                
+                // Add to header
+                thisHeader.appendChild(fullScreenDiv);
+                
+                // Create play button
+                const playbut = document.createElement('img');
+                playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
+                playbut.classList.add('playbut');
+                playbut.style.position = 'absolute';
+                playbut.setAttribute('aria-label', 'Play video');
+                
+                // Create pause button
+                const pausebut = document.createElement('img');
+                pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
+                pausebut.classList.add('pausebut');
+                pausebut.setAttribute('aria-label', 'Pause video');
+                
+                function playVideo() {
+                    const divplaying = document.querySelectorAll('.videoplaying');
+                    // Stop other playing videos
+                    divplaying.forEach(div => {
+                        div.classList.remove('videoplaying');
+                    });
+                    
+                    // Unmute on user gesture (enables audio on Safari/iOS)
+                    thisvideo.muted = false;
+                    thisvideo.play().catch(error => {
+                        console.log('Play failed:', error.message);
+                    });
+                    thisvideo.closest(".fullscreen").classList.add('videoplaying');
+                }
+                
+                function pauseVideo() {
+                    thisvideo.pause();
+                    const divplaying = document.querySelectorAll('.videoplaying');
+                    divplaying.forEach(div => {
+                        div.classList.remove('videoplaying');
+                    });
+                }
+                
+                playbut.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    playVideo();
+                });
+                
+                pausebut.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    pauseVideo();
+                });
+                
+                // Create time display
+                const timeDisplay = document.createElement('p');
+                timeDisplay.classList.add('timevideo');
+                
+                fullScreenDiv.appendChild(timeDisplay);
+                fullScreenDiv.appendChild(playbut);
+                fullScreenDiv.appendChild(pausebut);
+                
+                // Add click-to-pause/play functionality to the video element
+                thisvideo.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Don't interfere if native controls are visible (long videos)
+                    if (thisvideo.controls && thisvideo.duration > 120) {
+                        console.log('Native controls active, letting default video click behavior handle it');
+                        return;
+                    }
+                    
+                    if (thisvideo.paused) {
+                        console.log('Video clicked - playing');
+                        playVideo();
+                    } else {
+                        console.log('Video clicked - pausing');
+                        pauseVideo();
+                    }
+                });
+                
+                // Also make the fullscreen container clickable (but not the buttons)
+                fullScreenDiv.addEventListener('click', function(event) {
+                    // Don't trigger if clicking on play/pause buttons or time display
+                    if (event.target === playbut || event.target === pausebut || event.target === timeDisplay) {
+                        return;
+                    }
+                    
+                    // Don't interfere if native controls are visible (long videos)
+                    if (thisvideo.controls && thisvideo.duration > 120) {
+                        return;
+                    }
+                    
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    if (thisvideo.paused) {
+                        console.log('Video container clicked - playing');
+                        playVideo();
+                    } else {
+                        console.log('Video container clicked - pausing');
+                        pauseVideo();
+                    }
+                });
+                
+                // Display total duration when video metadata is loaded
+                thisvideo.addEventListener('loadedmetadata', function() {
+                    const durationMinutes = Math.floor(thisvideo.duration / 60);
+                    const durationSeconds = Math.floor(thisvideo.duration % 60);
+                    
+                    timeDisplay.textContent = durationMinutes + ':' + durationSeconds.toString().padStart(2, '0');
+                    console.log("Video duration:" + thisvideo.duration);
+                    
+                    // Add video controls for large videos
+                    if (thisvideo.duration > 120) { // min duration to activate controls
+                        thisvideo.controls = "controls";
+                        controlsVisible = true;
+                        // Hide our video controls
+                        const timeEl = document.querySelector('body.single-ajde_events .timevideo');
+                        const pauseEl = document.querySelector('body.single-ajde_events .pausebut');
+                        if (timeEl) timeEl.style.display = 'none';
+                        if (pauseEl) pauseEl.style.display = 'none';
+                        console.log("Activating Video controls for long video on single event page");
+                        
+                        // Ensure long videos still autoplay even with native controls
+                        setTimeout(() => {
+                            if (thisvideo.paused) {
+                                thisvideo.play().catch(error => {
+                                    console.log('Long video autoplay failed on single event page:', error.message);
+                                });
+                            }
+                        }, 100);
+                    }
+                });
+                
+                // Update progress bar and remaining time
+                thisvideo.addEventListener('timeupdate', function () {
+                    const elapsedTime = thisvideo.currentTime;
+                    const totalTime = thisvideo.duration;
+                    
+                    // Calculate remaining time
+                    const remainingTime = totalTime - elapsedTime;
+                    const remainingMinutes = Math.floor(remainingTime / 60);
+                    const remainingSeconds = Math.floor(remainingTime % 60);
+                    
+                    // Display remaining time
+                    timeDisplay.textContent = remainingMinutes + ':' + remainingSeconds.toString().padStart(2, '0');
+                });
+                
+                console.log('Single event video setup completed');
+            }
+            
+            /**
+             * Sets up normal event behavior for video events on single pages
+             * @param {HTMLVideoElement} videoEl - The video element
+             * @param {HTMLElement} headerEl - The header container element
+             * @param {HTMLElement} containerEl - The fullscreen container element
+             */
+            function setupNormalEventBehaviorSingle(videoEl, headerEl, containerEl) {
+                // Find the original header image
+                const headerImg = headerEl.querySelector('img');
+                if (!headerImg) {
+                    console.log('No header image found, video will show immediately');
+                    return;
+                }
+                
+                // Keep the original header image visible (like normal events)
+                headerImg.style.display = 'block';
+                console.log('Keeping featured image visible like normal events');
+                
+                // Hide the video initially
+                videoEl.style.display = 'none';
+                console.log('Video hidden initially - will show when ready');
+                
+                // Set video poster for when it becomes visible
+                const posterUrl = headerImg.currentSrc || headerImg.src;
+                if (posterUrl && !videoEl.poster) {
+                    videoEl.poster = posterUrl;
+                }
+                
+                // Show video and hide image when video is ready to play
+                const showVideo = () => {
+                    headerImg.style.display = 'none';
+                    videoEl.style.display = 'block';
+                    // Unmute video immediately when it becomes visible and starts playing
+                    videoEl.muted = false;
+                    console.log('Video ready - hiding featured image, showing video with audio');
+                };
+                
+                // Listen for video ready events
+                const events = ['loadeddata', 'canplay', 'playing'];
+                const cleanup = () => {
+                    events.forEach(event => videoEl.removeEventListener(event, handleReady));
+                };
+                
+                const handleReady = () => {
+                    showVideo();
+                    cleanup();
+                };
+                
+                events.forEach(event => videoEl.addEventListener(event, handleReady, { once: true }));
+                
+                // On error, keep the featured image visible (like normal events)
+                videoEl.addEventListener('error', () => {
+                    headerImg.style.display = 'block';
+                    videoEl.style.display = 'none';
+                    cleanup();
+                    console.log('Video error - keeping featured image visible like normal event');
+                }, { once: true });
+                
+                videoEl.addEventListener('stalled', cleanup, { once: true });
+            }
+            
+            // Initialize video handling
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSingleEventVideo);
+            } else {
+                initSingleEventVideo();
+            }
+            
+            // Also try after delays to ensure it loads
+            setTimeout(initSingleEventVideo, 500);
+            setTimeout(initSingleEventVideo, 1000);
+            setTimeout(initSingleEventVideo, 2000);
             
         })();
         </script>

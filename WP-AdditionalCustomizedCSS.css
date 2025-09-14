@@ -385,10 +385,18 @@
   .ct-icon-container {
               transition:0.5s!important;
               width: 35px!important;
-              background-color: rgba(245,245,245,0.9)!important;
+              background-color: transparent!important;
               height: 35px!important;
               opacity:1!important;
-              box-shadow: 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.3);
+              /*box-shadow: 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.3);*/
+          }
+          
+          /* Safari-specific fix to prevent delayed background appearance */
+          @supports (-webkit-appearance: none) {
+              .ct-icon-container {
+                  background-color: transparent !important;
+                  transition: none !important;
+              }
           }
           .ct-icon-container:hover{
               /*opacity:0.6!important*/
