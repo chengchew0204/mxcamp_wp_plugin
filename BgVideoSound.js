@@ -19,6 +19,13 @@ class VideoSound {
     this.setupIntersectionObserver();
     this.setupLazyLoading();
     
+    // Clean up any existing play buttons first
+    this.removePlayButton();
+    document.body.classList.remove('bgvideo');
+    
+    // Set up periodic cleanup to ensure sound buttons don't persist where they shouldn't
+    this.setupPeriodicCleanup();
+    
     // Aggressively preload and prepare videos for immediate playback
     this.preloadAllVideos();
     
@@ -27,7 +34,30 @@ class VideoSound {
       this.initialLoad = false;
       // Immediately try to play the first visible video
       this.playInitialVisibleVideo();
+      // Initialize sound button state based on current slide
+      this.updateSoundButtonState();
     }, 200);
+  }
+  
+  // Set up periodic cleanup to ensure sound buttons don't persist incorrectly
+  setupPeriodicCleanup() {
+    // Check every 2 seconds if sound button is where it shouldn't be
+    setInterval(() => {
+      const playButton = document.getElementById('playbutton');
+      const hasBgVideo = document.body.classList.contains('bgvideo');
+      
+      if ((playButton || hasBgVideo) && this.visibleDivId) {
+        const shouldShow = this.shouldSlideShowSoundButton(this.visibleDivId);
+        const isCardOpen = this.isCardOpen();
+        
+        // If sound button exists but shouldn't, or if card is open, remove it
+        if (!shouldShow || isCardOpen) {
+          console.log(`PERIODIC CLEANUP: Removing sound button from slide "${this.visibleDivId}" (shouldShow: ${shouldShow}, cardOpen: ${isCardOpen})`);
+          this.removePlayButton();
+          document.body.classList.remove('bgvideo');
+        }
+      }
+    }, 2000); // Check every 2 seconds
   }
   
   // Aggressively preload ALL videos for immediate playback
@@ -345,7 +375,10 @@ class VideoSound {
     // Then mute all videos
     this.muteAllVideos();
     
-    // Update the visible slide info
+    // Clear current video reference before updating slide info
+    this.currentVideo = null;
+    
+    // Update the visible slide info (this will also update sound button state)
     this.updateVisibleSlideInfo();
     
     // Find the visible video and play only that one
@@ -388,8 +421,39 @@ class VideoSound {
     
     // Update the visible slide ID if we found one
     if (mostVisibleSlide) {
+      const previousVisibleId = this.visibleDivId;
       this.visibleDivId = mostVisibleSlide.id;
       console.log('Most visible slide:', this.visibleDivId);
+      
+      // Update sound button state when visible slide changes
+      if (previousVisibleId !== this.visibleDivId) {
+        this.updateSoundButtonState();
+      }
+    }
+  }
+  
+  // Update sound button state based on currently visible slide
+  updateSoundButtonState() {
+    if (!this.visibleDivId) {
+      console.log('No visible slide ID, hiding sound button');
+      this.removePlayButton();
+      document.body.classList.remove('bgvideo');
+      return;
+    }
+    
+    const shouldShowSoundButton = this.shouldSlideShowSoundButton(this.visibleDivId);
+    
+    console.log(`updateSoundButtonState: slide="${this.visibleDivId}", shouldShow=${shouldShowSoundButton}`);
+    
+    if (shouldShowSoundButton) {
+      document.body.classList.add('bgvideo');
+      // Show the sound button immediately for designated slides
+      this.addPlayButton();
+      console.log('Sound button should be visible for slide:', this.visibleDivId);
+    } else {
+      this.removePlayButton();
+      document.body.classList.remove('bgvideo');
+      console.log('Sound button hidden for slide:', this.visibleDivId);
     }
   }
 
@@ -458,6 +522,7 @@ class VideoSound {
       // Play if moderately visible (lowered threshold for faster activation)
       if (entry.isIntersecting && isVideoVisible && (ratio >= 0.3 || visibilityPercentage >= 0.4)) {
         // Stocke l'ID de la div visible dans visibleDivId
+        const previousVisibleId = this.visibleDivId;
         this.visibleDivId = entry.target.id;
         
         // Update all other slides before playing this one
@@ -481,6 +546,11 @@ class VideoSound {
           this.playVideoImmediately(video);
           
           this.checkForVideo(entry.target);
+          
+          // Update sound button state if visible slide changed
+          if (previousVisibleId !== this.visibleDivId) {
+            this.updateSoundButtonState();
+          }
         } else {
           // This is not the most visible slide, stop the video and reset
           this.pauseAndResetVideo(video);
@@ -498,11 +568,77 @@ class VideoSound {
     return document.body.classList.contains('bodycardopened');
   }
 
-  // Vérifie si l'élément a une vidéo enfant avec la classe "thefrontvideo"
+  // Helper method to check if a slide should show the sound button
+  shouldSlideShowSoundButton(slideId) {
+    const slidesWithSoundButton = [
+      'calendario', 'calendar',
+      'nosotrxs', 'about', 
+      'restaurant', 'restaurante'
+    ];
+    return slidesWithSoundButton.includes(slideId);
+  }
+  
+  // Method to be called when cards are opened or closed
+  onCardStateChange() {
+    if (this.isCardOpen()) {
+      // Card is open, hide sound button
+      this.removePlayButton();
+      document.body.classList.remove('bgvideo');
+      console.log('Card opened - sound button hidden');
+    } else {
+      // Card is closed - AGGRESSIVE cleanup to ensure sound button only appears on designated slides
+      console.log('Card closed - performing aggressive cleanup');
+      
+      // Step 1: Force remove ALL sound buttons and clear state
+      this.forceCleanupSoundButton();
+      
+      // Step 2: Wait a moment then check if we should show sound button
+      setTimeout(() => {
+        this.updateSoundButtonState();
+      }, 50);
+    }
+  }
+  
+  // Aggressive cleanup method to ensure sound button is completely removed
+  forceCleanupSoundButton() {
+    console.log('=== Force Cleanup Sound Button ===');
+    
+    // Remove ALL play buttons from DOM
+    const allPlayButtons = document.querySelectorAll('#playbutton');
+    allPlayButtons.forEach(btn => btn.remove());
+    
+    // Remove bgvideo class
+    document.body.classList.remove('bgvideo', 'unmuted');
+    
+    // Clear video references
+    this.currentVideo = null;
+    
+    // Remove any video event listeners that might re-add the button
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(video => {
+      if (video._timeupdateHandler) {
+        video.removeEventListener('timeupdate', video._timeupdateHandler);
+        video._timeupdateHandler = null;
+      }
+    });
+    
+    console.log('Aggressive cleanup complete - all sound buttons removed');
+  }
+
+  // Check if slide should show sound button and handle video if present
   checkForVideo(element) {
     if (!element) return;
     
+    const slideId = element.id;
+    const shouldShowSoundButton = this.shouldSlideShowSoundButton(slideId);
+    
+    console.log(`checkForVideo called for slide: ${slideId}, shouldShow: ${shouldShowSoundButton}`);
+    
+    // ONLY handle video logic for slides that should show sound button
+    // Completely ignore videos on non-designated slides
+    if (shouldShowSoundButton) {
     const video = element.querySelector('.thefrontvideo');
+      
     if (video) {
       this.currentVideo = video; // Définit la vidéo actuelle
 	  var playButtonAdded = false;
@@ -522,20 +658,50 @@ class VideoSound {
 	  // Add the new handler
 	  video.addEventListener('timeupdate', video._timeupdateHandler);
 	  
-      document.body.classList.add('bgvideo'); // Ajoute la classe bgvideo au body
-      console.log('il y a une video');
       if(this.videoIsMuted === false){
         video.muted = false;
+        }
+      }
+      
+      // Only update sound button state if this is the currently visible slide
+      if (this.visibleDivId === slideId) {
+        document.body.classList.add('bgvideo');
+        // Show the sound button immediately for designated slides
+        this.addPlayButton(video);
+        console.log('Sound button enabled for designated slide:', slideId);
       }
     } else {
+      // For non-designated slides, NEVER show sound button regardless of video presence
+      if (this.visibleDivId === slideId) {
       this.removePlayButton();
-      document.body.classList.remove('bgvideo'); // Retire la classe bgvideo du body
-      console.log('il n y a pas de video');
+        document.body.classList.remove('bgvideo');
+        console.log('Sound button DISABLED for non-designated slide:', slideId);
+      }
+      
+      // Clear currentVideo if it was from this non-designated slide
+      if (this.currentVideo && this.currentVideo.closest('.slide_10') === element) {
+        this.currentVideo = null;
+        console.log('Cleared video reference for non-designated slide:', slideId);
+      }
     }
   }
 
   // Ajoute un bouton de lecture du son de la vidéo
-  addPlayButton(video) {
+  addPlayButton(video = null) {
+    // SAFETY CHECK: Only add sound button if we're on a designated slide
+    if (!this.visibleDivId || !this.shouldSlideShowSoundButton(this.visibleDivId)) {
+      console.log(`BLOCKED: Attempted to add sound button on non-designated slide: ${this.visibleDivId}`);
+      return; // Don't add the button
+    }
+    
+    // SAFETY CHECK: Don't add button if card is open
+    if (this.isCardOpen()) {
+      console.log('BLOCKED: Attempted to add sound button while card is open');
+      return;
+    }
+    
+    console.log(`ALLOWED: Adding sound button for designated slide: ${this.visibleDivId}`);
+    
     this.removePlayButton(); // Supprime le bouton existant avant d'en ajouter un nouveau
     const playButton = document.createElement('div');
     playButton.id = 'playbutton';
@@ -545,8 +711,16 @@ class VideoSound {
     playButton.appendChild(playIcon);
     playButton.addEventListener('click', () => {
       this.videoIsMuted = !this.videoIsMuted
+      
+      // If there's a current video, mute/unmute it
+      if (video) {
       video.muted = this.videoIsMuted;
-      playIcon.src = video.muted ? 'https://camp.mx/wp-content/uploads/soundwave.gif' : 'https://camp.mx/wp-content/uploads/sound-wave.gif'; 
+      } else if (this.currentVideo) {
+        this.currentVideo.muted = this.videoIsMuted;
+      }
+      
+      playIcon.src = this.videoIsMuted ? 'https://camp.mx/wp-content/uploads/soundwave.gif' : 'https://camp.mx/wp-content/uploads/sound-wave.gif'; 
+      
       if(!this.videoIsMuted){
         document.body.classList.add('unmuted')
         playIcon.src = 'https://camp.mx/wp-content/uploads/sound-wave.gif';
@@ -560,15 +734,20 @@ class VideoSound {
       console.log('bodyunmuted et change sound')
     }*/
     this.footer.appendChild(playButton);
-    console.log('playbutton ajoute');
+    console.log('playbutton ajoute for slide:', this.visibleDivId);
   }
 
   // Supprime le bouton de lecture du son
   removePlayButton() {
-    const playButton = document.getElementById('playbutton');
-    if (playButton) {
-      playButton.remove();
-      console.log('playbutton enleve');
+    // Remove all play buttons (in case there are duplicates)
+    const allPlayButtons = document.querySelectorAll('#playbutton');
+    allPlayButtons.forEach(btn => {
+      btn.remove();
+      console.log('playbutton removed');
+    });
+    
+    if (allPlayButtons.length > 0) {
+      console.log(`Removed ${allPlayButtons.length} play button(s)`);
     }
   }
 
@@ -636,8 +815,92 @@ class VideoSound {
       console.log('No videos found to force play');
     }
   }
+  
+  // Debug function to check current sound button state
+  debugSoundButtonState() {
+    console.log('=== Sound Button Debug ===');
+    console.log('Current visible slide ID:', this.visibleDivId);
+    console.log('Should show sound button:', this.shouldSlideShowSoundButton(this.visibleDivId));
+    console.log('Body has bgvideo class:', document.body.classList.contains('bgvideo'));
+    console.log('Play button exists:', !!document.getElementById('playbutton'));
+    console.log('Is card open:', this.isCardOpen());
+    console.log('Current video:', this.currentVideo);
+    
+    const visibleSlide = document.getElementById(this.visibleDivId);
+    if (visibleSlide) {
+      console.log('Visible slide has video:', !!visibleSlide.querySelector('.thefrontvideo'));
+    }
+    
+    // Check if there are any stale play buttons
+    const allPlayButtons = document.querySelectorAll('#playbutton');
+    console.log('Total play buttons in DOM:', allPlayButtons.length);
+    if (allPlayButtons.length > 1) {
+      console.warn('Multiple play buttons detected! Cleaning up...');
+      // Remove all but the last one
+      for (let i = 0; i < allPlayButtons.length - 1; i++) {
+        allPlayButtons[i].remove();
+      }
+    }
+  }
+  
+  // Force remove all play buttons and reset state
+  forceResetSoundButton() {
+    console.log('=== Force Resetting Sound Button ===');
+    
+    // Remove all play buttons
+    const allPlayButtons = document.querySelectorAll('#playbutton');
+    allPlayButtons.forEach(btn => btn.remove());
+    console.log('Removed', allPlayButtons.length, 'play buttons');
+    
+    // Remove bgvideo class
+    document.body.classList.remove('bgvideo');
+    
+    // Clear current video reference
+    this.currentVideo = null;
+    
+    // Update state based on current slide
+    this.updateSoundButtonState();
+    
+    console.log('Sound button state reset complete');
+  }
+  
+  // Method specifically for cleaning up after meditation card closes
+  onMeditationCardClosed(slideId) {
+    console.log('=== Meditation Card Closed Cleanup ===');
+    console.log('Slide ID:', slideId);
+    
+    // Force remove all sound buttons
+    this.removePlayButton();
+    document.body.classList.remove('bgvideo');
+    
+    // Clear any video references
+    this.currentVideo = null;
+    
+    // Verify the slide shouldn't show sound button
+    const shouldShow = this.shouldSlideShowSoundButton(slideId);
+    console.log(`Meditation slide "${slideId}" should show sound button: ${shouldShow}`);
+    
+    if (shouldShow) {
+      console.warn('WARNING: Meditation slide is in designated list! This should not happen.');
+    }
+    
+    // Double-check cleanup worked
+    setTimeout(() => {
+      const playButton = document.getElementById('playbutton');
+      const hasBgVideo = document.body.classList.contains('bgvideo');
+      
+      if (playButton || hasBgVideo) {
+        console.warn('Sound button cleanup failed, forcing removal...');
+        this.removePlayButton();
+        document.body.classList.remove('bgvideo');
+      } else {
+        console.log('Meditation card cleanup successful - no sound button');
+      }
+    }, 100);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  var videosound = new VideoSound();
+  // Make VideoSound instance globally accessible
+  window.videoSound = new VideoSound();
 });

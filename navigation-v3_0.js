@@ -1545,6 +1545,12 @@ class Navigation {
         this.eventHandlers[slideId+'header'] = this.closeCardsE.bind(this);
         cardHeader.addEventListener('click', this.eventHandlers[slideId+'header']);
         this.cardopened = true;
+        
+        // Notify video sound system that card state changed
+        if (window.videoSound && typeof window.videoSound.onCardStateChange === 'function') {
+            window.videoSound.onCardStateChange();
+        }
+        
         console.log('END opening card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
     }
     
@@ -2725,9 +2731,23 @@ class Navigation {
                 }
             }
             
+            // Store the slide ID before resetting it
+            const closedSlideId = this.targetSlide;
+            
             // Reset state variables
             this.targetSlide = 'none';
             this.cardopened = false;
+            
+            // Notify video sound system that card state changed
+            if (window.videoSound && typeof window.videoSound.onCardStateChange === 'function') {
+                // Check if this was a meditation card and call special cleanup
+                if (closedSlideId === 'meditadorxs' || closedSlideId === 'meditators') {
+                    console.log('Meditation card force closed, calling special cleanup for:', closedSlideId);
+                    window.videoSound.onMeditationCardClosed(closedSlideId);
+                } else {
+                    window.videoSound.onCardStateChange();
+                }
+            }
             
             // Resume background videos
             this.theFrontVideo.forEach(function(el) {
@@ -2778,8 +2798,22 @@ class Navigation {
                 this.eventHandlers[this.targetSlide+'bg'] = this.openCard.bind(this, { divId: this.targetSlide });
                 zoneBg.addEventListener('click', this.eventHandlers[this.targetSlide+'bg'], false);
             }
+            // Store the slide ID before resetting it
+            const closedSlideId = this.targetSlide;
             this.targetSlide = 'none';
             this.cardopened = false;
+            
+            // Notify video sound system that card state changed
+            if (window.videoSound && typeof window.videoSound.onCardStateChange === 'function') {
+                // Check if this was a meditation card and call special cleanup
+                if (closedSlideId === 'meditadorxs' || closedSlideId === 'meditators') {
+                    console.log('Meditation card closed, calling special cleanup for:', closedSlideId);
+                    window.videoSound.onMeditationCardClosed(closedSlideId);
+                } else {
+                    window.videoSound.onCardStateChange();
+                }
+            }
+            
             // Resume background videos when closing cards
             this.theFrontVideo.forEach(function(el) {
                 console.log(el);

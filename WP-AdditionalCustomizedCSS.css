@@ -955,7 +955,12 @@ body.ajde_events-template-default div#main-container > * {
   
   }
   body.single-ajde_events .evoet_c2.evoet_cx .evo_end .date, body.single-ajde_events .evoet_c2.evoet_cx .evo_start .date,body.single-ajde_events .evoet_c2.evoet_cx .evo_end .day, body.single-ajde_events .evoet_c2.evoet_cx .evo_start .day, body.single-ajde_events .evoet_c2.evoet_cx .evo_end .month, body.single-ajde_events .evoet_c2.evoet_cx .evo_start .month{display:inline-block!important}
-  
+
+  /* Add padding-top to evoet_c2.evoet_cx class for single event pages only */
+  body.single-ajde_events .evoet_c2.evoet_cx {
+      padding-top: 10px;
+  }
+
   /* Reorder month and date for single event pages - make evo_start a flex container */
   body.single-ajde_events .evoet_c2.evoet_cx .evo_start {
       display: flex !important;

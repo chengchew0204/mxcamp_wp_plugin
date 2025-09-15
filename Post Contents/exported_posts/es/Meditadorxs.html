@@ -1,0 +1,251 @@
+<!-- wp:html --><br>
+<h4 class="slide-title">AMIGOS NOBLES / NOBLE FRIENDS</h4>
+<!-- /wp:html -->
+
+<!-- wp:html -->
+<hr><hr>Algunos creen que la mayor mejora de la vida proviene de la práctica de la meditación.<hr><hr>Nosotros anfitrión una práctica diaria de meditación de 20 minutos a las 7:30 AM. Te invitamos a unirte a una práctica diaria de meditación comunitaria.<hr><hr>
+Esta no es una clase ni una sesión guiada, sino una oportunidad colectiva para reunirnos y sentarnos juntos en silencio.<hr><hr>
+
+<h4>Para SRC:</h4> DM @campmx a <a href="https://www.instagram.com/campmx/" target="_blank"><b><u>Instagram</font></b></u></a> o <a href="https://www.facebook.com/campmx.page" target="_blank"><b><u>Facebook</font></b></u></a><hr><hr>
+
+<h4>Qué esperar:</h4>
+Comenzaremos puntualmente a las 7:30 a. m. todos los días. El formato es sencillo:<hr><hr>
+
+•　20 minutos de meditación silenciosa<br>
+•　una suave campanada indicará el inicio y el final de la sesión<br>
+•　después de la campanada, quienes necesiten retirarse podrán hacerlo en silencio.<hr><hr>
+
+<h4>Círculo de Intercambio Opcional:</h4>
+Para quienes deseen quedarse, se abrirá un espacio para un breve intercambio grupal opcional. Esta es una oportunidad para compartir desde su experiencia en la práctica, pero no hay presión para participar.<hr><hr>
+
+<h4>Dónde:</h4>
+CAMP, Calle las Casitas 61 (o 51), Playa Zipolite, 70947 Arroyo Tres, Oaxaca, Mexico <a href="https://maps.app.goo.gl/4GLyPNkCUBTFear68" target="_blank"><b>(<u>mapa</u>)</b></font></a><hr><hr>
+
+<h4>Cuándo:</h4>
+Todos los días a las 7:30 a. m.<hr><hr>
+
+<h4>Qué traer:</h4>
+(Nada) Se proporcionan cojines, zabutons y bancos de meditación, y también hay sillas disponibles.<hr><hr>
+
+<h4>Precio:</h4>
+Gratuito<hr><hr><hr><hr><hr><hr>
+
+Esperamos con ansias sentarnos contigo.<hr>
+
+<b>CAMP</b> (Centro de Arte, Movimiento y Paz)<hr><hr><hr><hr>
+
+<h4>¿Qué es la meditación?</h4>
+La meditación es una práctica de entrenamiento mental, similar a cómo se entrena el cuerpo mediante el ejercicio físico. Implica técnicas para enfocar la atención y la consciencia para alcanzar un estado de claridad mental y tranquilidad emocional. Existen numerosas formas de meditación, pero muchas comparten el objetivo común de ayudar a estar más presente y menos reactivo al flujo constante de pensamientos que a menudo llenan nuestra mente. No se trata de detener los pensamientos, sino de observarlos sin juzgarlos.<hr><hr><hr>
+
+<video width="500" controls> <source data-src="https://camp.mx/wp-content/uploads/khandro.m4v"> </video></center><hr><hr>
+　
+<h4>¿Cómo meditar?</h4>
+　
+<video width="500" controls> <source data-src="https://camp.mx/wp-content/uploads/meditacion.mp4"> </video></center><hr><hr>
+　
+<h4>Cómo detener la mente del mono.</h4>
+
+<video width="500" controls> <source data-src="https://camp.mx/wp-content/uploads/Moojiji.m4v"> </video></center><hr><hr>
+</p>
+<!-- /wp:html -->
+
+<!-- wp:html --><hr />
+<div> </div>
+
+<style>
+  /* Ensure native controls are clickable */
+  .camp-video-wrap { position: relative; display:inline-block; max-width:100%; }
+  .camp-video-wrap video { display:block; width:100%; height:auto; pointer-events:auto !important; }
+  /* Soft control styles removed */
+  /* Avoid blocking controls if outer layer has transform/opacity animations */
+  .camp-video-wrap::after { content:''; position:absolute; inset:0; pointer-events:none; }
+</style>
+
+<script>
+(function () {
+  // -------- helpers --------
+  function wrapVideo(v){
+    if (v.closest('.camp-video-wrap')) return v.closest('.camp-video-wrap');
+    const wrap = document.createElement('div');
+    wrap.className = 'camp-video-wrap';
+    v.parentNode.insertBefore(wrap, v);
+    wrap.appendChild(v);
+    return wrap;
+  }
+
+  function ensureAttributes(v){
+    v.setAttribute('controls','');
+    v.setAttribute('playsinline','');
+    v.setAttribute('webkit-playsinline','');
+    v.setAttribute('preload','metadata');
+    // Prevent iOS forced fullscreen
+    v.setAttribute('disablepictureinpicture','');
+    v.setAttribute('controlsList','nodownload');
+    
+    // Mobile-specific attributes
+    v.style.width = '100%';
+    v.style.height = 'auto';
+    v.style.display = 'block';
+    v.style.pointerEvents = 'auto';
+    
+    // Set reasonable default volume for mobile
+    v.volume = 0.8;
+    v.muted = false; // Allow unmuted by default
+  }
+
+  function hydrateVideo(video) {
+    if (video.__hydrated) return;
+    const sources = video.querySelectorAll('source[data-src]');
+    let changed = false;
+    sources.forEach(srcEl => {
+      const url = srcEl.getAttribute('data-src');
+      if (url) {
+        srcEl.setAttribute('src', url);
+        srcEl.removeAttribute('data-src');
+        changed = true;
+      }
+    });
+    if (changed) {
+      // Safari occasionally needs explicit load to properly link controls state
+      video.load();
+      video.__hydrated = true;
+    }
+  }
+
+  // Soft control function removed
+
+  function pauseAll(except){
+    // Only target videos within meditation post content, not homepage videos (.thefrontvideo)
+    document.querySelectorAll('video').forEach(v=>{
+      // Skip homepage background videos
+      if (v.classList.contains('thefrontvideo')) return;
+      if (v !== except && !v.paused && !v.ended) {
+        try { v.pause(); } catch(e){}
+      }
+    });
+  }
+
+  function isVisible(el){
+    // Not in document flow, or display:none, or size 0, or completely outside viewport
+    if (!el.isConnected) return false;
+    if (el.offsetParent === null) return false; // display:none or in hidden ancestor
+    const rect = el.getBoundingClientRect();
+    return (rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < (window.innerHeight || 800) + 1);
+  }
+
+  // Auto-pause when video leaves view or card is closed
+  function autoPauseHidden(){
+    // Only target videos within meditation post content, not homepage videos (.thefrontvideo)
+    document.querySelectorAll('video').forEach(v=>{
+      // Skip homepage background videos
+      if (v.classList.contains('thefrontvideo')) return;
+      if (!isVisible(v) && !v.paused && !v.ended) {
+        try { v.pause(); } catch(e){}
+      }
+    });
+  }
+
+  // -------- main --------
+  document.addEventListener('DOMContentLoaded', function () {
+    // Target all videos but exclude homepage background videos (.thefrontvideo)
+    const allVideos = Array.from(document.querySelectorAll('video'));
+    const videos = allVideos.filter(v => !v.classList.contains('thefrontvideo'));
+
+    // 1) Setup attributes (no soft controls)
+    videos.forEach(v=>{
+      ensureAttributes(v);
+      wrapVideo(v); // Wrap for consistency but no soft controls
+    });
+
+    // 2) Hydrate sources when entering viewport
+    function setupIO(videos) {
+      if (!('IntersectionObserver' in window)) return false;
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            hydrateVideo(entry.target);
+            io.unobserve(entry.target);
+          }
+        });
+      }, { root: null, rootMargin: '200px 0px', threshold: 0.01 });
+      videos.forEach(v => io.observe(v));
+      return true;
+    }
+    if (!setupIO(videos)) {
+      // Fallback: scroll/resize detection
+      function onScroll() {
+        const vh = window.innerHeight || 800;
+        videos.forEach(v => {
+          if (v.__hydrated) return;
+          const r = v.getBoundingClientRect();
+          if (r.top < vh + 200 && r.bottom > -200) hydrateVideo(v);
+        });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      onScroll();
+    }
+
+    // 3) Only allow single video playback
+    videos.forEach(v=>{
+      v.addEventListener('play', ()=> pauseAll(v), { passive:true });
+      
+      // Enhanced mobile and Safari video click handling
+      v.addEventListener('click', (e)=>{
+        // If user clicks on controls, let native behavior handle; otherwise provide fallback toggle
+        const inControls = (e.offsetY > (v.clientHeight - 44)); // Rough estimate of bottom controls height
+        if (!inControls) {
+          if (v.paused || v.ended) {
+            // Pause all other videos first
+            pauseAll(v);
+            // Play this video with proper error handling for mobile
+            const playPromise = v.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                console.log('Mobile video play failed:', error);
+                // For mobile autoplay policy, try with user interaction
+                v.muted = true;
+                v.play().then(() => {
+                  // Once playing, try to unmute if user interacted
+                  setTimeout(() => {
+                    v.muted = false;
+                  }, 100);
+                }).catch(e => console.log('Muted play also failed:', e));
+              });
+            }
+          } else {
+            v.pause();
+          }
+        }
+      });
+      
+      // Mobile touch support
+      v.addEventListener('touchstart', (e) => {
+        // Mark as user-initiated for mobile autoplay policies
+        v.setAttribute('data-user-interacted', 'true');
+      }, { passive: true });
+      
+      // Mobile-specific play handling
+      v.addEventListener('play', (e) => {
+        // Ensure mobile videos can play
+        if (v.readyState < 2) {
+          v.load();
+        }
+      }, { passive: true });
+    });
+
+    // 4) Listen for DOM changes (card closed/removed/hidden)
+    const mo = new MutationObserver(() => autoPauseHidden());
+    mo.observe(document.body, { attributes:true, childList:true, subtree:true });
+    window.addEventListener('resize', autoPauseHidden, { passive:true });
+    window.addEventListener('scroll', autoPauseHidden, { passive:true });
+
+    // 5) Auto-pause when page is hidden, navigated away, or before unload
+    document.addEventListener('visibilitychange', ()=> {
+      if (document.hidden) pauseAll();
+    });
+    window.addEventListener('pagehide', ()=> pauseAll());
+    window.addEventListener('beforeunload', ()=> pauseAll());
+  });
+})();
+</script>

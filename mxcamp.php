@@ -283,10 +283,12 @@ function mxcamp_inject_background_redirect() {
         
         /* Video styles for single event pages */
         body.single-ajde_events .fullscreen img.playbut {
-            left: -10px;
+            left: -13px;
             bottom: -7px;
             width: 100px;
             cursor: pointer;
+            transform-origin: left bottom;
+            transform: scale(1.1);
         }
         
         @media screen and (max-width:600px) {
@@ -756,7 +758,7 @@ function mxcamp_inject_background_redirect() {
                 
                 // Create fullscreen container
                 const fullScreenDiv = document.createElement('div');
-                fullScreenDiv.classList.add('fullscreen', 'videoplaying');
+                fullScreenDiv.classList.add('fullscreen');
                 
                 // Move video and spinner to fullscreen container
                 fullScreenDiv.appendChild(thisvideo);
@@ -765,33 +767,22 @@ function mxcamp_inject_background_redirect() {
                 // Setup normal event behavior - show featured image, hide video until ready
                 setupNormalEventBehaviorSingle(thisvideo, thisHeader, fullScreenDiv);
                 
-                // Attempt autoplay (will be muted on Safari/iOS)
+                // Trigger video loading without autoplay - just load the video
                 setTimeout(() => {
-                    thisvideo.play().catch(error => {
-                        console.log('Autoplay failed (expected on some browsers):', error.message);
-                    });
-                }, 1000);
+                    thisvideo.load(); // Reload the video to trigger loading events
+                    console.log('Video load triggered');
+                }, 100);
                 
-                // Additional autoplay attempt for long videos after controls are added
-                setTimeout(() => {
-                    if (thisvideo.paused && thisvideo.duration > 120) {
-                        console.log('Attempting autoplay for long video on single event page');
-                        thisvideo.play().catch(error => {
-                            console.log('Long video autoplay retry failed:', error.message);
-                        });
-                    }
-                }, 2000);
+                // Hide spinner when video is ready (not when playing, since we don't autoplay)
+                thisvideo.addEventListener('loadeddata', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video loaded - spinner hidden');
+                });
                 
-                // Hide spinner when video starts playing
+                // Also hide spinner when video starts playing (user clicked play)
                 thisvideo.addEventListener('play', function () {
                     spinnerContainer.style.display = "none";
                     console.log('Video started playing - spinner hidden');
-                });
-                
-                // Additional safety - hide spinner when video is actually playing
-                thisvideo.addEventListener('playing', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video is playing - spinner hidden');
                 });
                 
                 // Hide spinner on error or stalled
@@ -932,14 +923,7 @@ function mxcamp_inject_background_redirect() {
                         if (pauseEl) pauseEl.style.display = 'none';
                         console.log("Activating Video controls for long video on single event page");
                         
-                        // Ensure long videos still autoplay even with native controls
-                        setTimeout(() => {
-                            if (thisvideo.paused) {
-                                thisvideo.play().catch(error => {
-                                    console.log('Long video autoplay failed on single event page:', error.message);
-                                });
-                            }
-                        }, 100);
+                        // No autoplay for single event pages - user must click play even for long videos
                     }
                 });
                 
@@ -992,21 +976,28 @@ function mxcamp_inject_background_redirect() {
                 const showVideo = () => {
                     headerImg.style.display = 'none';
                     videoEl.style.display = 'block';
-                    // Unmute video immediately when it becomes visible and starts playing
-                    videoEl.muted = false;
-                    console.log('Video ready - hiding featured image, showing video with audio');
+                    // Keep video muted initially - will unmute when user clicks play
+                    console.log('Video ready - hiding featured image, showing video (paused)');
                 };
                 
-                // Listen for video ready events
-                const events = ['loadeddata', 'canplay', 'playing'];
+                // Listen for video ready events - add debugging to see which events fire
+                const events = ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'];
                 const cleanup = () => {
                     events.forEach(event => videoEl.removeEventListener(event, handleReady));
                 };
                 
-                const handleReady = () => {
+                const handleReady = (event) => {
+                    console.log('Video ready event fired:', event.type, 'readyState:', videoEl.readyState);
                     showVideo();
                     cleanup();
                 };
+                
+                // Add debugging for all events
+                events.forEach(event => {
+                    videoEl.addEventListener(event, (e) => {
+                        console.log('Video event:', e.type, 'readyState:', videoEl.readyState);
+                    });
+                });
                 
                 events.forEach(event => videoEl.addEventListener(event, handleReady, { once: true }));
                 
