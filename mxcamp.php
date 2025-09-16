@@ -742,10 +742,11 @@ function mxcamp_inject_background_redirect() {
                 }
                 
                 // Initialize spinner
-                const spinnerContainer = document.createElement('div');
-                const spinner = '<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">';
-                spinnerContainer.innerHTML = spinner;
-                spinnerContainer.classList.add('card-video-loader');
+                // COMMENTED OUT: Removed loading spinner as requested
+                // const spinnerContainer = document.createElement('div');
+                // const spinner = '<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">';
+                // spinnerContainer.innerHTML = spinner;
+                // spinnerContainer.classList.add('card-video-loader');
                 
                 // Remove default controls
                 thisvideo.removeAttribute("controls");
@@ -762,7 +763,8 @@ function mxcamp_inject_background_redirect() {
                 
                 // Move video and spinner to fullscreen container
                 fullScreenDiv.appendChild(thisvideo);
-                fullScreenDiv.appendChild(spinnerContainer);
+                // COMMENTED OUT: Removed loading spinner as requested
+                // fullScreenDiv.appendChild(spinnerContainer);
                 
                 // Setup normal event behavior - show featured image, hide video until ready
                 setupNormalEventBehaviorSingle(thisvideo, thisHeader, fullScreenDiv);
@@ -774,27 +776,31 @@ function mxcamp_inject_background_redirect() {
                 }, 100);
                 
                 // Hide spinner when video is ready (not when playing, since we don't autoplay)
-                thisvideo.addEventListener('loadeddata', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video loaded - spinner hidden');
-                });
+                // COMMENTED OUT: Removed loading spinner as requested
+                // thisvideo.addEventListener('loadeddata', function () {
+                //     spinnerContainer.style.display = "none";
+                //     console.log('Video loaded - spinner hidden');
+                // });
                 
                 // Also hide spinner when video starts playing (user clicked play)
-                thisvideo.addEventListener('play', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video started playing - spinner hidden');
-                });
+                // COMMENTED OUT: Removed loading spinner as requested
+                // thisvideo.addEventListener('play', function () {
+                //     spinnerContainer.style.display = "none";
+                //     console.log('Video started playing - spinner hidden');
+                // });
                 
                 // Hide spinner on error or stalled
-                thisvideo.addEventListener('error', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video error - spinner hidden, fallback background retained');
-                });
+                // COMMENTED OUT: Removed loading spinner as requested
+                // thisvideo.addEventListener('error', function () {
+                //     spinnerContainer.style.display = "none";
+                //     console.log('Video error - spinner hidden, fallback background retained');
+                // });
                 
-                thisvideo.addEventListener('stalled', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video stalled - spinner hidden');
-                });
+                // COMMENTED OUT: Removed loading spinner as requested
+                // thisvideo.addEventListener('stalled', function () {
+                //     spinnerContainer.style.display = "none";
+                //     console.log('Video stalled - spinner hidden');
+                // });
                 
                 var controlsVisible = false;
                 thisvideo.addEventListener('timeupdate', function () {

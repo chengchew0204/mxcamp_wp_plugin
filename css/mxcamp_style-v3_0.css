@@ -2080,6 +2080,9 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
 } 
 
 /* Video Loading Spinner - shown while video is loading */
+/* COMMENTED OUT: Removed loading spinner as requested */
+
+/*
 .video-loading-spinner {
     position: absolute;
     top: 50%;
@@ -2138,6 +2141,7 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
         border-top: 3px solid rgba(245, 245, 245, 0.9);
     }
 }
+*/
 
 /* WPCode – CSS Snippet from Code-snippet by Erick */
 .eventon_full_description strong,

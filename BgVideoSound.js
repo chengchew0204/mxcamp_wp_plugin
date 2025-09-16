@@ -100,13 +100,15 @@ class VideoSound {
     // Only skip if explicitly paused by user or card is open
     
     // Always show loading spinner first - videos often take time to load
-    this.showVideoSpinner(video);
-    console.log('Video loading spinner shown for readyState:', video.readyState);
+    // COMMENTED OUT: Removed loading spinner as requested
+    // this.showVideoSpinner(video);
+    // console.log('Video loading spinner shown for readyState:', video.readyState);
     
     // Set up event listeners for video loading states with more reliable cleanup
     const hideSpinnerAndCleanup = () => {
       console.log('Video ready - hiding spinner and cleaning up listeners');
-      this.hideVideoSpinner(video);
+      // COMMENTED OUT: Removed loading spinner as requested
+      // this.hideVideoSpinner(video);
       // Clean up all listeners
       video.removeEventListener('canplay', hideSpinnerAndCleanup);
       video.removeEventListener('canplaythrough', hideSpinnerAndCleanup);
@@ -149,11 +151,11 @@ class VideoSound {
                 })
                 .catch(innerErr => {
                   console.error('Still cannot play video even when muted:', innerErr);
-                  this.hideVideoSpinner(video);
+                  // this.hideVideoSpinner(video); // Method commented out
                 });
             }
           } else {
-            this.hideVideoSpinner(video);
+            // this.hideVideoSpinner(video); // Method commented out
           }
         });
     } else {
@@ -190,86 +192,89 @@ class VideoSound {
   }
 
   // Create video loading spinner for a specific video
-  createVideoSpinner(video) {
-    if (!video) {
-      console.error('Cannot create spinner - no video provided');
-      return;
-    }
-    
-    if (this.videoSpinners.has(video)) {
-      console.log('Spinner already exists for this video');
-      return this.videoSpinners.get(video);
-    }
-    
-    const slide = video.closest('.slide_10');
-    if (!slide) {
-      console.error('Cannot create spinner - video not inside slide_10');
-      return;
-    }
-    
-    // Create spinner container
-    const spinnerContainer = document.createElement('div');
-    spinnerContainer.className = 'video-loading-spinner';
-    
-    // Create spinner element
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner';
-    
-    spinnerContainer.appendChild(spinner);
-    slide.appendChild(spinnerContainer);
-    
-    // Store reference
-    this.videoSpinners.set(video, spinnerContainer);
-    
-    console.log('Video loading spinner created for slide:', slide.id);
-    return spinnerContainer;
-  }
+  // COMMENTED OUT: Removed loading spinner as requested
+  // createVideoSpinner(video) {
+  //   if (!video) {
+  //     console.error('Cannot create spinner - no video provided');
+  //     return;
+  //   }
+  //   
+  //   if (this.videoSpinners.has(video)) {
+  //     console.log('Spinner already exists for this video');
+  //     return this.videoSpinners.get(video);
+  //   }
+  //   
+  //   const slide = video.closest('.slide_10');
+  //   if (!slide) {
+  //     console.error('Cannot create spinner - video not inside slide_10');
+  //     return;
+  //   }
+  //   
+  //   // Create spinner container
+  //   const spinnerContainer = document.createElement('div');
+  //   spinnerContainer.className = 'video-loading-spinner';
+  //   
+  //   // Create spinner element
+  //   const spinner = document.createElement('div');
+  //   spinner.className = 'spinner';
+  //   
+  //   spinnerContainer.appendChild(spinner);
+  //   slide.appendChild(spinnerContainer);
+  //   
+  //   // Store reference
+  //   this.videoSpinners.set(video, spinnerContainer);
+  //   
+  //   console.log('Video loading spinner created for slide:', slide.id);
+  //   return spinnerContainer;
+  // }
 
   // Show video loading spinner
-  showVideoSpinner(video) {
-    if (!video) return;
-    
-    let spinner = this.videoSpinners.get(video);
-    if (!spinner) {
-      spinner = this.createVideoSpinner(video);
-    }
-    
-    if (spinner) {
-      spinner.classList.remove('hide');
-      spinner.style.display = 'block';
-      spinner.style.opacity = '1';
-      const slide = video.closest('.slide_10');
-      console.log('Video loading spinner shown for slide:', slide ? slide.id : 'unknown');
-      
-      // Safety timeout to hide spinner if video events don't fire
-      setTimeout(() => {
-        if (spinner && !spinner.classList.contains('hide')) {
-          console.log('Safety timeout: hiding video spinner after 10 seconds');
-          this.hideVideoSpinner(video);
-        }
-      }, 10000);
-      
-    } else {
-      console.error('Failed to show video spinner - spinner not created');
-    }
-  }
+  // COMMENTED OUT: Removed loading spinner as requested
+  // showVideoSpinner(video) {
+  //   if (!video) return;
+  //   
+  //   let spinner = this.videoSpinners.get(video);
+  //   if (!spinner) {
+  //     spinner = this.createVideoSpinner(video);
+  //   }
+  //   
+  //   if (spinner) {
+  //     spinner.classList.remove('hide');
+  //     spinner.style.display = 'block';
+  //     spinner.style.opacity = '1';
+  //     const slide = video.closest('.slide_10');
+  //     console.log('Video loading spinner shown for slide:', slide ? slide.id : 'unknown');
+  //     
+  //     // Safety timeout to hide spinner if video events don't fire
+  //     setTimeout(() => {
+  //       if (spinner && !spinner.classList.contains('hide')) {
+  //         console.log('Safety timeout: hiding video spinner after 10 seconds');
+  //         this.hideVideoSpinner(video);
+  //       }
+  //     }, 10000);
+  //     
+  //   } else {
+  //     console.error('Failed to show video spinner - spinner not created');
+  //   }
+  // }
 
   // Hide video loading spinner
-  hideVideoSpinner(video) {
-    if (!video) return;
-    
-    const spinner = this.videoSpinners.get(video);
-    if (spinner) {
-      spinner.classList.add('hide');
-      // Remove after transition
-      setTimeout(() => {
-        if (spinner.classList.contains('hide')) {
-          spinner.style.display = 'none';
-        }
-      }, 300);
-      console.log('Video loading spinner hidden');
-    }
-  }
+  // COMMENTED OUT: Removed loading spinner as requested
+  // hideVideoSpinner(video) {
+  //   if (!video) return;
+  //   
+  //   const spinner = this.videoSpinners.get(video);
+  //   if (spinner) {
+  //     spinner.classList.add('hide');
+  //     // Remove after transition
+  //     setTimeout(() => {
+  //       if (spinner.classList.contains('hide')) {
+  //         spinner.style.display = 'none';
+  //       }
+  //     }, 300);
+  //     console.log('Video loading spinner hidden');
+  //   }
+  // }
 
   // Remove video loading spinner
   removeVideoSpinner(video) {
@@ -295,7 +300,7 @@ class VideoSound {
         video.currentTime = 0;
         
         // Hide any loading spinner
-        this.hideVideoSpinner(video);
+        // this.hideVideoSpinner(video); // Method commented out
         
         console.log('Video stopped and reset to beginning');
       } catch (err) {
@@ -316,7 +321,7 @@ class VideoSound {
       video.currentTime = 0;
       
       // Hide any loading spinner
-      this.hideVideoSpinner(video);
+      // this.hideVideoSpinner(video); // Method commented out
       
       console.log('Video stopped and reset to beginning');
     } catch (err) {
@@ -763,13 +768,14 @@ class VideoSound {
       console.log('Testing spinner on slide:', slide ? slide.id : 'unknown');
       
       // Show spinner for 5 seconds
-      this.showVideoSpinner(firstVideo);
-      console.log('Spinner should now be visible on the first video slide');
+      // COMMENTED OUT: Removed loading spinner as requested
+      // this.showVideoSpinner(firstVideo);
+      // console.log('Spinner should now be visible on the first video slide');
       
-      setTimeout(() => {
-        this.hideVideoSpinner(firstVideo);
-        console.log('Spinner hidden after 5 seconds');
-      }, 5000);
+      // setTimeout(() => {
+      //   this.hideVideoSpinner(firstVideo);
+      //   console.log('Spinner hidden after 5 seconds');
+      // }, 5000);
     } else {
       console.log('No videos found to test spinner on');
     }
@@ -869,6 +875,9 @@ class VideoSound {
     console.log('=== Meditation Card Closed Cleanup ===');
     console.log('Slide ID:', slideId);
     
+    // Pause all videos in the meditation posts
+    this.pauseMeditationVideos(slideId);
+    
     // Force remove all sound buttons
     this.removePlayButton();
     document.body.classList.remove('bgvideo');
@@ -897,6 +906,41 @@ class VideoSound {
         console.log('Meditation card cleanup successful - no sound button');
       }
     }, 100);
+  }
+  
+  // Method to pause all videos in meditation posts
+  pauseMeditationVideos(slideId) {
+    console.log('Pausing meditation videos for slide:', slideId);
+    
+    // Find the meditation slide that's being closed
+    const meditationSlide = document.getElementById(slideId);
+    if (!meditationSlide) {
+      console.log('Meditation slide not found:', slideId);
+      return;
+    }
+    
+    // Find all videos within the meditation slide
+    const videos = meditationSlide.querySelectorAll('video');
+    console.log('Found', videos.length, 'videos in meditation slide');
+    
+    videos.forEach((video, index) => {
+      if (!video.paused) {
+        video.pause();
+        console.log(`Paused meditation video ${index + 1}:`, video.src || video.querySelector('source')?.src);
+      }
+    });
+    
+    // Also check for any videos in the post content area
+    const postContent = meditationSlide.querySelector('.post-content');
+    if (postContent) {
+      const postVideos = postContent.querySelectorAll('video');
+      postVideos.forEach((video, index) => {
+        if (!video.paused) {
+          video.pause();
+          console.log(`Paused post content video ${index + 1}:`, video.src || video.querySelector('source')?.src);
+        }
+      });
+    }
   }
 }
 

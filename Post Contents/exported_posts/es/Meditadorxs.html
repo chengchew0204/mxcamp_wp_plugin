@@ -37,15 +37,27 @@ Esperamos con ansias sentarnos contigo.<hr>
 <h4>¿Qué es la meditación?</h4>
 La meditación es una práctica de entrenamiento mental, similar a cómo se entrena el cuerpo mediante el ejercicio físico. Implica técnicas para enfocar la atención y la consciencia para alcanzar un estado de claridad mental y tranquilidad emocional. Existen numerosas formas de meditación, pero muchas comparten el objetivo común de ayudar a estar más presente y menos reactivo al flujo constante de pensamientos que a menudo llenan nuestra mente. No se trata de detener los pensamientos, sino de observarlos sin juzgarlos.<hr><hr><hr>
 
-<video width="500" controls> <source data-src="https://camp.mx/wp-content/uploads/khandro.m4v"> </video></center><hr><hr>
+<div class="video-wrap">
+  <video class="lazy-video" width="500" controls preload="metadata" playsinline webkit-playsinline controlsList="nodownload" data-src="https://camp.mx/wp-content/uploads/khandro.m4v">
+  </video>
+  <div class="video-placeholder">Cargando video...</div>
+</div><hr><hr>
 　
 <h4>¿Cómo meditar?</h4>
 　
-<video width="500" controls> <source data-src="https://camp.mx/wp-content/uploads/meditacion.mp4"> </video></center><hr><hr>
+<div class="video-wrap">
+  <video class="lazy-video" width="500" controls preload="metadata" playsinline webkit-playsinline controlsList="nodownload" data-src="https://camp.mx/wp-content/uploads/meditacion.mp4">
+  </video>
+  <div class="video-placeholder">Cargando video...</div>
+</div><hr><hr>
 　
 <h4>Cómo detener la mente del mono.</h4>
 
-<video width="500" controls> <source data-src="https://camp.mx/wp-content/uploads/Moojiji.m4v"> </video></center><hr><hr>
+<div class="video-wrap">
+  <video class="lazy-video" width="500" controls preload="metadata" playsinline webkit-playsinline controlsList="nodownload" data-src="https://camp.mx/wp-content/uploads/Moojiji.m4v">
+  </video>
+  <div class="video-placeholder">Cargando video...</div>
+</div><hr><hr>
 </p>
 <!-- /wp:html -->
 
@@ -53,199 +65,183 @@ La meditación es una práctica de entrenamiento mental, similar a cómo se entr
 <div> </div>
 
 <style>
-  /* Ensure native controls are clickable */
-  .camp-video-wrap { position: relative; display:inline-block; max-width:100%; }
-  .camp-video-wrap video { display:block; width:100%; height:auto; pointer-events:auto !important; }
-  /* Soft control styles removed */
-  /* Avoid blocking controls if outer layer has transform/opacity animations */
-  .camp-video-wrap::after { content:''; position:absolute; inset:0; pointer-events:none; }
+.video-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  /*background-color: #f0f0f0;*/
+  /*border: 1px solid #ddd;*/
+  /*border-radius: 4px;*/
+}
+
+.video-wrap video {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: auto;
+}
+
+.video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: -1;
+  /*background-color: rgba(240, 240, 240, 0.9);*/
+}
+
+.lazy-video.loading {
+  opacity: 0.7;
+}
+
+.lazy-video.loaded + .video-placeholder {
+  display: none;
+}
 </style>
 
 <script>
-(function () {
-  // -------- helpers --------
-  function wrapVideo(v){
-    if (v.closest('.camp-video-wrap')) return v.closest('.camp-video-wrap');
-    const wrap = document.createElement('div');
-    wrap.className = 'camp-video-wrap';
-    v.parentNode.insertBefore(wrap, v);
-    wrap.appendChild(v);
-    return wrap;
-  }
-
-  function ensureAttributes(v){
-    v.setAttribute('controls','');
-    v.setAttribute('playsinline','');
-    v.setAttribute('webkit-playsinline','');
-    v.setAttribute('preload','metadata');
-    // Prevent iOS forced fullscreen
-    v.setAttribute('disablepictureinpicture','');
-    v.setAttribute('controlsList','nodownload');
-    
-    // Mobile-specific attributes
-    v.style.width = '100%';
-    v.style.height = 'auto';
-    v.style.display = 'block';
-    v.style.pointerEvents = 'auto';
-    
-    // Set reasonable default volume for mobile
-    v.volume = 0.8;
-    v.muted = false; // Allow unmuted by default
-  }
-
-  function hydrateVideo(video) {
-    if (video.__hydrated) return;
-    const sources = video.querySelectorAll('source[data-src]');
-    let changed = false;
-    sources.forEach(srcEl => {
-      const url = srcEl.getAttribute('data-src');
-      if (url) {
-        srcEl.setAttribute('src', url);
-        srcEl.removeAttribute('data-src');
-        changed = true;
-      }
-    });
-    if (changed) {
-      // Safari occasionally needs explicit load to properly link controls state
-      video.load();
-      video.__hydrated = true;
-    }
-  }
-
-  // Soft control function removed
-
-  function pauseAll(except){
-    // Only target videos within meditation post content, not homepage videos (.thefrontvideo)
-    document.querySelectorAll('video').forEach(v=>{
-      // Skip homepage background videos
-      if (v.classList.contains('thefrontvideo')) return;
-      if (v !== except && !v.paused && !v.ended) {
-        try { v.pause(); } catch(e){}
+document.addEventListener('DOMContentLoaded', function() {
+  // Función para pausar todos los videos en este post
+  function pauseAllVideos() {
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(video => {
+      if (!video.paused) {
+        video.pause();
+        console.log('Video pausado:', video.src || video.querySelector('source')?.src);
       }
     });
   }
-
-  function isVisible(el){
-    // Not in document flow, or display:none, or size 0, or completely outside viewport
-    if (!el.isConnected) return false;
-    if (el.offsetParent === null) return false; // display:none or in hidden ancestor
-    const rect = el.getBoundingClientRect();
-    return (rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < (window.innerHeight || 800) + 1);
-  }
-
-  // Auto-pause when video leaves view or card is closed
-  function autoPauseHidden(){
-    // Only target videos within meditation post content, not homepage videos (.thefrontvideo)
-    document.querySelectorAll('video').forEach(v=>{
-      // Skip homepage background videos
-      if (v.classList.contains('thefrontvideo')) return;
-      if (!isVisible(v) && !v.paused && !v.ended) {
-        try { v.pause(); } catch(e){}
-      }
-    });
-  }
-
-  // -------- main --------
-  document.addEventListener('DOMContentLoaded', function () {
-    // Target all videos but exclude homepage background videos (.thefrontvideo)
-    const allVideos = Array.from(document.querySelectorAll('video'));
-    const videos = allVideos.filter(v => !v.classList.contains('thefrontvideo'));
-
-    // 1) Setup attributes (no soft controls)
-    videos.forEach(v=>{
-      ensureAttributes(v);
-      wrapVideo(v); // Wrap for consistency but no soft controls
-    });
-
-    // 2) Hydrate sources when entering viewport
-    function setupIO(videos) {
-      if (!('IntersectionObserver' in window)) return false;
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            hydrateVideo(entry.target);
-            io.unobserve(entry.target);
-          }
-        });
-      }, { root: null, rootMargin: '200px 0px', threshold: 0.01 });
-      videos.forEach(v => io.observe(v));
-      return true;
-    }
-    if (!setupIO(videos)) {
-      // Fallback: scroll/resize detection
-      function onScroll() {
-        const vh = window.innerHeight || 800;
-        videos.forEach(v => {
-          if (v.__hydrated) return;
-          const r = v.getBoundingClientRect();
-          if (r.top < vh + 200 && r.bottom > -200) hydrateVideo(v);
-        });
-      }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
-      onScroll();
-    }
-
-    // 3) Only allow single video playback
-    videos.forEach(v=>{
-      v.addEventListener('play', ()=> pauseAll(v), { passive:true });
-      
-      // Enhanced mobile and Safari video click handling
-      v.addEventListener('click', (e)=>{
-        // If user clicks on controls, let native behavior handle; otherwise provide fallback toggle
-        const inControls = (e.offsetY > (v.clientHeight - 44)); // Rough estimate of bottom controls height
-        if (!inControls) {
-          if (v.paused || v.ended) {
-            // Pause all other videos first
-            pauseAll(v);
-            // Play this video with proper error handling for mobile
-            const playPromise = v.play();
-            if (playPromise !== undefined) {
-              playPromise.catch(error => {
-                console.log('Mobile video play failed:', error);
-                // For mobile autoplay policy, try with user interaction
-                v.muted = true;
-                v.play().then(() => {
-                  // Once playing, try to unmute if user interacted
-                  setTimeout(() => {
-                    v.muted = false;
-                  }, 100);
-                }).catch(e => console.log('Muted play also failed:', e));
-              });
-            }
-          } else {
-            v.pause();
+  
+  // Escuchar eventos de cierre de tarjeta (método de respaldo)
+  const slideElement = document.querySelector('.slide_10');
+  if (slideElement) {
+    // Usar MutationObserver para detectar cuando el slide obtiene la clase 'closed'
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const target = mutation.target;
+          if (target.classList.contains('closed')) {
+            console.log('Tarjeta de meditación cerrada, pausando videos');
+            pauseAllVideos();
           }
         }
       });
-      
-      // Mobile touch support
-      v.addEventListener('touchstart', (e) => {
-        // Mark as user-initiated for mobile autoplay policies
-        v.setAttribute('data-user-interacted', 'true');
-      }, { passive: true });
-      
-      // Mobile-specific play handling
-      v.addEventListener('play', (e) => {
-        // Ensure mobile videos can play
-        if (v.readyState < 2) {
-          v.load();
-        }
-      }, { passive: true });
     });
-
-    // 4) Listen for DOM changes (card closed/removed/hidden)
-    const mo = new MutationObserver(() => autoPauseHidden());
-    mo.observe(document.body, { attributes:true, childList:true, subtree:true });
-    window.addEventListener('resize', autoPauseHidden, { passive:true });
-    window.addEventListener('scroll', autoPauseHidden, { passive:true });
-
-    // 5) Auto-pause when page is hidden, navigated away, or before unload
-    document.addEventListener('visibilitychange', ()=> {
-      if (document.hidden) pauseAll();
+    
+    observer.observe(slideElement, {
+      attributes: true,
+      attributeFilter: ['class']
     });
-    window.addEventListener('pagehide', ()=> pauseAll());
-    window.addEventListener('beforeunload', ()=> pauseAll());
+  }
+  
+  // Lazy loading para videos usando Intersection Observer
+  const lazyVideos = document.querySelectorAll('.lazy-video');
+  
+  // Asegurar atributos esenciales para Safari
+  lazyVideos.forEach(video => {
+    video.setAttribute('controls', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('controlsList', 'nodownload');
+    video.setAttribute('preload', 'metadata');
+    
+    // Safari-específico: Asegurar que el video esté listo para interacción
+    video.addEventListener('loadstart', () => {
+      console.log('Evento loadstart del video disparado');
+    });
+    
+    video.addEventListener('canplay', () => {
+      console.log('El video puede reproducirse - controles Safari deberían estar listos');
+      // Forzar mostrar los controles del video
+      video.controls = true;
+    });
   });
-})();
+  
+  if ('IntersectionObserver' in window) {
+    const videoObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        
+        const video = entry.target;
+        if (video.__hydrated) { 
+          observer.unobserve(video); 
+          return; 
+        }
+        
+        const dataSrc = video.dataset.src;
+        if (dataSrc) {
+          video.classList.add('loading');
+          
+          // Safari funciona mejor con asignación directa de src
+          video.src = dataSrc;
+          video.removeAttribute('data-src');
+          
+          // Marcar como cargado una vez que se cargan los metadatos
+          video.addEventListener('loadedmetadata', () => {
+            video.classList.remove('loading');
+            video.classList.add('loaded');
+            
+            // Safari-específico: Forzar controles a ser interactivos
+            setTimeout(() => {
+              video.controls = true;
+              console.log('Safari: Reactivación forzada de controles para:', video.src);
+            }, 100);
+          }, { once: true });
+          
+          // Safari-específico: Agregar manejador de clic como respaldo
+          video.addEventListener('click', (e) => {
+            // Solo manejar si se hace clic directamente en el video, no en los controles
+            if (e.target === video) {
+              if (video.paused) {
+                video.play();
+              } else {
+                video.pause();
+              }
+              console.log('Manejador de clic de respaldo Safari activado');
+            }
+          });
+          
+          video.load();
+          video.__hydrated = true;
+          observer.unobserve(video);
+        }
+      });
+    }, {
+      // Cargar video cuando esté a 100px de entrar al viewport
+      rootMargin: '100px'
+    });
+    
+    lazyVideos.forEach(video => {
+      videoObserver.observe(video);
+    });
+  } else {
+    // Fallback para navegadores sin soporte de IntersectionObserver
+    lazyVideos.forEach(video => {
+      const dataSrc = video.dataset.src;
+      if (dataSrc) {
+        video.src = dataSrc;
+        video.removeAttribute('data-src');
+        video.classList.add('loaded');
+        video.load();
+      }
+    });
+  }
+  
+  // Pausar todos los videos al salir de la página o cambiar pestañas
+  function pauseAllOnExit() {
+    document.querySelectorAll('video').forEach(video => {
+      if (!video.paused && !video.ended) {
+        try { video.pause(); } catch(e) {}
+      }
+    });
+  }
+  
+  document.addEventListener('visibilitychange', () => { 
+    if (document.hidden) pauseAllOnExit(); 
+  });
+  window.addEventListener('pagehide', () => pauseAllOnExit());
+});
 </script>
