@@ -382,37 +382,41 @@
           }
   
   
-  .ct-icon-container {
-              transition:0.5s!important;
-              width: 35px!important;
-              background-color: transparent!important;
-              height: 35px!important;
-              opacity:1!important;
-              /*box-shadow: 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.3);*/
-          }
+.ct-icon-container {
+            transition:0.5s!important;
+            width: 35px!important;
+            background-color: rgba(245,245,245,0.9)!important;
+            height: 35px!important;
+            opacity:1!important;
+            border-radius: 50%!important;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.2), 0 0 80px rgba(0, 0, 0, 0.3);
+        }
           
-          /* Safari-specific fix to prevent delayed background appearance */
-          @supports (-webkit-appearance: none) {
-              .ct-icon-container {
-                  background-color: transparent !important;
-                  transition: none !important;
-              }
-          }
+        /* Safari-specific fix to prevent delayed background appearance */
+        @supports (-webkit-appearance: none) {
+            .ct-icon-container {
+                background-color: rgba(245,245,245,0.9) !important;
+                border-radius: 50% !important;
+                transition: none !important;
+            }
+        }
           .ct-icon-container:hover{
               /*opacity:0.6!important*/
           }
   
-  @media screen and (min-width:600px){
-      .ct-icon-container {
-              width: 35px!important;
-          height:35px!important
-              
-          }
-      footer{
-                  top: calc(100vh - 75px)!important;
-              }
-      
-  }
+@media screen and (min-width:600px){
+    .ct-icon-container {
+            width: 35px!important;
+        height:35px!important;
+        background-color: rgba(245,245,245,0.9)!important;
+        border-radius: 50%!important;
+            
+        }
+    footer{
+            top: calc(100vh - 75px)!important;
+        }
+    
+}
   .ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(1), .ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(2), .ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(3) { 
   x:unset;
   transform:unset;
@@ -428,10 +432,11 @@
   
   
   
-         .ct-social-box a:nth-child(4) .ct-icon-container{
-              background: url(https://camp.mx/camp-stg/img/icon/es_mx.png) no-repeat center center;
-              background-size: 100%!important;
-          }
+       .ct-social-box a:nth-child(4) .ct-icon-container{
+            background: rgba(245,245,245,0.9) url(https://camp.mx/camp-stg/img/icon/es_mx.png) no-repeat center center!important;
+            background-size: 20px 20px!important;
+            border-radius: 50%!important;
+        }
   
   /*HEADER FOOTER*/
     h3.hb-title.hb-title-search-form{color:black}
@@ -576,7 +581,7 @@ body.ajde_events-template-default div#main-container > * {
       font-weight: 400!important;
   }
   .ajde_evcal_calendar.boxy .eventon_list_event.event{
-  aspect-ratio:1/1!important;
+  aspect-ratio:3/4!important;
   border-radius:0!important;
   width: auto!important;
   min-height:unset!important;
@@ -586,7 +591,7 @@ body.ajde_events-template-default div#main-container > * {
   border-radius:0!important;
   }
    .evoet_title{
-  display:none!important}
+  display:none!important ;}
   
   .ajde_evcal_calendar.boxy.boxstyle0 #evcal_list .eventon_list_event .desc_trig span {}
   .ajde_evcal_calendar.boxy.boxstyle0 #evcal_list .eventon_list_event .desc_trig {
@@ -702,10 +707,10 @@ body.ajde_events-template-default div#main-container > * {
       border-radius:0
   }
   .evo_metarow_directimg img {
-      border-radius:0
+      border-radius:0 !important;
   }
   .evo_header_title{
-      display:none!important
+      display:none !important;
   }
   [data-val="2022"], [data-val="2023"]{
       display:none!important
@@ -932,16 +937,17 @@ body.ajde_events-template-default div#main-container > * {
   #event_addtocal{display:none}
   #evo_lightboxes .evoet_c2.evoet_cx .evo_start, #evo_lightboxes .evoet_c2.evoet_cx .evo_end, body.single-ajde_events .evoet_c2.evoet_cx .evo_start, body.single-ajde_events .evoet_c2.evoet_cx .evo_end {
       float:none!important;
-      line-height:unset!important;
+      line-height:unset;
       display:block!important;
       font-size:19px!important
   }
+  
   #evo_lightboxes .evoet_c2.evoet_cx .evo_start > *, #evo_lightboxes .evoet_c2.evoet_cx .evo_end > *, body.single-ajde_events .evoet_c2.evoet_cx .evo_start > *, body.single-ajde_events .evoet_c2.evoet_cx .evo_end > * {
       display:inline-block;
       font-size:24px!important;
       line-height:19px!important;
       margin-right:5px;
-      margin-top:-12px!important
+      margin-top:-14.1px!important
   }
   @media screen and (max-width:1200px){
       #evo_lightboxes .evoet_c2.evoet_cx .evo_start > *, #evo_lightboxes .evoet_c2.evoet_cx .evo_end > *, body.single-ajde_events .evoet_c2.evoet_cx .evo_start > *, body.single-ajde_events .evoet_c2.evoet_cx .evo_end > * {

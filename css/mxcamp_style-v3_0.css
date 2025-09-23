@@ -955,16 +955,18 @@ body.visible-contribuir .ct-social-box a:nth-child(3) {
 .ct-icon-container {
 	transition: 0.5s !important;
 	width: 35px !important;
-	background-color: transparent !important;
+	background-color: rgba(245,245,245,0.9) !important;
 	height: 35px !important;
 	opacity: 1 !important;
-	/*box-shadow: 0 0 60px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 0, 0, 0.4), 0 0 80px rgba(0, 0, 0, 0.1);*/
+	border-radius: 50% !important;
+	box-shadow: 0 0 60px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 0, 0, 0.4), 0 0 80px rgba(0, 0, 0, 0.1);
 }
 
 /* Safari-specific fix to prevent delayed background appearance */
 @supports (-webkit-appearance: none) {
 	.ct-icon-container {
-		background-color: transparent !important;
+		background-color: rgba(245,245,245,0.9) !important;
+		border-radius: 50% !important;
 		transition: none !important;
 	}
 }

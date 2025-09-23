@@ -339,7 +339,7 @@ function mxcamp_inject_background_redirect() {
         }
         
         body.single-ajde_events .ajde_evcal_calendar.boxy .eventon_list_event.event {
-            aspect-ratio: 4/5 !important;
+            aspect-ratio: 3/4 !important;
             width: auto !important;
             min-height: unset !important;
             background-repeat: no-repeat;
