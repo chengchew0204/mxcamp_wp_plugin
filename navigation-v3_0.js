@@ -2020,8 +2020,8 @@ class Navigation {
         messageElement.textContent = hintData.message;
         
         // Adjust styling based on text length
-        const fontSize = (isMobile && textLength > 20) ? '20px' : (isMobile ? '22px' : '24px');
-        const lineHeight = (isMobile && textLength > 20) ? '22px' : (isMobile ? '25px' : '26px');
+        const fontSize = (isMobile && textLength > 20) ? '18px' : (isMobile ? '20px' : '24px');
+        const lineHeight = (isMobile && textLength > 20) ? '20px' : (isMobile ? '23px' : '26px');
         
         messageElement.style.cssText = `
             font-family: 'ClearSans', helvetica, sans-serif;
@@ -2043,8 +2043,8 @@ class Navigation {
         
         // Apply mobile responsive styling to match h2 mobile styles
         if (window.innerWidth <= 1200) {
-            messageElement.style.fontSize = '22px';
-            messageElement.style.lineHeight = '25px';
+            messageElement.style.fontSize = '20px';
+            messageElement.style.lineHeight = '23px';
             messageElement.style.paddingTop = '3px';
             messageElement.style.paddingBottom = '4px';
             messageElement.style.marginTop = '0';

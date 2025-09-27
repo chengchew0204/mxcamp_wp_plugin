@@ -679,8 +679,38 @@ function mxcamp_inject_background_redirect() {
                     body.single-ajde_events {
                         cursor: pointer;
                     }
+                    body.single-ajde_events button{
+                        cursor: pointer !important;
+                    }
+                    
+                    body.single-ajde_events .video-events-grid,
+                    body.single-ajde_events .fullscreen,
+                    body.single-ajde_events .playbut,
+                    body.single-ajde_events .pausebut {
+                        cursor: pointer !important;
+                    }
+                    
+                    /* Links should ALWAYS show pointer cursor with highest specificity */
                     body.single-ajde_events a,
-                    body.single-ajde_events button,
+                    body.single-ajde_events .eventon_full_description a,
+                    body.single-ajde_events .eventon_desc_in a,
+                    body.single-ajde_events .evcal_evdata_cell a,
+                    body.single-ajde_events .evocard_box a,
+                    body.single-ajde_events p a,
+                    body.single-ajde_events center a,
+                    body.single-ajde_events font a {
+                        cursor: pointer !important;
+                    }
+                    body.single-ajde_events .eventon_full_description,
+                    body.single-ajde_events .evcal_evdata_row,
+                    body.single-ajde_events .evocard_box,
+                    body.single-ajde_events .event_excerpt,
+                    body.single-ajde_events .eventon_desc_in,
+                    body.single-ajde_events .evo_metarow_details,
+                    body.single-ajde_events .evcal_evdata_cell,
+                    body.single-ajde_events h3,
+                    body.single-ajde_events mark,
+                    body.single-ajde_events hr,
                     body.single-ajde_events input,
                     body.single-ajde_events textarea,
                     body.single-ajde_events select,
@@ -691,7 +721,7 @@ function mxcamp_inject_background_redirect() {
                     body.single-ajde_events .cta,
                     body.single-ajde_events .fullscreen.video,
                     body.single-ajde_events .comment-form {
-                        cursor: auto !important;
+                        cursor: default !important;
                     }
                 `;
                 document.head.appendChild(style);
