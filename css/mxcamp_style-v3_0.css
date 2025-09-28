@@ -1796,9 +1796,8 @@ input[type="button"],
     cursor: pointer;
 }
 
-/* Don't override cursor for control buttons */
-.playbut,
-.pausebut,
+/* Event videos no longer use play/pause buttons - they are click-to-play */
+/* Only fullscreen button remains for other video types */
 .fullscreenbut {
     cursor: pointer !important;
 }
@@ -2081,10 +2080,9 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
   to{ left:100%; }
 } 
 
-/* Video Loading Spinner - shown while video is loading */
-/* COMMENTED OUT: Removed loading spinner as requested */
+/* Event Video Loading Spinner - shown while event videos are loading */
+/* Note: Homepage background video spinners remain disabled, this is only for event videos */
 
-/*
 .video-loading-spinner {
     position: absolute;
     top: 50%;
@@ -2143,7 +2141,21 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
         border-top: 3px solid rgba(245, 245, 245, 0.9);
     }
 }
-*/
+
+/* Card video loader for event lightboxes */
+.card-video-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /* WPCode – CSS Snippet from Code-snippet by Erick */
 .eventon_full_description strong,

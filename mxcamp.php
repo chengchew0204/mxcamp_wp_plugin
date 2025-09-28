@@ -771,12 +771,11 @@ function mxcamp_inject_background_redirect() {
                     return;
                 }
                 
-                // Initialize spinner
-                // COMMENTED OUT: Removed loading spinner as requested
-                // const spinnerContainer = document.createElement('div');
-                // const spinner = '<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">';
-                // spinnerContainer.innerHTML = spinner;
-                // spinnerContainer.classList.add('card-video-loader');
+                // Initialize spinner for event videos
+                const spinnerContainer = document.createElement('div');
+                const spinner = '<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">';
+                spinnerContainer.innerHTML = spinner;
+                spinnerContainer.classList.add('card-video-loader');
                 
                 // Remove default controls
                 thisvideo.removeAttribute("controls");
@@ -793,8 +792,7 @@ function mxcamp_inject_background_redirect() {
                 
                 // Move video and spinner to fullscreen container
                 fullScreenDiv.appendChild(thisvideo);
-                // COMMENTED OUT: Removed loading spinner as requested
-                // fullScreenDiv.appendChild(spinnerContainer);
+                fullScreenDiv.appendChild(spinnerContainer);
                 
                 // Setup normal event behavior - show featured image, hide video until ready
                 setupNormalEventBehaviorSingle(thisvideo, thisHeader, fullScreenDiv);
@@ -806,31 +804,27 @@ function mxcamp_inject_background_redirect() {
                 }, 100);
                 
                 // Hide spinner when video is ready (not when playing, since we don't autoplay)
-                // COMMENTED OUT: Removed loading spinner as requested
-                // thisvideo.addEventListener('loadeddata', function () {
-                //     spinnerContainer.style.display = "none";
-                //     console.log('Video loaded - spinner hidden');
-                // });
+                thisvideo.addEventListener('loadeddata', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video loaded - spinner hidden');
+                });
                 
                 // Also hide spinner when video starts playing (user clicked play)
-                // COMMENTED OUT: Removed loading spinner as requested
-                // thisvideo.addEventListener('play', function () {
-                //     spinnerContainer.style.display = "none";
-                //     console.log('Video started playing - spinner hidden');
-                // });
+                thisvideo.addEventListener('play', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video started playing - spinner hidden');
+                });
                 
                 // Hide spinner on error or stalled
-                // COMMENTED OUT: Removed loading spinner as requested
-                // thisvideo.addEventListener('error', function () {
-                //     spinnerContainer.style.display = "none";
-                //     console.log('Video error - spinner hidden, fallback background retained');
-                // });
+                thisvideo.addEventListener('error', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video error - spinner hidden, fallback background retained');
+                });
                 
-                // COMMENTED OUT: Removed loading spinner as requested
-                // thisvideo.addEventListener('stalled', function () {
-                //     spinnerContainer.style.display = "none";
-                //     console.log('Video stalled - spinner hidden');
-                // });
+                thisvideo.addEventListener('stalled', function () {
+                    spinnerContainer.style.display = "none";
+                    console.log('Video stalled - spinner hidden');
+                });
                 
                 var controlsVisible = false;
                 thisvideo.addEventListener('timeupdate', function () {
@@ -842,18 +836,7 @@ function mxcamp_inject_background_redirect() {
                 // Add to header
                 thisHeader.appendChild(fullScreenDiv);
                 
-                // Create play button
-                const playbut = document.createElement('img');
-                playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
-                playbut.classList.add('playbut');
-                playbut.style.position = 'absolute';
-                playbut.setAttribute('aria-label', 'Play video');
-                
-                // Create pause button
-                const pausebut = document.createElement('img');
-                pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
-                pausebut.classList.add('pausebut');
-                pausebut.setAttribute('aria-label', 'Pause video');
+                // Play/pause buttons removed for event videos - videos are click-to-play without buttons
                 
                 function playVideo() {
                     const divplaying = document.querySelectorAll('.videoplaying');
@@ -878,23 +861,14 @@ function mxcamp_inject_background_redirect() {
                     });
                 }
                 
-                playbut.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    playVideo();
-                });
-                
-                pausebut.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    pauseVideo();
-                });
+                // Play/pause button event listeners removed - videos are now click-to-play without buttons
                 
                 // Create time display
                 const timeDisplay = document.createElement('p');
                 timeDisplay.classList.add('timevideo');
                 
                 fullScreenDiv.appendChild(timeDisplay);
-                fullScreenDiv.appendChild(playbut);
-                fullScreenDiv.appendChild(pausebut);
+                // Play/pause buttons removed - videos are click-to-play without buttons
                 
                 // Add click-to-pause/play functionality to the video element
                 thisvideo.addEventListener('click', function(event) {
@@ -916,10 +890,10 @@ function mxcamp_inject_background_redirect() {
                     }
                 });
                 
-                // Also make the fullscreen container clickable (but not the buttons)
+                // Also make the fullscreen container clickable (but not the time display)
                 fullScreenDiv.addEventListener('click', function(event) {
-                    // Don't trigger if clicking on play/pause buttons or time display
-                    if (event.target === playbut || event.target === pausebut || event.target === timeDisplay) {
+                    // Don't trigger if clicking on time display
+                    if (event.target === timeDisplay) {
                         return;
                     }
                     
@@ -952,11 +926,9 @@ function mxcamp_inject_background_redirect() {
                     if (thisvideo.duration > 120) { // min duration to activate controls
                         thisvideo.controls = "controls";
                         controlsVisible = true;
-                        // Hide our video controls
+                        // Hide our time display for long videos with native controls
                         const timeEl = document.querySelector('body.single-ajde_events .timevideo');
-                        const pauseEl = document.querySelector('body.single-ajde_events .pausebut');
                         if (timeEl) timeEl.style.display = 'none';
-                        if (pauseEl) pauseEl.style.display = 'none';
                         console.log("Activating Video controls for long video on single event page");
                         
                         // No autoplay for single event pages - user must click play even for long videos

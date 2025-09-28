@@ -22,37 +22,7 @@
     
     <!-- wp:html -->
     <style>
-        .fullscreen img.playbut{
-        left: -10px;
-        bottom: -7px;
-        width: 100px;
-        cursor: pointer;
-        }
-    @media screen and (max-width:600px){
-        .fullscreen img.playbut{
-                left: 0;
-            bottom: 0;
-            width: 50px;
-        }
-    }
-        .videoplaying .playbut {
-            display: none;
-        }
-        .fullscreen .pausebut {
-            position: absolute;
-            left: 5px;
-            bottom: 5px;
-            width: 30px;
-            cursor: pointer;
-            display: none;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 50%;
-            padding: 7px;
-        }
-        
-        .videoplaying.fullscreen:hover .pausebut {
-            display: block;
-        }
+        /* Event videos no longer use play/pause buttons - they are click-to-play */
     
      .evocard_row .fullscreen .timevideo {
         margin-top: 5px !important;
@@ -312,17 +282,7 @@
                     });
                     thisHeader.appendChild(fullScreenDiv);
                     
-                    // Old brittle poster logic removed - now handled by applyPosterFromHeaderImage() 
-                    let playbut = document.createElement('img');
-                    playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
-                    playbut.classList.add('playbut');
-                    playbut.style.position = 'absolute';
-                    playbut.setAttribute('aria-label', 'Play video');
-                   
-                let pausebut= document.createElement('img');
-                    pausebut.setAttribute('src', 'https://camp.mx/wp-content/uploads/pause.svg');
-                    pausebut.classList.add('pausebut');
-                    pausebut.setAttribute('aria-label', 'Pause video');
+                    // Play/pause buttons removed for event videos - videos are click-to-play without buttons
                    
                 function playVideo() {
                 let divplaying = document.querySelectorAll('.videoplaying');
@@ -348,22 +308,14 @@
                         });
                     }
                    
-                playbut.addEventListener('click',  (event)=>{
-                        event.preventDefault();
-                        playVideo();
-                   });
-            pausebut.addEventListener('click', (event)=> {
-                event.preventDefault();
-                pauseVideo();
-            });
+                // Play/pause button event listeners removed - videos are now click-to-play without buttons
         
                // Crée l'affichage du temps
                 const timeDisplay = document.createElement('p');
                 timeDisplay.classList.add('timevideo');
     
                 fullScreenDiv.appendChild(timeDisplay);
-                fullScreenDiv.appendChild(playbut);
-                fullScreenDiv.appendChild(pausebut);
+                // Play/pause buttons removed - videos are click-to-play without buttons
                 
                 // Add click-to-pause/play functionality to the video element
                 thisvideo.addEventListener('click', function(event) {
@@ -385,10 +337,10 @@
                     }
                 });
                 
-                // Also make the fullscreen container clickable (but not the buttons)
+                // Also make the fullscreen container clickable (but not the time display)
                 fullScreenDiv.addEventListener('click', function(event) {
-                    // Don't trigger if clicking on play/pause buttons or time display
-                    if (event.target === playbut || event.target === pausebut || event.target === timeDisplay) {
+                    // Don't trigger if clicking on time display
+                    if (event.target === timeDisplay) {
                         return;
                     }
                     
@@ -421,9 +373,8 @@
                              {
                                thisvideo.controls = "controls";
                                controlsVisible=true;
-                               //hide our video controls
-                               document.querySelector('.timevideo').style.display='none'
-                               document.querySelector('.pausebut').style.display='none';
+                               //hide our time display for long videos with native controls
+                               document.querySelector('.timevideo').style.display='none';
                                console.log("Activating Video controls for long video");
                                
                                // Ensure long videos still autoplay even with native controls

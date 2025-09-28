@@ -2020,8 +2020,8 @@ class Navigation {
         messageElement.textContent = hintData.message;
         
         // Adjust styling based on text length
-        const fontSize = (isMobile && textLength > 20) ? '18px' : (isMobile ? '20px' : '24px');
-        const lineHeight = (isMobile && textLength > 20) ? '20px' : (isMobile ? '23px' : '26px');
+        const fontSize = (isMobile && textLength > 20) ? '18px' : (isMobile ? '20px' : '21.6px');
+        const lineHeight = (isMobile && textLength > 20) ? '20px' : (isMobile ? '23px' : '23.4px');
         
         messageElement.style.cssText = `
             font-family: 'ClearSans', helvetica, sans-serif;
