@@ -2080,33 +2080,51 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
   to{ left:100%; }
 } 
 
-/* Event Video Loading Spinner - shown while event videos are loading */
-/* Note: Homepage background video spinners remain disabled, this is only for event videos */
+/* OLD Event Video Loading Spinner - DEPRECATED, replaced by video-loading-spinner-overlay */
+/* This old system is disabled to prevent conflicts with the new spinner system */
 
-.video-loading-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 50 !important; /* Much higher z-index to appear above all slide content */
-    opacity: 1;
-    transition: opacity 0.3s ease-out;
+/* Card video loader for event lightboxes - DEPRECATED, now using video-loading-spinner-overlay */
+.card-video-loader {
+    display: none !important; /* Hidden - replaced by new spinner system */
+}
+
+/* Video loading spinner overlay - positioned above feature image */
+.video-loading-spinner-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100 !important; /* Higher than fullscreen video container */
+    display: flex;  /* Removed !important so inline display:none can override */
+    align-items: center !important;
+    justify-content: center !important;
     pointer-events: none;
     user-select: none;
+    background: rgba(0, 0, 0, 0.1); /* Subtle background for better visibility */
 }
 
-.video-loading-spinner.hide {
-    opacity: 0;
+/* When spinner overlay is hidden */
+.video-loading-spinner-overlay[style*="display: none"] {
+    display: none !important;
 }
 
-.video-loading-spinner .spinner {
+.video-loading-spinner-overlay .video-loading-spinner {
+    position: static;  /* Changed from relative to static to avoid positioning issues */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-loading-spinner-overlay .video-loading-spinner .spinner {
     width: 75px;
     height: 75px;
     border: 3px solid rgba(245, 245, 245, 0.2);
     border-top: 3px solid rgba(245, 245, 245, 0.9);
     border-radius: 50%;
     animation: videoSpin 1s linear infinite;
-    backdrop-filter: blur(2px); /* Blur background for better visibility */
 }
 
 @keyframes videoSpin {
@@ -2114,47 +2132,22 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
     100% { transform: rotate(360deg); }
 }
 
-/* Hide video spinner when card is opened */
-.slide_10.opened .video-loading-spinner {
-    display: none !important;
-}
-
-/* Hide video spinner when menu is active */
-.slides.menuactive .video-loading-spinner {
-    display: none !important;
-}
-
-/* Mobile adjustments for video spinner */
+/* Mobile adjustments for overlay spinner */
 @media screen and (max-width: 768px) {
-    .video-loading-spinner .spinner {
+    .video-loading-spinner-overlay .video-loading-spinner .spinner {
         width: 50px;
         height: 50px;
         border-width: 2.5px;
     }
 }
 
-/* Accessibility for video spinner */
+/* Accessibility for overlay spinner */
 @media (prefers-reduced-motion: reduce) {
-    .video-loading-spinner .spinner {
+    .video-loading-spinner-overlay .video-loading-spinner .spinner {
         animation: none !important;
         border: 3px solid rgba(245, 245, 245, 0.6);
         border-top: 3px solid rgba(245, 245, 245, 0.9);
     }
-}
-
-/* Card video loader for event lightboxes */
-.card-video-loader {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 50;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 /* WPCode – CSS Snippet from Code-snippet by Erick */

@@ -771,11 +771,7 @@ function mxcamp_inject_background_redirect() {
                     return;
                 }
                 
-                // Initialize spinner for event videos
-                const spinnerContainer = document.createElement('div');
-                const spinner = '<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">';
-                spinnerContainer.innerHTML = spinner;
-                spinnerContainer.classList.add('card-video-loader');
+                // Old spinner removed - using new spinner system in setupNormalEventBehaviorSingle
                 
                 // Remove default controls
                 thisvideo.removeAttribute("controls");
@@ -790,11 +786,11 @@ function mxcamp_inject_background_redirect() {
                 const fullScreenDiv = document.createElement('div');
                 fullScreenDiv.classList.add('fullscreen');
                 
-                // Move video and spinner to fullscreen container
+                // Move video to fullscreen container
                 fullScreenDiv.appendChild(thisvideo);
-                fullScreenDiv.appendChild(spinnerContainer);
                 
                 // Setup normal event behavior - show featured image, hide video until ready
+                // This function now handles the spinner creation and positioning
                 setupNormalEventBehaviorSingle(thisvideo, thisHeader, fullScreenDiv);
                 
                 // Trigger video loading without autoplay - just load the video
@@ -802,29 +798,6 @@ function mxcamp_inject_background_redirect() {
                     thisvideo.load(); // Reload the video to trigger loading events
                     console.log('Video load triggered');
                 }, 100);
-                
-                // Hide spinner when video is ready (not when playing, since we don't autoplay)
-                thisvideo.addEventListener('loadeddata', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video loaded - spinner hidden');
-                });
-                
-                // Also hide spinner when video starts playing (user clicked play)
-                thisvideo.addEventListener('play', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video started playing - spinner hidden');
-                });
-                
-                // Hide spinner on error or stalled
-                thisvideo.addEventListener('error', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video error - spinner hidden, fallback background retained');
-                });
-                
-                thisvideo.addEventListener('stalled', function () {
-                    spinnerContainer.style.display = "none";
-                    console.log('Video stalled - spinner hidden');
-                });
                 
                 var controlsVisible = false;
                 thisvideo.addEventListener('timeupdate', function () {
@@ -980,12 +953,32 @@ function mxcamp_inject_background_redirect() {
                     videoEl.poster = posterUrl;
                 }
                 
-                // Show video and hide image when video is ready to play
+        // Create and show loading spinner above the feature image
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.className = 'video-loading-spinner-overlay';
+        loadingSpinner.innerHTML = `
+            <div class="video-loading-spinner">
+                <div class="spinner"></div>
+            </div>
+        `;
+        
+        // Position spinner in the header container (will be over the feature image)
+        // The containerEl (fullscreen div) will be appended to headerEl later
+        headerEl.style.position = 'relative';
+        headerEl.appendChild(loadingSpinner);
+        console.log('Loading spinner added to header container above feature image');
+                
+                // Show video and hide image + spinner when video is ready to play
                 const showVideo = () => {
                     headerImg.style.display = 'none';
                     videoEl.style.display = 'block';
+                    // Hide the loading spinner
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                        console.log('Loading spinner hidden');
+                    }
                     // Keep video muted initially - will unmute when user clicks play
-                    console.log('Video ready - hiding featured image, showing video (paused)');
+                    console.log('Video ready - hiding featured image and spinner, showing video (paused)');
                 };
                 
                 // Listen for video ready events - add debugging to see which events fire
@@ -1009,15 +1002,25 @@ function mxcamp_inject_background_redirect() {
                 
                 events.forEach(event => videoEl.addEventListener(event, handleReady, { once: true }));
                 
-                // On error, keep the featured image visible (like normal events)
+                // On error, hide spinner and keep the featured image visible (like normal events)
                 videoEl.addEventListener('error', () => {
                     headerImg.style.display = 'block';
                     videoEl.style.display = 'none';
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                        console.log('Video error - hiding loading spinner, keeping featured image visible');
+                    }
                     cleanup();
                     console.log('Video error - keeping featured image visible like normal event');
                 }, { once: true });
                 
-                videoEl.addEventListener('stalled', cleanup, { once: true });
+                videoEl.addEventListener('stalled', () => {
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                        console.log('Video stalled - hiding loading spinner');
+                    }
+                    cleanup();
+                }, { once: true });
             }
             
             // Initialize video handling

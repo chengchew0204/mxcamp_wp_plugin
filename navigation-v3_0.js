@@ -1967,51 +1967,22 @@ class Navigation {
         const isLongText = textLength > 15;
         const isVeryLongText = textLength > 30; // Special handling for very long texts like ORGANIZADORXS
         
-        // For longer text hints, use different positioning to ensure proper centering
-        const maxWidth = isVeryLongText ? '100%' : (isLongText ? '95%' : '90%');
-        
-        // Specific slide adjustments for mobile positioning
-        let leftAdjustment = 0; // Default no adjustment
-        if (isMobile) {
-            switch(slideId.toLowerCase()) {
-                case 'orientacion':
-                case 'orientation':
-                    leftAdjustment = -14; // Move left 10px
-                    break;
-                case 'organizadorxs':
-                case 'organizers':
-                    leftAdjustment = -18; // Move left 20px
-                    break;
-                case 'meditadorxs':
-                    leftAdjustment = -14; // Move left 10px
-                    break;
-                case 'meditators':
-                case 'restaurant':
-                    leftAdjustment = -10; // Move left 6px
-                    break;
-                case 'restaurante':
-                    leftAdjustment = -14; // Move left 10px
-                    break;
-            }
-        }
-        
-        const leftPosition = '50%';
-        const transformValue = `translate(calc(-50% + ${leftAdjustment}px), -50%)`;
-        
+        // Container styling - always centered using transform translate
         textHint.style.cssText = `
             position: fixed;
             top: ${topPosition};
-            left: ${leftPosition};
-            transform: ${transformValue};
+            left: 50%;
+            transform: translate(-50%, -50%);
             z-index: 9999;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s ease-in-out;
-            text-align: center;
-            max-width: ${maxWidth};
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0 20px;
             box-sizing: border-box;
-            width: ${isVeryLongText ? 'max-content' : (isLongText ? 'max-content' : 'auto')};
         `;
         
         // Create message element with post content styling (matching .card-content)
@@ -2029,15 +2000,12 @@ class Navigation {
             font-stretch: 70%;
             letter-spacing: 0px;
             color: rgba(245, 245, 245, 0.95);
-            display: inline-block;
             font-size: ${fontSize};
             line-height: ${lineHeight};
             margin-top: 0.5px;
             padding: 2px 9px 3px 9px;
             white-space: ${isLongText ? 'nowrap' : 'pre'};
             text-align: center;
-            max-width: 100%;
-            overflow: visible;
             text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.8), 0px 0px 20px rgba(0, 0, 0, 0.6);
         `;
         

@@ -98,13 +98,33 @@
             videoEl.poster = posterUrl;
         }
         
-        // Show video and hide image when video is ready to play
+        // Create and show loading spinner above the feature image
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.className = 'video-loading-spinner-overlay';
+        loadingSpinner.innerHTML = `
+            <div class="video-loading-spinner">
+                <div class="spinner"></div>
+            </div>
+        `;
+        
+        // Position spinner in the header container (will be over the feature image)
+        // The containerEl (fullscreen div) will be appended to headerEl later
+        headerEl.style.position = 'relative';
+        headerEl.appendChild(loadingSpinner);
+        console.log('Loading spinner added to header container above feature image');
+        
+        // Show video and hide image + spinner when video is ready to play
         const showVideo = () => {
             headerImg.style.display = 'none';
             videoEl.style.display = 'block';
+            // Hide the loading spinner
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'none';
+                console.log('Loading spinner hidden');
+            }
             // Unmute video immediately when it becomes visible and starts playing
             videoEl.muted = false;
-            console.log('Video ready - hiding featured image, showing video with audio');
+            console.log('Video ready - hiding featured image and spinner, showing video with audio');
         };
         
         // Listen for video ready events
@@ -120,15 +140,25 @@
         
         events.forEach(event => videoEl.addEventListener(event, handleReady, { once: true }));
         
-        // On error, keep the featured image visible (like normal events)
+        // On error, hide spinner and keep the featured image visible (like normal events)
         videoEl.addEventListener('error', () => {
             headerImg.style.display = 'block';
             videoEl.style.display = 'none';
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'none';
+                console.log('Video error - hiding loading spinner, keeping featured image visible');
+            }
             cleanup();
             console.log('Video error - keeping featured image visible like normal event');
         }, { once: true });
         
-        videoEl.addEventListener('stalled', cleanup, { once: true });
+        videoEl.addEventListener('stalled', () => {
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'none';
+                console.log('Video stalled - hiding loading spinner');
+            }
+            cleanup();
+        }, { once: true });
     }
     
     setOnClickOutside(
@@ -210,11 +240,7 @@
                 let thisvideo = eventLightBox.querySelector('.eventon_full_description video.video-events-grid');
                 if(thisvideo && thisvideo!=''){
     
-                    //initialisation du spiner
-                    let spinnerContainer =  document.createElement('div');
-                    let spinner = `<img src="/img/oval.svg" style="width: 70px;height: auto; margin:auto">`;
-                    spinnerContainer.innerHTML=spinner;
-                    spinnerContainer.classList.add('card-video-loader');
+                    // Old spinner removed - using new spinner system in setupNormalEventBehavior
                     
                     thisvideo.removeAttribute("controls");
     
@@ -230,9 +256,9 @@
                     // Find header container for normal event behavior setup
                     let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div');
                     fullScreenDiv.appendChild(thisvideo);
-                    fullScreenDiv.appendChild(spinnerContainer);
                     
                     // Setup normal event behavior - show featured image, hide video until ready
+                    // This function now handles the spinner creation and positioning
                     setupNormalEventBehavior(thisvideo, thisHeader, fullScreenDiv);
                     
                     // Attempt autoplay (will be muted on Safari/iOS)
@@ -251,28 +277,6 @@
                             });
                         }
                     }, 2000);
-                    // Hide spinner when video starts playing
-                    thisvideo.addEventListener('play', function () {
-                        spinnerContainer.style.display="none";
-                        console.log('Video started playing - spinner hidden');
-                    });
-                    
-                    // Additional safety - hide spinner when video is actually playing
-                    thisvideo.addEventListener('playing', function () {
-                        spinnerContainer.style.display="none";
-                        console.log('Video is playing - spinner hidden');
-                    });
-                    
-                    // Hide spinner on error or stalled - keep CSS fallback visible
-                    thisvideo.addEventListener('error', function () {
-                        spinnerContainer.style.display="none";
-                        console.log('Video error - spinner hidden, fallback background retained');
-                    });
-                    
-                    thisvideo.addEventListener('stalled', function () {
-                        spinnerContainer.style.display="none";
-                        console.log('Video stalled - spinner hidden');
-                    });
                     
                     var controlsVisible = false;
                     thisvideo.addEventListener('timeupdate', function () {
