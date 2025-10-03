@@ -421,6 +421,25 @@ class Navigation {
         var urlHash = window.location.hash;
         var currentPath = window.location.pathname;
         
+        /*
+        // Debug logging
+        console.log('UrlVerif - Current path:', currentPath);
+        console.log('UrlVerif - Current hash:', urlHash);
+        console.log('UrlVerif - Full URL:', window.location.href);
+        
+        // Handle map/mapa permalink redirects - redirect to homepage with hash
+        // This ensures all resources are loaded before opening the map
+        if (currentPath === '/map_p/' || currentPath === '/map_p') {
+            console.log('Map permalink detected, redirecting to homepage with #map');
+            window.location.href = 'https://camp.mx/#map';
+            return;
+        }
+        if (currentPath === '/mapa_p/' || currentPath === '/mapa_p') {
+            console.log('Mapa permalink detected, redirecting to homepage with #mapa');
+            window.location.href = 'https://camp.mx/#mapa';
+            return;
+        }
+        */
         // Handle specific redirect cases for events/eventos
         if (urlHash) {
             const cleanHash = urlHash.substring(1);
@@ -3701,18 +3720,18 @@ class Navigation {
                     
                     waitForCalendarUpdate(() => {
                         console.log('Year loaded successfully, now proceeding to month navigation...');
-                        // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
+                        // [Added #1] At the start of callback: Hide native navigation again (plugin often redraws header when crossing years)
                         hideOriginalNavigation();
 
-                        // [新增 #2] 重新抓取最新的年份／月份 anchors
+                        // [Added #2] Re-fetch the latest year/month anchors
                         const { years: y2, months: m2 } = freshNodeLists();
 
-                        // 用原陣列容器回填，保持外層閉包引用不變
+                        // Refill the original array container to keep the outer closure reference unchanged
                         years.length = 0; years.push(...y2);
                         months.length = 0; months.push(...m2);
 
-                        // [新增 #3] 將 currentYear 指到「新節點」：
-                        // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
+                        // [Added #3] Point currentYear to the 'new node':
+                        // Use the currently displayed yearText in UI as comparison to find the year anchor with the same name
                         const targetYearText = (yearText.textContent || '').trim();
                         const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
                         if (matchedYear) {
@@ -3723,7 +3742,7 @@ class Navigation {
                             currentYearIndex = 0;
                         }
 
-                        // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
+                        // [Added #4] Lock onto target month by targetMonthName and click (fallback if not found)
                         if (decemberName) {
                             const target = months.find(m => (m.textContent || '').trim().toUpperCase() === decemberName.toUpperCase());
                             if (target) {
@@ -3763,7 +3782,7 @@ class Navigation {
                                     }
                                 }, 300);
                             } else if (months.length) {
-                                // fallback：若找不到目標月，選擇最後一個合理的候選（很可能是12月）
+                                // fallback: If target month not found, select the last reasonable candidate (likely December)
                                 const fallback = months[months.length - 1];
                                 if (fallback && fallback.click) {
                                     fallback.click();
@@ -3795,18 +3814,18 @@ class Navigation {
                     
                     waitForCalendarUpdate(() => {
                         console.log('Year loaded successfully, now proceeding to month navigation...');
-                        // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
+                        // [Added #1] At the start of callback: Hide native navigation again (plugin often redraws header when crossing years)
                         hideOriginalNavigation();
 
-                        // [新增 #2] 重新抓取最新的年份／月份 anchors
+                        // [Added #2] Re-fetch the latest year/month anchors
                         const { years: y2, months: m2 } = freshNodeLists();
 
-                        // 用原陣列容器回填，保持外層閉包引用不變
+                        // Refill the original array container to keep the outer closure reference unchanged
                         years.length = 0; years.push(...y2);
                         months.length = 0; months.push(...m2);
 
-                        // [新增 #3] 將 currentYear 指到「新節點」：
-                        // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
+                        // [Added #3] Point currentYear to the 'new node':
+                        // Use the currently displayed yearText in UI as comparison to find the year anchor with the same name
                         const targetYearText = (yearText.textContent || '').trim();
                         const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
                         if (matchedYear) {
@@ -3817,7 +3836,7 @@ class Navigation {
                             currentYearIndex = 0;
                         }
 
-                        // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
+                        // [Added #4] Lock onto target month by targetMonthName and click (fallback if not found)
                         if (januaryName) {
                             const target = months.find(m => (m.textContent || '').trim().toUpperCase() === januaryName.toUpperCase());
                             if (target) {
@@ -3857,7 +3876,7 @@ class Navigation {
                                     }
                                 }, 300);
                             } else if (months.length) {
-                                // fallback：若找不到目標月，選擇第一個合理的候選（很可能是1月）
+                                // fallback: If target month not found, select the first reasonable candidate (likely January)
                                 const fallback = months[0];
                                 if (fallback && fallback.click) {
                                     fallback.click();
@@ -3925,18 +3944,18 @@ class Navigation {
                         
                         waitForCalendarUpdate(() => {
                             console.log('Year loaded successfully (from month left), now proceeding to month navigation...');
-                            // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
+                            // [Added #1] At the start of callback: Hide native navigation again (plugin often redraws header when crossing years)
                             hideOriginalNavigation();
 
-                            // [新增 #2] 重新抓取最新的年份／月份 anchors
+                            // [Added #2] Re-fetch the latest year/month anchors
                             const { years: y2, months: m2 } = freshNodeLists();
 
-                            // 用原陣列容器回填，保持外層閉包引用不變
+                            // Refill the original array container to keep the outer closure reference unchanged
                             years.length = 0; years.push(...y2);
                             months.length = 0; months.push(...m2);
 
-                            // [新增 #3] 將 currentYear 指到「新節點」：
-                            // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
+                            // [Added #3] Point currentYear to the 'new node':
+                            // Use the currently displayed yearText in UI as comparison to find the year anchor with the same name
                             const targetYearText = (yearText.textContent || '').trim();
                             const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
                             if (matchedYear) {
@@ -3947,7 +3966,7 @@ class Navigation {
                                 currentYearIndex = 0;
                             }
 
-                            // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
+                            // [Added #4] Lock onto target month by targetMonthName and click (fallback if not found)
                             if (decemberName) {
                                 const target = months.find(m => (m.textContent || '').trim().toUpperCase() === decemberName.toUpperCase());
                                 if (target) {
@@ -3987,7 +4006,7 @@ class Navigation {
                                         }
                                     }, 300);
                                 } else if (months.length) {
-                                    // fallback：若找不到目標月，選擇最後一個合理的候選（很可能是12月）
+                                    // fallback: If target month not found, select the last reasonable candidate (likely December)
                                     const fallback = months[months.length - 1];
                                     if (fallback && fallback.click) {
                                         fallback.click();
@@ -4052,18 +4071,18 @@ class Navigation {
                         
                         waitForCalendarUpdate(() => {
                             console.log('Year loaded successfully (from month right), now proceeding to month navigation...');
-                            // [新增 #1] 回呼一開始：再次隱藏原生導覽（外掛跨年時常重繪 header）
+                            // [Added #1] At the start of callback: Hide native navigation again (plugin often redraws header when crossing years)
                             hideOriginalNavigation();
 
-                            // [新增 #2] 重新抓取最新的年份／月份 anchors
+                            // [Added #2] Re-fetch the latest year/month anchors
                             const { years: y2, months: m2 } = freshNodeLists();
 
-                            // 用原陣列容器回填，保持外層閉包引用不變
+                            // Refill the original array container to keep the outer closure reference unchanged
                             years.length = 0; years.push(...y2);
                             months.length = 0; months.push(...m2);
 
-                            // [新增 #3] 將 currentYear 指到「新節點」：
-                            // 以目前 UI 顯示的 yearText 作為比對，找同名年份 anchor
+                            // [Added #3] Point currentYear to the 'new node':
+                            // Use the currently displayed yearText in UI as comparison to find the year anchor with the same name
                             const targetYearText = (yearText.textContent || '').trim();
                             const matchedYear = years.find(y => (y.textContent || '').trim() === targetYearText);
                             if (matchedYear) {
@@ -4074,7 +4093,7 @@ class Navigation {
                                 currentYearIndex = 0;
                             }
 
-                            // [新增 #4] 依 targetMonthName 鎖定目標月份並點擊（若無則做 fallback）
+                            // [Added #4] Lock onto target month by targetMonthName and click (fallback if not found)
                             if (januaryName) {
                                 const target = months.find(m => (m.textContent || '').trim().toUpperCase() === januaryName.toUpperCase());
                                 if (target) {
@@ -4114,7 +4133,7 @@ class Navigation {
                                         }
                                     }, 300);
                                 } else if (months.length) {
-                                    // fallback：若找不到目標月，選擇第一個合理的候選（很可能是1月）
+                                    // fallback: If target month not found, select the first reasonable candidate (likely January)
                                     const fallback = months[0];
                                     if (fallback && fallback.click) {
                                         fallback.click();
