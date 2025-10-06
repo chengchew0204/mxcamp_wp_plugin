@@ -4,6 +4,7 @@ class Hovers {
       this.init();
       this.activeHover = null;
       this.lastScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+      this.hideTimers = new Map(); // Store timers per hover element
       
       // Add click handler for closing all hovers when clicking elsewhere on the page
       document.addEventListener('click', (e) => {
@@ -11,6 +12,32 @@ class Hovers {
         if (!e.target.closest('.hover') && !e.target.closest('.hover-content')) {
           this.closeAllHovers();
         }
+      });
+      
+      // Add global mousemove listener to detect when cursor is outside both trigger and content
+      document.addEventListener('mousemove', (e) => {
+        // Check all visible hover contents
+        const visibleHovers = document.querySelectorAll('.hover-content[style*="display: block"]');
+        visibleHovers.forEach(hoverContent => {
+          const parentHover = hoverContent.closest('.hover');
+          if (!parentHover) return;
+          
+          // Check if mouse is over the trigger or the content
+          const isOverTrigger = parentHover.matches(':hover');
+          const isOverContent = hoverContent.matches(':hover');
+          
+          if (!isOverTrigger && !isOverContent) {
+            // Mouse is outside both, schedule hide
+            this.scheduleHide(parentHover);
+          } else {
+            // Mouse is over one of them, cancel hide
+            const timerId = this.hideTimers.get(parentHover);
+            if (timerId) {
+              clearTimeout(timerId);
+              this.hideTimers.delete(parentHover);
+            }
+          }
+        });
       });
       
       // Add scroll handler to detect when user scrolls away from hover content
@@ -59,13 +86,18 @@ class Hovers {
       var hovers = document.getElementsByClassName("hover");
       for (var i = 0; i < hovers.length; i++) {
         // Mouse events
-        hovers[i].addEventListener('mouseover', (e) => {
-          // Don't prevent default to allow navigation to work
+        hovers[i].addEventListener('mouseenter', (e) => {
+          // Cancel any pending hide timer for this specific hover
+          const timerId = this.hideTimers.get(e.currentTarget);
+          if (timerId) {
+            clearTimeout(timerId);
+            this.hideTimers.delete(e.currentTarget);
+          }
           this.HoverMe(e.currentTarget);
         });
-        hovers[i].addEventListener('mouseout', (e) => {
-          // Don't prevent default to allow navigation to work
-          this.desHoverMe(e.currentTarget);
+        hovers[i].addEventListener('mouseleave', (e) => {
+          // Start a delay before hiding
+          this.scheduleHide(e.currentTarget);
         });
         
         // Touch events for mobile - use touchstart/touchend
@@ -77,10 +109,39 @@ class Hovers {
           }
           this.HoverMe(e.currentTarget);
         });
+        
+        // Add event listeners to hover-content to keep it visible
+        const hoverContent = hovers[i].querySelector('.hover-content');
+        if (hoverContent) {
+          hoverContent.addEventListener('mouseenter', (e) => {
+            // Cancel any pending hide timer when entering hover content
+            const parentHover = e.currentTarget.closest('.hover');
+            if (parentHover) {
+              const timerId = this.hideTimers.get(parentHover);
+              if (timerId) {
+                clearTimeout(timerId);
+                this.hideTimers.delete(parentHover);
+              }
+            }
+          });
+          hoverContent.addEventListener('mouseleave', (e) => {
+            // Start a delay before hiding when leaving hover content
+            const parentHover = e.currentTarget.closest('.hover');
+            if (parentHover) {
+              this.scheduleHide(parentHover);
+            }
+          });
+        }
       }
     }
     
     closeAllHovers() {
+      // Clear all pending hide timers
+      this.hideTimers.forEach((timerId, hoverElement) => {
+        clearTimeout(timerId);
+      });
+      this.hideTimers.clear();
+      
       var hovers = document.getElementsByClassName("hover");
       for (var i = 0; i < hovers.length; i++) {
         // Skip menu items
@@ -136,6 +197,21 @@ class Hovers {
     }
   
 	HoverMe(el) {
+	  // Close all other hovers immediately when opening a new one
+	  var allHovers = document.getElementsByClassName("hover");
+	  for (var i = 0; i < allHovers.length; i++) {
+	    if (allHovers[i] !== el && !allHovers[i].closest('.mobile-menu')) {
+	      // Clear any pending timer for this hover
+	      const timerId = this.hideTimers.get(allHovers[i]);
+	      if (timerId) {
+	        clearTimeout(timerId);
+	        this.hideTimers.delete(allHovers[i]);
+	      }
+	      // Close it immediately
+	      this.desHoverMe(allHovers[i]);
+	    }
+	  }
+	  
 	  // Get the hover content element
 	  let hoverContent = el.querySelector('.hover-content');
 	  if (!hoverContent) return;
@@ -367,6 +443,22 @@ class Hovers {
 	  }, 200);
 	}
 	
+    scheduleHide(el) {
+      // Clear any existing timer for this specific element
+      const existingTimer = this.hideTimers.get(el);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+      }
+      
+      // Set a new timer with 300ms delay
+      const timerId = setTimeout(() => {
+        this.desHoverMe(el);
+        this.hideTimers.delete(el);
+      }, 300);
+      
+      this.hideTimers.set(el, timerId);
+    }
+
     desHoverMe(el) {
       // Skip for menu items - should be handled by navigation js
       if (el.closest('.mobile-menu')) {

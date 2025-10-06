@@ -484,7 +484,7 @@ h2:after {
     position: absolute;
     width: 300px;
     z-index: 10;
-    margin-top: 19px;
+    margin-top: 5px;
     margin-left: -4px;
     border: 0px solid transparent;
     overflow-y: auto;

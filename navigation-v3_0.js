@@ -254,8 +254,7 @@ class Navigation {
             this.hideLoadingSpinner();
         }
     }
-
-
+    
     // Load all resources (gif-detail, background images, etc.) with callback when ready
     loadAllResourcesWithCallback(callback) {
         console.log('Starting comprehensive resource loading...');
@@ -564,17 +563,8 @@ class Navigation {
             // Device-specific title logic for organizadorxs slide
             let displayTitle = postTitle;
             if (divId === 'organizadorxs') {
-                // Function to detect mobile device
-                const isMobileDevice = () => {
-                    return (window.innerWidth <= 768 || 
-                           navigator.maxTouchPoints > 0 || 
-                           navigator.msMaxTouchPoints > 0 ||
-                           ('ontouchstart' in window) || 
-                           (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
-                           (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
-                };
-                
-                displayTitle = isMobileDevice() ? 'ORGANIZADXR' : 'ORGANIZADORXS';
+                // Always use full title in mobile menu since there's space
+                displayTitle = 'ORGANIZADORXS';
             }
 
             const NewMenuItem = document.createElement('li');
@@ -1958,6 +1948,14 @@ class Navigation {
         END COMMENTED OUT */
     }
     
+    /* 
+    
+    For the users who are browsing via desktop's Safari, please give out a message before the exisiting "Click me to open ..." things,
+    and shows out a message "Para una mejor experiencia, navegue a través de Chrome/Firefox.", "You are using Safari. For best experience, please use another browser.". 
+
+
+    */
+
     // NEW: Text-based hint system - lightweight and non-disruptive
     performPostContentTextHint(slideElement) {
         const slideId = slideElement.id;
@@ -2278,6 +2276,132 @@ class Navigation {
         return isMobile ? 'mobiles' : 'desktop';
     }
     
+    // Detect if user is on desktop Safari (not mobile Safari)
+    isDesktopSafari() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isSafari = userAgent.indexOf('safari') !== -1 && userAgent.indexOf('chrome') === -1 && userAgent.indexOf('chromium') === -1;
+        const isMobile = /iphone|ipad|ipod|android/i.test(userAgent) || window.innerWidth <= 768;
+        
+        return isSafari && !isMobile;
+    }
+    
+    // Show Safari warning message for desktop Safari users
+    showSafariWarningIfNeeded() {
+        // Debug browser detection
+        const userAgent = navigator.userAgent.toLowerCase();
+        console.log('=== Safari Warning Check ===');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Contains safari:', userAgent.indexOf('safari') !== -1);
+        console.log('Contains chrome:', userAgent.indexOf('chrome') !== -1);
+        console.log('Contains chromium:', userAgent.indexOf('chromium') !== -1);
+        console.log('Window width:', window.innerWidth);
+        console.log('Is desktop Safari:', this.isDesktopSafari());
+        
+        // Check if desktop Safari
+        if (!this.isDesktopSafari()) {
+            console.log('Not desktop Safari, skipping browser warning');
+            return;
+        }
+        
+        // Check if warning has already been shown on this page load
+        // Using window flag only (not sessionStorage) so it shows once per reload
+        if (window._safariWarningShown) {
+            console.log('Safari warning already shown on this page load');
+            return;
+        }
+        
+        console.log('✓ Showing Safari browser warning for desktop Safari user');
+        
+        // Detect current language
+        const language = this.detectLanguage();
+        const isEnglish = language === 'en';
+        
+        // Set warning message based on language
+        const warningMessage = isEnglish ? 
+            'You are using Safari. For best experience, please use another browser.' :
+            'Estás usando Safari. Para una mejor experiencia, utiliza otro navegador.';
+        
+        // Create the warning overlay
+        const warningOverlay = document.createElement('div');
+        warningOverlay.className = 'safari-warning-overlay';
+        
+        // Position the warning at the top center of the screen
+        warningOverlay.style.cssText = `
+            position: fixed;
+            top: 38%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+        `;
+        
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.className = 'safari-warning-message';
+        messageElement.textContent = warningMessage;
+        
+        messageElement.style.cssText = `
+            font-family: 'ClearSans', helvetica, sans-serif;
+            font-weight: 500;
+            font-stretch: 70%;
+            letter-spacing: 0px;
+            background-color: rgba(255, 200, 0, 0.75);
+            color: rgba(0, 0, 0, 0.9);
+            font-size: 18px;
+            line-height: 22px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            white-space: nowrap;
+        `;
+        
+        // Add message to overlay
+        warningOverlay.appendChild(messageElement);
+        
+        // Add to document body
+        document.body.appendChild(warningOverlay);
+        
+        // Force reflow and trigger fade in
+        warningOverlay.offsetHeight;
+        
+        setTimeout(() => {
+            if (warningOverlay && warningOverlay.parentNode) {
+                warningOverlay.style.opacity = '1';
+                console.log('Safari warning faded in');
+            }
+        }, 100);
+        
+        // Hold for 5 seconds then fade out (longer for slow readers)
+        setTimeout(() => {
+            if (warningOverlay && warningOverlay.parentNode) {
+                warningOverlay.style.opacity = '0';
+                console.log('Safari warning fading out');
+                
+                // Remove after fade completes
+                setTimeout(() => {
+                    if (warningOverlay && warningOverlay.parentNode) {
+                        warningOverlay.parentNode.removeChild(warningOverlay);
+                        console.log('Safari warning removed');
+                    }
+                }, 500); // Match transition duration
+            }
+        }, 5000);
+        
+        // Mark as shown for this page load only (resets on reload/language change)
+        window._safariWarningShown = true;
+        console.log('Safari warning marked as shown for this page load');
+    }
+    
     getScreenshotPath(slideId, language, deviceType) {
         // Map slide IDs to their screenshot filenames
         const screenshotMap = {
@@ -2428,6 +2552,24 @@ class Navigation {
     initScrollHints() {
         console.log('Initializing cursor hints - site is ready for interaction');
         
+        // Check if Safari warning will be shown
+        const willShowSafariWarning = this.isDesktopSafari() && !window._safariWarningShown;
+        
+        // Show Safari warning for desktop Safari users before showing hints
+        this.showSafariWarningIfNeeded();
+        
+        // Calculate delay for cursor hints if Safari warning was shown
+        // Safari warning timing: 100ms fade in + 5000ms display + 500ms fade out = 5600ms total
+        const cursorHintDelay = willShowSafariWarning ? 5600 : 0;
+        
+        if (willShowSafariWarning) {
+            console.log('Safari warning shown - delaying cursor hints by', cursorHintDelay, 'ms');
+        }
+        
+        // Store the Safari warning state for intersection observer to use
+        this._safariWarningDelay = cursorHintDelay;
+        this._safariWarningTime = Date.now();
+        
         // Immediate setup since we're now the "ready" signal
             const slides = document.querySelectorAll('.slide_10');
             
@@ -2437,7 +2579,21 @@ class Navigation {
                         const slideId = entry.target.id;
                         // Only show hint if site is fully loaded, slide is not opened, not during programmatic scrolling, and not during user scrolling
                         if (this.isFullyLoaded && !entry.target.classList.contains('opened') && !this.scrolling && !this.isUserScrolling) {
-                            this.showCursorHint(entry.target);
+                            // Calculate remaining Safari warning delay
+                            const elapsedTime = Date.now() - this._safariWarningTime;
+                            const remainingDelay = Math.max(0, this._safariWarningDelay - elapsedTime);
+                            
+                            if (remainingDelay > 0) {
+                                console.log('Delaying cursor hint by', remainingDelay, 'ms for Safari warning');
+                                setTimeout(() => {
+                                    // Check conditions again after delay
+                                    if (!entry.target.classList.contains('opened') && !this.scrolling) {
+                                        this.showCursorHint(entry.target);
+                                    }
+                                }, remainingDelay);
+                            } else {
+                                this.showCursorHint(entry.target);
+                            }
                         }
                     }
                 });
@@ -2451,13 +2607,14 @@ class Navigation {
             });
         
         // Show immediate cursor hint on currently visible slide as "ready" signal
+        // Add Safari warning delay to the initial hint timing
         setTimeout(() => {
             const currentSlide = document.getElementById(this.slideVisibleId);
             if (currentSlide && !currentSlide.classList.contains('opened')) {
                 console.log('Showing initial cursor hint as ready signal');
                 this.showCursorHint(currentSlide);
             }
-        }, 1100); // Brief delay to ensure everything is set up
+        }, 1100 + cursorHintDelay); // Brief delay + Safari warning delay
     }
     
     // Debug function to test cursor hints manually
@@ -2565,6 +2722,24 @@ class Navigation {
         } else {
             console.log('No visible slide to test on');
         }
+    }
+    
+    // Test Safari warning display
+    testSafariWarning() {
+        console.log('=== Testing Safari Warning ===');
+        console.log('Browser info:');
+        console.log('- User Agent:', navigator.userAgent);
+        console.log('- Is Desktop Safari:', this.isDesktopSafari());
+        console.log('- Window dimensions:', window.innerWidth, 'x', window.innerHeight);
+        console.log('- Current language:', this.detectLanguage());
+        console.log('- Warning shown flag:', window._safariWarningShown);
+        
+        // Clear window flag to allow re-showing
+        window._safariWarningShown = false;
+        console.log('Cleared flag, forcing Safari warning display...');
+        
+        // Force show the warning
+        this.showSafariWarningIfNeeded();
     }
     
     // Simple test overlay for debugging visibility issues
@@ -3267,11 +3442,44 @@ class Navigation {
         // Try to hide original navigation immediately
         hideOriginalNavigation();
         
+        // Shared state for synchronizing multiple navigation instances
+        const navigationState = {
+            years: [],
+            months: [],
+            currentYear: null,
+            currentMonth: null,
+            currentYearIndex: 0,
+            currentMonthIndex: 0,
+            topNavElements: null,
+            bottomNavElements: null
+        };
+        
+        // Function to update all navigation displays (will be enhanced later with caret visibility)
+        const updateAllNavigationDisplays = () => {
+            if (navigationState.topNavElements) {
+                navigationState.topNavElements.yearText.textContent = navigationState.currentYear?.textContent || '';
+                navigationState.topNavElements.monthText.textContent = navigationState.currentMonth?.textContent || '';
+            }
+            if (navigationState.bottomNavElements) {
+                navigationState.bottomNavElements.yearText.textContent = navigationState.currentYear?.textContent || '';
+                navigationState.bottomNavElements.monthText.textContent = navigationState.currentMonth?.textContent || '';
+            }
+            // Note: updateCaretVisibility will be called separately from within each createCompactNav scope
+        };
+        
+        // Global function to update caret visibility for all navigations
+        let updateAllCaretVisibility = null; // Will be set by first nav creation
+        
         // Function to create compact navigation
-        const createCompactNav = () => {
-            // Check if already processed
-            if (document.querySelector('.compact-calendar-nav')) {
-                console.log('Compact navigation already exists');
+        const createCompactNav = (position = 'top') => {
+            // For bottom nav, allow creation even if top nav exists
+            const existingNavs = document.querySelectorAll('.compact-calendar-nav');
+            if (position === 'top' && existingNavs.length > 0) {
+                console.log('Top navigation already exists');
+                return true;
+            }
+            if (position === 'bottom' && existingNavs.length > 1) {
+                console.log('Bottom navigation already exists');
                 return true;
             }
             
@@ -3288,61 +3496,79 @@ class Navigation {
             // Find all year and month links in the entire calendar header area
             const allLinks = Array.from(calendar.querySelectorAll('a'));
             
-            // Separate years and months
-            const years = [];
-            const months = [];
-            let currentYear = null;
-            let currentMonth = null;
-            
-            allLinks.forEach(link => {
-                const text = link.textContent.trim();
-                // Check if it's a year (4 digits)
-                if (YEAR_RE.test(text)) {
-                    years.push(link);
-                    if (link.classList.contains('current')) {
-                        currentYear = link;
+            // Only populate shared state on first navigation creation
+            if (position === 'top') {
+                navigationState.years = [];
+                navigationState.months = [];
+                navigationState.currentYear = null;
+                navigationState.currentMonth = null;
+                
+                allLinks.forEach(link => {
+                    const text = link.textContent.trim();
+                    // Check if it's a year (4 digits)
+                    if (YEAR_RE.test(text)) {
+                        navigationState.years.push(link);
+                        if (link.classList.contains('current')) {
+                            navigationState.currentYear = link;
+                        }
+                        // Hide the year link
+                        link.style.display = 'none';
+                        // Also hide any parent span or container
+                        if (link.parentElement && link.parentElement.tagName !== 'BODY') {
+                            link.parentElement.style.display = 'none';
+                        }
+                    } else if (monthRegex.test(text)) {
+                        navigationState.months.push(link);
+                        if (link.classList.contains('current')) {
+                            navigationState.currentMonth = link;
+                        }
+                        // Hide the month link
+                        link.style.display = 'none';
+                        // Also hide any parent span or container
+                        if (link.parentElement && link.parentElement.tagName !== 'BODY') {
+                            link.parentElement.style.display = 'none';
+                        }
                     }
-                    // Hide the year link
-                    link.style.display = 'none';
-                    // Also hide any parent span or container
-                    if (link.parentElement && link.parentElement.tagName !== 'BODY') {
-                        link.parentElement.style.display = 'none';
-                    }
-                } else if (monthRegex.test(text)) {
-                    months.push(link);
-                    if (link.classList.contains('current')) {
-                        currentMonth = link;
-                    }
-                    // Hide the month link
-                    link.style.display = 'none';
-                    // Also hide any parent span or container
-                    if (link.parentElement && link.parentElement.tagName !== 'BODY') {
-                        link.parentElement.style.display = 'none';
-                    }
+                });
+                
+                console.log('Years found:', navigationState.years.map(y => y.textContent).join(', '));
+                console.log('Months found:', navigationState.months.map(m => m.textContent).join(', '));
+                console.log('Current year:', navigationState.currentYear?.textContent || 'none');
+                console.log('Current month:', navigationState.currentMonth?.textContent || 'none');
+                
+                if (navigationState.years.length === 0 || navigationState.months.length === 0) {
+                    console.log('Not enough date elements found');
+                    console.log('Available months:', navigationState.months.length, 'Available years:', navigationState.years.length);
+                    return false;
                 }
-            });
+                
+                // Default to 2025 and MAY if no current selection
+                if (!navigationState.currentYear) {
+                    navigationState.currentYear = navigationState.years.find(y => y.textContent === '2025') || navigationState.years[0];
+                }
+                if (!navigationState.currentMonth) {
+                    navigationState.currentMonth = navigationState.months.find(m => m.textContent.toUpperCase() === defaultMonth) || navigationState.months[4]; // MAY is typically at index 4
+                }
+                
+                navigationState.currentYearIndex = navigationState.years.indexOf(navigationState.currentYear);
+                navigationState.currentMonthIndex = navigationState.months.indexOf(navigationState.currentMonth);
+            }
             
-            console.log('Years found:', years.map(y => y.textContent).join(', '));
-            console.log('Months found:', months.map(m => m.textContent).join(', '));
-            console.log('Current year:', currentYear?.textContent || 'none');
-            console.log('Current month:', currentMonth?.textContent || 'none');
+            // Use shared state for both navigations
+            const years = navigationState.years;
+            const months = navigationState.months;
+            let currentYear = navigationState.currentYear;
+            let currentMonth = navigationState.currentMonth;
             
             if (years.length === 0 || months.length === 0) {
-                console.log('Not enough date elements found');
-                console.log('Available months:', months.length, 'Available years:', years.length);
+                console.log('Not enough date elements found in shared state');
                 return false;
-            }
-            
-            // Default to 2025 and MAY if no current selection
-            if (!currentYear) {
-                currentYear = years.find(y => y.textContent === '2025') || years[0];
-            }
-            if (!currentMonth) {
-                currentMonth = months.find(m => m.textContent.toUpperCase() === defaultMonth) || months[4]; // MAY is typically at index 4
             }
             
             // Find where to insert the compact navigation
             const calendarHeader = calendar.querySelector('.calendar_header');
+            const calendarEventsList = calendar.querySelector('.eventon_events_list');
+            
             if (!calendarHeader) {
                 console.log('Calendar header not found');
                 return false;
@@ -3363,13 +3589,23 @@ class Navigation {
             
             // Create the compact navigation container
             const compactNav = document.createElement('div');
-            compactNav.className = 'compact-calendar-nav';
+            compactNav.className = `compact-calendar-nav compact-calendar-nav-${position}`;
+            compactNav.setAttribute('data-position', position);
             
-            // Apply different styling based on device type
-            if (isMobileDevice) {
-                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -5px; bottom: 0px; z-index: 10; overflow: visible;';
+            // Apply different styling based on device type and position
+            if (position === 'top') {
+                if (isMobileDevice) {
+                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -5px; bottom: 0px; z-index: 10; overflow: visible;';
+                } else {
+                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -9px;';
+                }
             } else {
-                compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -9px;';
+                // Bottom navigation - visible on both mobile and desktop, positioned under calendar content
+                if (isMobileDevice) {
+                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: relative; left: -5px; z-index: 10; margin-top: 10px;';
+                } else {
+                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: relative; left: -9px; z-index: 10; margin-top: 10px;';
+                }
             }
             
             // Year navigation elements
@@ -3423,8 +3659,28 @@ class Navigation {
             compactNav.appendChild(monthText);
             compactNav.appendChild(monthRight);
             
-            // Insert at the beginning of calendar header
-            calendarHeader.insertBefore(compactNav, calendarHeader.firstChild);
+            // Store navigation elements for synchronization
+            const navElements = {
+                yearLeft, yearRight, yearText,
+                monthLeft, monthRight, monthText,
+                compactNav
+            };
+            
+            // Insert navigation at appropriate location
+            if (position === 'top') {
+                calendarHeader.insertBefore(compactNav, calendarHeader.firstChild);
+                navigationState.topNavElements = navElements;
+            } else {
+                // Append to the end of the calendar or after events list
+                if (calendarEventsList && calendarEventsList.parentNode) {
+                    calendarEventsList.parentNode.insertBefore(compactNav, calendarEventsList.nextSibling);
+                } else {
+                    calendar.appendChild(compactNav);
+                }
+                navigationState.bottomNavElements = navElements;
+            }
+            
+            console.log(`${position} navigation inserted`);
             
             // Add resize event listener to handle orientation changes
             const updateMobilePositioning = () => {
@@ -3452,12 +3708,22 @@ class Navigation {
                 // Update month right caret with h2::after-style properties
                 monthRight.style.cssText = `background-image: url(${currentCaretSrc}); background-repeat: no-repeat; background-size: ${currentCaretSize}; content: ''; display: inline-block; width: ${currentCaretSize}; height: ${currentCaretSize}; cursor: pointer; transform: rotate(-90deg); transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; left: 3px; top: 5px; transition: transform 0.5s ease; vertical-align: top;`;
                 
-                if (isCurrentlyMobile) {
-                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -3px; bottom: 0px; z-index: 10; overflow: visible;';
-                    calendarHeader.style.position = 'relative';
+                // Update positioning based on whether this is top or bottom nav
+                if (position === 'top') {
+                    if (isCurrentlyMobile) {
+                        compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -3px; bottom: 0px; z-index: 10; overflow: visible;';
+                        calendarHeader.style.position = 'relative';
+                    } else {
+                        compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -3px;';
+                        calendarHeader.style.position = '';
+                    }
                 } else {
-                    compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -3px;';
-                    calendarHeader.style.position = '';
+                    // Bottom nav visibility based on device
+                    if (isCurrentlyMobile) {
+                        compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: relative; left: -5px; z-index: 10; margin-top: 10px;';
+                    } else {
+                        compactNav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: relative; left: -9px; z-index: 10; margin-top: 10px;';
+                    }
                 }
             };
             
@@ -3470,42 +3736,51 @@ class Navigation {
                 evoJDates.style.display = 'none';
             }
             
-            // Set up navigation handlers
-            let currentYearIndex = years.indexOf(currentYear);
-            let currentMonthIndex = months.indexOf(currentMonth);
+            // Set up navigation handlers using shared state
+            let currentYearIndex = navigationState.currentYearIndex;
+            let currentMonthIndex = navigationState.currentMonthIndex;
             
             // Helper function to find month by name and update indices
             const updateToMonth = (monthName) => {
-                const targetMonth = months.find(m => m.textContent.toUpperCase() === monthName.toUpperCase());
+                const targetMonth = navigationState.months.find(m => m.textContent.toUpperCase() === monthName.toUpperCase());
                 if (targetMonth) {
-                    currentMonth = targetMonth;
-                    currentMonthIndex = months.indexOf(targetMonth);
-                    monthText.textContent = currentMonth.textContent;
-                    // Update caret visibility immediately when month text changes
-                    updateCaretVisibility();
+                    navigationState.currentMonth = targetMonth;
+                    navigationState.currentMonthIndex = navigationState.months.indexOf(targetMonth);
+                    currentMonth = navigationState.currentMonth;
+                    currentMonthIndex = navigationState.currentMonthIndex;
+                    // Update all navigation displays
+                    updateAllNavigationDisplays();
+                    // Update caret visibility for all navigations
+                    updateAllCaretVisibility();
                     console.log(`Updated to month: ${monthName}, index: ${currentMonthIndex}`);
                     return true;
                 }
-                console.log(`Could not find month: ${monthName} in available months:`, months.map(m => m.textContent));
+                console.log(`Could not find month: ${monthName} in available months:`, navigationState.months.map(m => m.textContent));
                 return false;
             };
             
             // Helper function to change year and update display
             const changeYear = (direction) => {
-                if (direction === 'previous' && currentYearIndex > 0) {
-                    currentYearIndex--;
-                    currentYear = years[currentYearIndex];
-                    yearText.textContent = currentYear.textContent;
+                if (direction === 'previous' && navigationState.currentYearIndex > 0) {
+                    navigationState.currentYearIndex--;
+                    navigationState.currentYear = navigationState.years[navigationState.currentYearIndex];
+                    currentYear = navigationState.currentYear;
+                    currentYearIndex = navigationState.currentYearIndex;
+                    // Update all navigation displays
+                    updateAllNavigationDisplays();
                     console.log(`Changed to previous year: ${currentYear.textContent}`);
                     return true;
-                } else if (direction === 'next' && currentYearIndex < years.length - 1) {
-                    currentYearIndex++;
-                    currentYear = years[currentYearIndex];
-                    yearText.textContent = currentYear.textContent;
+                } else if (direction === 'next' && navigationState.currentYearIndex < navigationState.years.length - 1) {
+                    navigationState.currentYearIndex++;
+                    navigationState.currentYear = navigationState.years[navigationState.currentYearIndex];
+                    currentYear = navigationState.currentYear;
+                    currentYearIndex = navigationState.currentYearIndex;
+                    // Update all navigation displays
+                    updateAllNavigationDisplays();
                     console.log(`Changed to next year: ${currentYear.textContent}`);
                     return true;
                 }
-                console.log(`Cannot change year ${direction}, current index: ${currentYearIndex}, total years: ${years.length}`);
+                console.log(`Cannot change year ${direction}, current index: ${currentYearIndex}, total years: ${navigationState.years.length}`);
                 return false;
             };
             
@@ -3729,6 +4004,10 @@ class Navigation {
                         // Refill the original array container to keep the outer closure reference unchanged
                         years.length = 0; years.push(...y2);
                         months.length = 0; months.push(...m2);
+                        
+                        // Also update shared state
+                        navigationState.years.length = 0; navigationState.years.push(...y2);
+                        navigationState.months.length = 0; navigationState.months.push(...m2);
 
                         // [Added #3] Point currentYear to the 'new node':
                         // Use the currently displayed yearText in UI as comparison to find the year anchor with the same name
@@ -3737,9 +4016,13 @@ class Navigation {
                         if (matchedYear) {
                             currentYear = matchedYear;
                             currentYearIndex = years.indexOf(matchedYear);
+                            navigationState.currentYear = matchedYear;
+                            navigationState.currentYearIndex = currentYearIndex;
                         } else if (years.length) {
                             currentYear = years[0];
                             currentYearIndex = 0;
+                            navigationState.currentYear = years[0];
+                            navigationState.currentYearIndex = 0;
                         }
 
                         // [Added #4] Lock onto target month by targetMonthName and click (fallback if not found)
@@ -3748,9 +4031,13 @@ class Navigation {
                             if (target) {
                                 currentMonth = target;
                                 currentMonthIndex = months.indexOf(target);
+                                navigationState.currentMonth = target;
+                                navigationState.currentMonthIndex = currentMonthIndex;
                                 monthText.textContent = (currentMonth.textContent || '').trim();
+                                // Update all navigation displays
+                                updateAllNavigationDisplays();
                                 // Update caret visibility immediately when month text changes
-                                updateCaretVisibility();
+                                updateAllCaretVisibility();
                                 
                                 console.log('Month text updated to December, carets updated, now clicking month...');
                                 
@@ -3823,6 +4110,10 @@ class Navigation {
                         // Refill the original array container to keep the outer closure reference unchanged
                         years.length = 0; years.push(...y2);
                         months.length = 0; months.push(...m2);
+                        
+                        // Also update shared state
+                        navigationState.years.length = 0; navigationState.years.push(...y2);
+                        navigationState.months.length = 0; navigationState.months.push(...m2);
 
                         // [Added #3] Point currentYear to the 'new node':
                         // Use the currently displayed yearText in UI as comparison to find the year anchor with the same name
@@ -3831,9 +4122,13 @@ class Navigation {
                         if (matchedYear) {
                             currentYear = matchedYear;
                             currentYearIndex = years.indexOf(matchedYear);
+                            navigationState.currentYear = matchedYear;
+                            navigationState.currentYearIndex = currentYearIndex;
                         } else if (years.length) {
                             currentYear = years[0];
                             currentYearIndex = 0;
+                            navigationState.currentYear = years[0];
+                            navigationState.currentYearIndex = 0;
                         }
 
                         // [Added #4] Lock onto target month by targetMonthName and click (fallback if not found)
@@ -3842,9 +4137,13 @@ class Navigation {
                             if (target) {
                                 currentMonth = target;
                                 currentMonthIndex = months.indexOf(target);
+                                navigationState.currentMonth = target;
+                                navigationState.currentMonthIndex = currentMonthIndex;
                                 monthText.textContent = (currentMonth.textContent || '').trim();
+                                // Update all navigation displays
+                                updateAllNavigationDisplays();
                                 // Update caret visibility immediately when month text changes
-                                updateCaretVisibility();
+                                updateAllCaretVisibility();
                                 
                                 console.log('Month text updated to January, carets updated, now clicking month...');
                                 
@@ -3897,32 +4196,85 @@ class Navigation {
             };
             
             // Function to update caret visibility based on current month
-            const updateCaretVisibility = () => {
-                const currentMonthName = currentMonth.textContent.toUpperCase();
+            const updateCaretVisibility = (navEls = navElements) => {
+                const currentMonthName = navigationState.currentMonth.textContent.toUpperCase();
                 
                 // Hide back caret on January
                 if (currentMonthName === januaryName.toUpperCase()) {
-                    monthLeft.style.visibility = 'hidden';
-                    monthLeft.style.pointerEvents = 'none';
+                    navEls.monthLeft.style.visibility = 'hidden';
+                    navEls.monthLeft.style.pointerEvents = 'none';
                 } else {
-                    monthLeft.style.visibility = 'visible';
-                    monthLeft.style.pointerEvents = 'auto';
+                    navEls.monthLeft.style.visibility = 'visible';
+                    navEls.monthLeft.style.pointerEvents = 'auto';
                 }
                 
                 // Hide forward caret on December
                 if (currentMonthName === decemberName.toUpperCase()) {
-                    monthRight.style.visibility = 'hidden';
-                    monthRight.style.pointerEvents = 'none';
+                    navEls.monthRight.style.visibility = 'hidden';
+                    navEls.monthRight.style.pointerEvents = 'none';
                 } else {
-                    monthRight.style.visibility = 'visible';
-                    monthRight.style.pointerEvents = 'auto';
+                    navEls.monthRight.style.visibility = 'visible';
+                    navEls.monthRight.style.pointerEvents = 'auto';
                 }
                 
-                console.log(`Caret visibility updated for month: ${currentMonthName}`);
+                console.log(`Caret visibility updated for month: ${currentMonthName} (${position} nav)`);
             };
             
             // Call initially to set correct visibility
             updateCaretVisibility();
+            
+            // Set the global updateAllCaretVisibility function on first navigation creation only
+            if (!updateAllCaretVisibility) {
+                updateAllCaretVisibility = () => {
+                    if (navigationState.topNavElements) {
+                        const currentMonthName = navigationState.currentMonth.textContent.toUpperCase();
+                        const topNavEls = navigationState.topNavElements;
+                        
+                        // Hide back caret on January
+                        if (currentMonthName === januaryName.toUpperCase()) {
+                            topNavEls.monthLeft.style.visibility = 'hidden';
+                            topNavEls.monthLeft.style.pointerEvents = 'none';
+                        } else {
+                            topNavEls.monthLeft.style.visibility = 'visible';
+                            topNavEls.monthLeft.style.pointerEvents = 'auto';
+                        }
+                        
+                        // Hide forward caret on December
+                        if (currentMonthName === decemberName.toUpperCase()) {
+                            topNavEls.monthRight.style.visibility = 'hidden';
+                            topNavEls.monthRight.style.pointerEvents = 'none';
+                        } else {
+                            topNavEls.monthRight.style.visibility = 'visible';
+                            topNavEls.monthRight.style.pointerEvents = 'auto';
+                        }
+                    }
+                    
+                    if (navigationState.bottomNavElements) {
+                        const currentMonthName = navigationState.currentMonth.textContent.toUpperCase();
+                        const bottomNavEls = navigationState.bottomNavElements;
+                        
+                        // Hide back caret on January
+                        if (currentMonthName === januaryName.toUpperCase()) {
+                            bottomNavEls.monthLeft.style.visibility = 'hidden';
+                            bottomNavEls.monthLeft.style.pointerEvents = 'none';
+                        } else {
+                            bottomNavEls.monthLeft.style.visibility = 'visible';
+                            bottomNavEls.monthLeft.style.pointerEvents = 'auto';
+                        }
+                        
+                        // Hide forward caret on December
+                        if (currentMonthName === decemberName.toUpperCase()) {
+                            bottomNavEls.monthRight.style.visibility = 'hidden';
+                            bottomNavEls.monthRight.style.pointerEvents = 'none';
+                        } else {
+                            bottomNavEls.monthRight.style.visibility = 'visible';
+                            bottomNavEls.monthRight.style.pointerEvents = 'auto';
+                        }
+                    }
+                    
+                    console.log('Updated caret visibility for all navigations');
+                };
+            }
             
             // Enhanced month navigation with stability checking for cross-year transitions
             monthLeft.onclick = () => {
@@ -4040,9 +4392,13 @@ class Navigation {
                         // Fallback to array-based navigation
                         currentMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
                         currentMonth = months[currentMonthIndex];
+                        navigationState.currentMonth = currentMonth;
+                        navigationState.currentMonthIndex = currentMonthIndex;
                         monthText.textContent = currentMonth.textContent;
+                        // Update all navigation displays
+                        updateAllNavigationDisplays();
                         // Update caret visibility immediately when month text changes
-                        updateCaretVisibility();
+                        updateAllCaretVisibility();
                         const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
                         waitForCalendarUpdate(() => {
@@ -4166,9 +4522,13 @@ class Navigation {
                         // Fallback to array-based navigation
                         currentMonthIndex = currentMonthIndex < months.length - 1 ? currentMonthIndex + 1 : 0;
                         currentMonth = months[currentMonthIndex];
+                        navigationState.currentMonth = currentMonth;
+                        navigationState.currentMonthIndex = currentMonthIndex;
                         monthText.textContent = currentMonth.textContent;
+                        // Update all navigation displays
+                        updateAllNavigationDisplays();
                         // Update caret visibility immediately when month text changes
-                        updateCaretVisibility();
+                        updateAllCaretVisibility();
                         const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
                         waitForCalendarUpdate(() => {
@@ -4195,10 +4555,31 @@ class Navigation {
         
         // Try to create the navigation with retries
         let attempts = 0;
+        let topNavCreated = false;
+        let bottomNavCreated = false;
+        
         const tryCreate = () => {
             attempts++;
-            if (createCompactNav()) {
-                console.log('Success on attempt', attempts);
+            
+            // Create top navigation first
+            if (!topNavCreated && createCompactNav('top')) {
+                topNavCreated = true;
+                console.log('Top navigation created successfully on attempt', attempts);
+            }
+            
+            // Then create bottom navigation for both mobile and desktop
+            if (topNavCreated && !bottomNavCreated) {
+                if (createCompactNav('bottom')) {
+                    bottomNavCreated = true;
+                    console.log('Bottom navigation created successfully on attempt', attempts);
+                }
+            }
+            
+            // Check if we're done (both top and bottom created)
+            const allDone = topNavCreated && bottomNavCreated;
+            
+            if (allDone) {
+                console.log('All navigations created successfully on attempt', attempts);
                 
                 // First paint: just ensure calendar is ready, no hiding/revealing needed
                 const cal = document.querySelector('.ajde_evcal_calendar');
@@ -4214,7 +4595,8 @@ class Navigation {
             } else if (attempts < 20) {
                 setTimeout(tryCreate, 250);
             } else {
-                console.log('Failed to create compact navigation after 20 attempts');
+                console.log('Failed to create all compact navigations after 20 attempts');
+                console.log('Top nav created:', topNavCreated, 'Bottom nav created:', bottomNavCreated);
             }
         };
         

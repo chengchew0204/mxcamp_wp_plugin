@@ -474,17 +474,8 @@ class Navigation {
             // Device-specific title logic for organizadorxs slide
             let displayTitle = postTitle;
             if (divId === 'organizadorxs') {
-                // Function to detect mobile device
-                const isMobileDevice = () => {
-                    return (window.innerWidth <= 768 || 
-                           navigator.maxTouchPoints > 0 || 
-                           navigator.msMaxTouchPoints > 0 ||
-                           ('ontouchstart' in window) || 
-                           (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
-                           (navigator.userAgent.toLowerCase().indexOf('android') !== -1));
-                };
-                
-                displayTitle = isMobileDevice() ? 'ORGANIZADXR' : 'ORGANIZADORXS';
+                // Always use full title in mobile menu since there's space
+                displayTitle = 'ORGANIZADORXS';
             }
 
             const NewMenuItem = document.createElement('li');
