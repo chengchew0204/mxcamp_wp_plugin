@@ -561,7 +561,7 @@ class Navigation {
         arrowImg.style.height = 'auto';
         arrowImg.style.marginLeft = '2px'; // Keep closer positioning
         arrowImg.style.filter = 'brightness(0) invert(1)'; // Removing drop-shadow effects
-        arrowImg.style.transform = 'rotate(-90deg)';
+        arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
         arrowImg.style.transition = 'transform 0.5s ease';
         arrowImg.style.display = 'inline';
         arrowImg.style.verticalAlign = 'middle';
@@ -1238,8 +1238,14 @@ class Navigation {
     activateMenu() {
         console.log('menuopen', this.menuopened);
         
+        // Cancel any pending hint timers to prevent hints from appearing while menu is open
+        this.cancelPendingHints();
+        
         // Hide any active cursor hint when menu is activated
         this.hideCurrentCursorHint();
+        
+        // Hide any active text hints when menu is activated
+        this.hideAllActiveTextHints();
         
         if(this.cardopened===true){this.closeCards()};
         this.slider.classList.add('menuactive');
@@ -1270,6 +1276,19 @@ class Navigation {
         this.slider.classList.remove('menuactive');
         this.menuToActivate.classList.remove('active');
         this.menuopened = false;
+        
+        // After menu closes, check if we should show hints for the current visible slide
+        setTimeout(() => {
+            const currentSlide = document.getElementById(this.slideVisibleId);
+            if (currentSlide && 
+                !currentSlide.classList.contains('opened') && 
+                !this.cardopened &&
+                !this.scrolling) {
+                
+                console.log('Menu closed - showing cursor hint for slide:', this.slideVisibleId);
+                this.showCursorHint(currentSlide);
+            }
+        }, 400); // Small delay after menu transition completes
     
         // Return a promise that resolves when the transition ends
         return new Promise((resolve) => {
@@ -1440,6 +1459,12 @@ class Navigation {
     }
     
     showCursorHint(slideElement) {
+        // Don't show cursor hint if menu is open
+        if (this.menuopened) {
+            console.log('Cursor hint skipped for slide:', slideElement.id, '- menu is open');
+            return;
+        }
+        
         // Remove any existing cursor hint to allow fresh animation
         const existingHint = slideElement.querySelector('.cursor-hint');
         if (existingHint) {

@@ -650,7 +650,7 @@ class Navigation {
         arrowImg.style.height = 'auto';
         arrowImg.style.marginLeft = '2px'; // Keep closer positioning
         arrowImg.style.filter = 'brightness(0) invert(1)'; // Removing drop-shadow effects
-        arrowImg.style.transform = 'rotate(-90deg)';
+        arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
         arrowImg.style.transition = 'transform 0.5s ease';
         arrowImg.style.display = 'inline';
         arrowImg.style.verticalAlign = 'middle';
@@ -663,7 +663,7 @@ class Navigation {
         hoverDiv.style.display = 'none';
         hoverDiv.style.position = 'absolute';
         hoverDiv.style.left = 'calc(100% - 70px)'; // Changed from 75px to 50px to move it more to the right
-        hoverDiv.style.top = '20px'; // Position below the menu item
+        hoverDiv.style.top = '0px'; // Position below the menu item
         hoverDiv.style.border = '1px solid white'; // Add white border around the entire hover div
         hoverDiv.style.backgroundColor = 'white'; // Set background to white
         hoverDiv.style.padding = '3.5px'; // Adjust padding to 3.5px
@@ -725,14 +725,14 @@ class Navigation {
         function closeAllPreviews() {
             // Close volunteer preview
             volunteerIsHovering = false;
-            arrowImg.style.transform = 'rotate(-90deg)';
+            arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
             hoverDiv.style.display = 'none';
             volunteerPreviewShown = false;
             
             /* COMMENTED OUT: Restaurant preview variables - no longer needed
             // Close restaurant preview
             restaurantIsHovering = false;
-            arrowImgRestaurant.style.transform = 'rotate(-90deg)';
+            arrowImgRestaurant.style.setProperty('transform', 'rotate(-90deg)', 'important');
             hoverDivRestaurant.style.display = 'none';
             restaurantPreviewShown = false;
             END COMMENTED OUT */
@@ -747,7 +747,7 @@ class Navigation {
             closeAllPreviews();
             
             // Then open this preview
-            arrowImg.style.transform = 'rotate(0deg)';
+            arrowImg.style.setProperty('transform', 'rotate(0deg)', 'important');
             hoverDiv.style.display = 'block';
             volunteerIsHovering = true;
             volunteerPreviewShown = true;
@@ -759,7 +759,7 @@ class Navigation {
             closeAllPreviews();
             
             // Then open this preview
-            arrowImgRestaurant.style.transform = 'rotate(0deg)';
+            arrowImgRestaurant.style.setProperty('transform', 'rotate(0deg)', 'important');
             hoverDivRestaurant.style.display = 'block';
             
             // Recheck position when showing
@@ -774,7 +774,7 @@ class Navigation {
             // Small delay before hiding to allow mouse movement between elements
             volunteerHoverTimer = setTimeout(() => {
                 if (!volunteerIsHovering) {
-                    arrowImg.style.transform = 'rotate(-90deg)';
+                    arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
                     hoverDiv.style.display = 'none';
                     volunteerPreviewShown = false;
                 }
@@ -786,7 +786,7 @@ class Navigation {
             // Small delay before hiding to allow mouse movement between elements
             restaurantHoverTimer = setTimeout(() => {
                 if (!restaurantIsHovering) {
-                    arrowImgRestaurant.style.transform = 'rotate(-90deg)';
+                    arrowImgRestaurant.style.setProperty('transform', 'rotate(-90deg)', 'important');
                     hoverDivRestaurant.style.display = 'none';
                     restaurantPreviewShown = false;
                 }
@@ -839,7 +839,7 @@ class Navigation {
             if (volunteerPreviewShown) {
                 // If preview is shown, hide it
                 volunteerIsHovering = false;
-                arrowImg.style.transform = 'rotate(-90deg)';
+                arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
                 hoverDiv.style.display = 'none';
                 volunteerPreviewShown = false;
             } else {
@@ -859,7 +859,7 @@ class Navigation {
                 if (volunteerPreviewShown) {
                     // If preview is shown, hide it
                     volunteerIsHovering = false;
-                    arrowImg.style.transform = 'rotate(-90deg)';
+                    arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
                     hoverDiv.style.display = 'none';
                     volunteerPreviewShown = false;
                 } else {
@@ -923,7 +923,7 @@ class Navigation {
         arrowImgRestaurant.style.height = 'auto';
         arrowImgRestaurant.style.marginLeft = '2px'; // Keep closer positioning
         arrowImgRestaurant.style.filter = 'brightness(0) invert(1)'; // Removing drop-shadow effects
-        arrowImgRestaurant.style.transform = 'rotate(-90deg)';
+        arrowImgRestaurant.style.setProperty('transform', 'rotate(-90deg)', 'important');
         arrowImgRestaurant.style.transition = 'transform 0.5s ease';
         arrowImgRestaurant.style.display = 'inline';
         arrowImgRestaurant.style.verticalAlign = 'middle';
@@ -936,7 +936,7 @@ class Navigation {
         hoverDivRestaurant.style.display = 'none';
         hoverDivRestaurant.style.position = 'absolute';
         hoverDivRestaurant.style.left = 'calc(100% - 70px)'; // Changed from 75px to 50px to move it more to the right
-        hoverDivRestaurant.style.top = '20px'; // Default position below the menu item
+        hoverDivRestaurant.style.top = '0px'; // Default position below the menu item
         hoverDivRestaurant.style.border = '1px solid white'; // Add white border around the entire hover div
         hoverDivRestaurant.style.backgroundColor = 'white'; // Set background to white
         hoverDivRestaurant.style.padding = '3.5px'; // Adjust padding to 3.5px
@@ -1111,7 +1111,7 @@ class Navigation {
                 if (restaurantPreviewShown) {
                     // If preview is shown, hide it
                     restaurantIsHovering = false;
-                    arrowImgRestaurant.style.transform = 'rotate(-90deg)';
+                    arrowImgRestaurant.style.setProperty('transform', 'rotate(-90deg)', 'important');
                     hoverDivRestaurant.style.display = 'none';
                     restaurantPreviewShown = false;
                 } else {
@@ -1130,7 +1130,7 @@ class Navigation {
             if (restaurantPreviewShown) {
                 // If preview is shown, hide it
                 restaurantIsHovering = false;
-                arrowImgRestaurant.style.transform = 'rotate(-90deg)';
+                arrowImgRestaurant.style.setProperty('transform', 'rotate(-90deg)', 'important');
                 hoverDivRestaurant.style.display = 'none';
                 restaurantPreviewShown = false;
             } else {
@@ -1350,6 +1350,9 @@ class Navigation {
     activateMenu() {
         console.log('menuopen', this.menuopened);
         
+        // Cancel any pending hint timers to prevent hints from appearing while menu is open
+        this.cancelPendingHints();
+        
         // Hide any active cursor hint when menu is activated
         this.hideCurrentCursorHint();
         
@@ -1385,6 +1388,27 @@ class Navigation {
         this.slider.classList.remove('menuactive');
         this.menuToActivate.classList.remove('active');
         this.menuopened = false;
+        
+        // After menu closes, check if we should show hints for the current visible slide
+        setTimeout(() => {
+            const currentSlide = document.getElementById(this.slideVisibleId);
+            if (currentSlide && 
+                !currentSlide.classList.contains('opened') && 
+                !this.cardopened &&
+                !this.scrolling) {
+                
+                // Check if cursor hint hasn't been shown yet for this slide
+                if (!this.cursorHintShown.has(this.slideVisibleId)) {
+                    console.log('Menu closed - showing cursor hint for slide:', this.slideVisibleId);
+                    this.showCursorHint(currentSlide);
+                }
+                // If cursor hint was already shown but text hint wasn't, show text hint
+                else if (!this.slideHintShown.has(this.slideVisibleId)) {
+                    console.log('Menu closed - showing text hint for slide:', this.slideVisibleId);
+                    this.performPostContentTextHint(currentSlide);
+                }
+            }
+        }, 400); // Small delay after menu transition completes
     
         // Return a promise that resolves when the transition ends
         return new Promise((resolve) => {
@@ -1565,6 +1589,12 @@ class Navigation {
     
     showCursorHint(slideElement) {
         const slideId = slideElement.id;
+        
+        // Don't show cursor hint if menu is open
+        if (this.menuopened) {
+            console.log('Cursor hint skipped for slide:', slideId, '- menu is open');
+            return;
+        }
         
         // Check if cursor hint has already been shown for this slide this session
         if (this.cursorHintShown.has(slideId)) {
@@ -1960,6 +1990,12 @@ class Navigation {
     performPostContentTextHint(slideElement) {
         const slideId = slideElement.id;
         
+        // Don't show text hint if menu is open
+        if (this.menuopened) {
+            console.log('Text hint skipped for slide:', slideId, '- menu is open');
+            return;
+        }
+        
         console.log('Starting text-based hint for slide:', slideId);
         
         // Get hint messages based on slide and language
@@ -2287,6 +2323,12 @@ class Navigation {
     
     // Show Safari warning message for desktop Safari users
     showSafariWarningIfNeeded() {
+        // Don't show Safari warning if menu is open
+        if (this.menuopened) {
+            console.log('Safari warning skipped - menu is open');
+            return;
+        }
+        
         // Debug browser detection
         const userAgent = navigator.userAgent.toLowerCase();
         console.log('=== Safari Warning Check ===');
