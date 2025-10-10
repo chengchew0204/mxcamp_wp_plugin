@@ -525,7 +525,7 @@ body.ajde_events-template-default div#main-container > * {
   }
   body.single-ajde_events p, body.single-ajde_events span, body.single-ajde_events p.evo_location_name, body.single-ajde_events p.evo_location_address, body.single-ajde_events p, body.single-ajde_events span, body.single-ajde_events p.evo_location_name, body.single-ajde_events p.evo_location_address, body.single-ajde_events p, body.single-ajde_events span, body.single-ajde_events p.evo_location_name, body.single-ajde_events p.evo_location_address{
       font-size:19px!important;
-      font-weight:500!important;
+      font-weight:400;
       color: black!important
   }
   @media (max-width: 480px) {
@@ -1077,9 +1077,9 @@ body.ajde_events-template-default div#main-container > * {
   }
   
   /* ==== EventON full description baseline ==== */
-.eventon_full_description { font-weight: 500; }
-.eventon_full_description .eventon_desc_in { font-weight: 500; }
-.eventon_full_description p { font-weight: inherit; }
+.eventon_full_description { font-weight: 400; }
+.eventon_full_description .eventon_desc_in { font-weight: 400; }
+.eventon_full_description p { font-weight: 400; }
 
 /* Keep headings/bold heavier than baseline */
 .eventon_full_description b,
@@ -1093,7 +1093,7 @@ body.ajde_events-template-default div#main-container > * {
 
 /* Prevent icon fonts from becoming bold */
 .eventon_full_description i.fa,
-.eventon_full_description .fa { font-weight: 500; }
+.eventon_full_description .fa { font-weight: 400; }
 
 /* ==== COMPREHENSIVE FONT CONSISTENCY FOR EVENT CARDS ==== */
 /* Force all EventON elements to use ClearSans font family */
@@ -1225,4 +1225,19 @@ body.single-ajde_events {
 
 .evocard_row{
 	padding-bottom: 0px !important;
+}
+
+
+
+
+
+/* ===== Blocksy Burger Button Safari Fix ===== */
+
+.ct-header, .ct-header * {
+  box-shadow: none !important; /* if shadow is the culprit */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  transform: none !important;
+  will-change: auto !important;
 }

@@ -1585,6 +1585,19 @@ class Navigation {
         }
         
         console.log('END opening card', 'slideid', this.targetSlide, 'cardopened', this.cardopened);
+        
+        // Handle permalink target slide - mark it as already shown hints and reset flag
+        // This prevents hints from ever showing on the permalink target slide
+        // while allowing hints on other slides
+        if (this.isDirectUrlVisit) {
+            console.log('Direct URL visit detected - marking permalink target slide as already shown hints:', slideId);
+            // Mark this slide as having already shown both cursor and text hints
+            // so it will never show hints (even if user closes card and returns to it)
+            this.slideHintShown.add(slideId);
+            this.cursorHintShown.add(slideId);
+            console.log('Resetting direct URL visit flag to allow hints on other slides');
+            this.isDirectUrlVisit = false;
+        }
     }
     
     showCursorHint(slideElement) {
