@@ -5,6 +5,18 @@ window.addEventListener("load", () => {
   // - Stylesheets applied
   // - Images and other media loaded
   // - Fonts, if blocking, are also ready
+  
+  // Check if this is a direct URL visit (permalink)
+  // If so, skip the low-res to high-res swap since we already loaded high-res directly
+  const isDirectUrlVisit = window.navigation && window.navigation.isDirectUrlVisit;
+  
+  if (isDirectUrlVisit) {
+    console.log('Direct URL visit detected - skipping image swap (already using high-res)');
+    return;
+  }
+  
+  console.log('Normal homepage visit - performing low-res to high-res swap');
+  
     document.querySelectorAll(".slide_10[data-bg-high-res]").forEach(slide => {
         const highResUrl = slide.dataset.bgHighRes;
         const highResImg = new Image();

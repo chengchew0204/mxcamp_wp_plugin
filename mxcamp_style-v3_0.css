@@ -1,0 +1,2147 @@
+/* Add font-display property to optimize font loading */
+@font-face {
+	font-family: 'ClearSans';
+	font-style: normal;
+	font-weight: 300;
+	font-display: swap;
+	src: url(https://camp.mx/font/clear-sans/woff2/ClearSans-Light.woff2) format('woff2'),
+		 url(https://camp.mx/font/clear-sans/woff/ClearSans-Light.woff) format('woff');
+}
+
+@font-face {
+	font-family: 'ClearSans';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url(https://camp.mx/font/clear-sans/woff2/ClearSans-Regular.woff2) format('woff2'),
+		 url(https://camp.mx/font/clear-sans/woff/ClearSans-Regular.woff) format('woff');
+}
+
+@font-face {
+	font-family: 'ClearSans';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url(https://camp.mx/font/clear-sans/woff2/ClearSans-Medium.woff2) format('woff2'),
+		 url(https://camp.mx/font/clear-sans/woff/ClearSans-Medium.woff) format('woff');
+}
+
+body {
+	font-family: 'ClearSans', helvetica, sans-serif;
+	font-weight: 500;
+	font-stretch: 80%;
+	letter-spacing: -0.2px;
+}
+
+div.entry-content {
+	margin-right: -40px;
+}
+.skip-link{display:none !important;}
+
+@media screen and(max-width:1000px) {
+	body {
+		-webkit-user-select: none;
+		/* Safari */
+		-ms-user-select: none;
+		/* IE 10 and IE 11 */
+		user-select: none;
+		/* Standard syntax */
+	}
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: 'ClearSans', helvetica, sans-serif;
+	font-weight: 500;
+	font-stretch: 70%;
+	letter-spacing: 0px;
+}
+
+p {
+	color: rgba(245, 245, 245, 0.9);
+	font-weight: 500;
+}
+
+.slides h1 {
+	font-size: 24px;
+	position: absolute;
+	bottom: 17px;
+	left: 18px;
+	margin: 0;
+	text-transform: uppercase;
+	line-height: 24px;
+	text-shadow: 0px 0 80px rgba(0, 0, 0, 1), 0 0 80px black, 0px 0 80px rgba(0, 0, 0, 0.5);
+	display: none;
+
+}
+
+@media screen and (max-width:600px) {
+	.slides h1 {
+		font-size: 22px;
+		line-height: 22px;
+		left: 50%;
+		transform: translateX(-50%);
+		text-align: center;
+		white-space: nowrap;
+		width: auto;
+		max-width: calc(100vw - 40px);
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+
+body.bodycardopened .slides h1 {
+	display: none;
+}
+
+	body.bodycardopened.mapa .slide_10_scroll,
+	body.bodycardopened.map .slide_10_scroll {
+		position: absolute;
+	}
+
+h2 {
+	background-color: rgba(245, 245, 245, 0.95);
+	color: rgba(0, 0, 0, 0.85);
+	display: inline-block;
+	font-size: 24px;
+	line-height: 26px;
+	margin-top: 0;
+	padding: 2px 9px 3px 9px;
+	position: relative;
+	white-space: pre;
+	cursor: pointer;
+	font-weight: 500;
+	margin-top: 0.5px;
+}
+
+[data-vertical-spacing*=top] {
+	padding-top: 0 !important
+}
+
+html,
+.slides {
+	scroll-behavior: smooth !important;
+	margin-bottom: 0 !important;
+	-webkit-overflow-scrolling: touch;
+}
+
+body {
+	/*background: #000000;*/
+	font-size: 19px;
+	line-height: 1.3em;
+	font-weight: 500
+}
+
+#header [data-device=desktop] {
+	display: none;
+}
+
+#header [data-device=mobile] {
+	display: block;
+}
+
+@media (min-width: 1000px) {
+	#offcanvas [data-device=mobile] {
+		display: block;
+	}
+}
+
+@media screen and (max-width: 1000px) {
+	.ct-panel-content[data-device=mobile] {
+		display: block !important;
+	}
+
+	.ct-panel-inner {
+		left: 0 !important;
+
+	}
+}
+
+@media screen and (min-width: 1000px) {
+	.ct-panel-content[data-device=mobile] {
+		display: block !important;
+	}
+
+	.ct-panel-inner {
+		left: 0 !important;
+
+	}
+}
+
+.ct-panel-inner {
+	left: 0 !important;
+	align-self: unset !important
+}
+
+.ct-panel-actions {
+	display: block !important;
+	padding: 0 !important;
+
+}
+
+.ct-panel-content-inner {
+	padding: 0 20px
+}
+
+.ct-panel-actions button {
+	display: block;
+	margin-inline-start: unset;
+	padding: 20px !important;
+	outline: none;
+}
+
+.ct-panel-actions button svg {
+	width: 26px;
+	height: 26px;
+
+}
+
+
+
+.ct-panel-content[data-device=desktop] {
+	display: none
+}
+
+@media screen and (max-width: 1000px) {
+	.ct-panel-content[data-device=desktop] {
+		display: none
+	}
+}
+
+.ct-panel .ct-header .active,
+#offcanvas {
+	background: transparent !important;
+	box-shadow: none !important
+}
+
+[data-header*="type-1"] #offcanvas .ct-panel-inner {
+	background: transparent !important;
+	box-shadow: none !important
+}
+
+header#header.ct-header {
+	position: absolute;
+	z-index: 99998;
+	background-color: transparent;
+
+}
+
+header .ct-container-fluid {
+	width: 100%
+}
+
+
+.ct-icon,
+.ct-icon-container svg {
+	fill: rgba(245, 245, 245, 0.95);
+}
+button.ct-toggle svg.ct-icon {
+	fill: rgba(245, 245, 245, 0.95)!important;
+}
+
+/* Ensure burger menu is always clickable above slide content */
+button.ct-header-trigger.ct-toggle {
+	z-index: 99999 !important;
+	position: relative !important;
+	pointer-events: auto !important;
+}
+
+
+.slide_10 {
+	height: 100dvh;
+	width: 100dvw;
+	margin-left: 0;
+	margin-right: 0;
+	max-width: 100% !important;
+	background-size: cover;
+	background-position: center bottom;
+	overflow: hidden;
+	position: relative;
+	scroll-snap-align: center;
+
+}
+
+.slide_10_bg {
+	height: 100%;
+	width: 100%;
+	transition: 0.5s;
+	position: absolute;
+	z-index: 1;
+}
+
+.slide_10_scroll {
+	height: 100%;
+	width: 100%;
+	position: relative;
+	z-index: 2;
+	cursor:pointer;
+	/* overflow-x: scroll; */
+
+	/*-webkit-overflow-scrolling: touch;*/
+	/* padding-right: 40px */
+}
+
+/* Ensure slide content doesn't interfere with burger menu */
+.slide_10_scroll {
+	pointer-events: auto;
+}
+
+/* When slide is opened, ensure burger menu remains accessible */
+.slide_10.opened .slide_10_scroll {
+	z-index: 2 !important;
+}
+
+.slide_10.opened .slide_10_bg {
+	background: rgba(32, 16, 16, 0.50);
+}
+
+.slide_10.opened .slide_10_scroll {
+	cursor: auto;
+	overflow-y:scroll;
+	overflow-x:hidden;
+}
+
+.slides {
+	overflow: overlay;
+	height: 100dvh;
+	width: 100% !important;
+	margin-left: 0;
+	margin-right: 0;
+	max-width: 100% !important;
+	position: relative;
+	scroll-snap-type: y mandatory;
+	scroll-behavior: smooth !important;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* .slides.menuactive .card {
+	opacity: 0
+} */
+
+#thefrontvideo,
+.thefrontvideo,
+#thefrontvideo2,
+#thefrontvideo1 {
+	position: absolute;
+	z-index: 0;
+	object-fit: cover;
+	width: 100%;
+	height: 100%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
+}
+
+.card {
+	max-width: 968px;
+	margin-left: auto;
+	margin-right: auto;
+	position: static;
+	z-index: 1;
+	top: 0;
+	transition: 0.2s;
+	opacity: 1;
+	cursor: default;
+	height: 100px;
+}
+
+.card-header {
+	/*top: 102px;*/
+	top: 21px;
+	position: absolute;
+	z-index: 100000;
+	left: 77px;
+}
+
+.card-content {
+	display: none;
+	color: rgba(245, 245, 245, 0.9);
+	padding-top: 50px;
+	z-index: 3;
+	font-weight: 500;
+}
+
+
+
+.slide_10.opened .card-header {
+	position: fixed;
+	width: fit-content;
+	left: 77px;
+	z-index: 100000;
+	/*margin-top: 102px*/
+}
+
+@media screen and (max-width: 1200px) {
+	.slide_10.opened .card-content {
+		margin-top: 50px;
+		padding-top: 0
+	}
+
+	#gallery.slide_10.opened .card-content,
+	#galeria.slide_10.opened .card-content {
+		margin-top: 0px;
+	}
+}
+
+h2:after {
+	background-image: url(https://camp.mx/img/caret28.svg);
+	background-repeat: no-repeat;
+	background-size: 19px;
+	content: '';
+	display: inline-block;
+	filter: invert(1);
+	height: 19px;
+	left: 3px;
+	position: relative;
+	top: 9px;
+	transform-origin: 9px 6px;
+	transform: rotate(-90deg);
+	transition: transform 0.5s ease;
+	vertical-align: top;
+	width: 19px;
+}
+
+.slides.menuactive h2:after {
+	content: none;
+}
+
+@media screen and (max-width: 1200px) {
+	.card-header h2 {
+		font-size: 22px;
+		line-height: 25px;
+		padding-top: 3px;
+		padding-bottom: 4px;
+		margin-top: 0;
+	}
+
+	h2:after {
+		top: 9px;
+	}
+}
+
+.slide_10.opened .card-content {
+
+	display: block;
+	animation: getopacity 0.5s linear;
+	padding-bottom: 0px
+}
+
+.slide_10.closing .card-content {
+	display: block !important;
+	animation: fadeout 0.25s linear !important;
+	padding-bottom: 0px
+}
+
+@keyframes getopacity {
+	from {
+		opacity: 0
+	}
+
+	to {
+		opacity: 1
+	}
+}
+
+@keyframes fadeout {
+	from {
+		opacity: 1
+	}
+
+	to {
+		opacity: 0
+	}
+}
+
+.card-content .hover {
+	display: inline-block;
+	background: rgba(245, 245, 245, 0.9);
+	border-radius: 0;
+	color: black;
+	height: 1.2em;
+	line-height: 0.7;
+	padding: 3px;
+	vertical-align: baseline;
+	cursor: pointer;
+	z-index: 2;
+}
+
+/* Regular hover content hidden by default */
+.hover-content {
+    display: none;
+    background: rgba(245, 245, 245, 0.95);
+    padding: 10px;
+    /*box-shadow: 0 8px 100px rgba(64, 64, 64, 0.3), 0 4px 60px rgba(64, 64, 64, 0.2);*/
+    box-sizing: border-box;
+    color: #282828;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.3em;
+    max-width: 80vw;
+    padding: 10px;
+    position: absolute;
+    width: 300px;
+    z-index: 10;
+    margin-top: 19px;
+    margin-left: -4px;
+    border: 0px solid transparent;
+    overflow-y: auto;
+    max-height: 80vh;
+    cursor: default; /* Default cursor for the container */
+}
+
+/* Immediate pointer cursor for clickable elements in hover content (fallback while JS processes) */
+.hover-content a,
+.hover-content button,
+.hover-content [onclick],
+.hover-content [role="button"],
+.hover-content input[type="submit"],
+.hover-content input[type="button"],
+.hover-content [data-href],
+.hover-content [data-url],
+.hover-content [data-link],
+.hover-content .clickable,
+.hover-content .link,
+.hover-content .btn,
+.hover-content .button,
+.hover-content [tabindex]:not([tabindex="-1"]),
+.hover-content a img {
+    cursor: pointer !important;
+}
+
+/* Show hover content when hovering the parent */
+.hover:hover .hover-content {
+    display: block;
+}
+
+/* Wider hover content for better image visibility */
+.hover.wider-hover .hover-content {
+    width: 600px;
+    max-width: 90vw;
+}
+
+.hover.wider-hover .hover-content img {
+    width: 100%;
+    height: auto;
+    max-width: none;
+}
+
+/* Special override for menu item hover content */
+.mobile-menu .menu-item .hover-content {
+    display: none;
+}
+
+/* Allow menu arrow hover content to be controlled via JavaScript */
+.mobile-menu .menu-arrow + .hover-content {
+    display: none;
+}
+
+/* Hover content styling for menu items */
+.mobile-menu .hover-content {
+    background: rgba(245, 245, 245, 0.95);
+    padding: 10px;
+    box-shadow: 0 8px 120px rgba(64, 64, 64, 0.3), 0 4px 80px rgba(64, 64, 64, 0.2);
+    box-sizing: border-box;
+    color: #282828;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.3em;
+    max-width: 300px;
+    width: 300px;
+    z-index: 100;
+    position: absolute;
+    left: 25px;
+    margin-top: -15px;
+    top: 100%;
+    padding-top: 5px;
+    transform: translateY(-10px);
+}
+
+.mobile-menu .hover-content::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background: transparent;
+}
+
+.mobile-menu .hover-content img {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+    margin-top: 0;
+}
+
+/* Mobile specific positioning for menu hover content */
+@media screen and (max-width: 768px) {
+    .mobile-menu .hover-content {
+        max-width: 280px;
+        width: 280px;
+        /* Allow JavaScript to control the left position */
+        left: auto;
+        right: auto;
+        margin-left: 0;
+        margin-right: 0;
+        position: absolute;
+        z-index: 1000;
+    }
+}
+
+.card-content .hover:hover .hover-content.bottom {
+	bottom: 0
+}
+
+.card-content .hover-content img {
+	max-width: 100%;
+	height: auto;
+}
+
+@media screen and (max-width: 1200px) {
+	.card-header {
+
+		left: 77px;
+	}
+
+	h2 {
+		margin-top: 0px;
+		margin-bottom: 32px;
+	}
+}
+
+
+
+.slide_10.opened h2:after {
+	transform: rotate(0deg);
+}
+
+h2 br {
+	display: none
+}
+
+#galeria.opened .slide_10_bg,
+#gallery.opened .slide_10_bg {
+	background: rgba(32, 16, 16, 0.70);
+}
+
+#mapa.opened .slide_10_bg,
+#map.opened .slide_10_bg {
+	background: rgba(32, 16, 16, 0.70);
+}
+
+#calendar.opened .slide_10_bg,
+#calendario.opened .slide_10_bg {
+	background: rgba(32, 16, 16, 0.50);
+}
+
+.card h4 {
+	font-size: 24px;
+	letter-spacing: 0.22px;
+	line-height: 32px;
+	margin-bottom: 32px;
+	margin-top: 32px;
+	padding: 0;
+	color: rgba(245, 245, 245, 0.85)
+}
+
+.card h3 {
+	font-size: 24px;
+	margin: 0;
+}
+
+.card .slide-title {
+    font-size: 33px; 
+} 
+
+@media screen and (max-width:1200px) {
+	.card h4 {
+		font-size: 22px;
+	}
+
+	.card h3 {
+		font-size: 22px;
+		margin: 0;
+	}
+    
+    .card .slide-title {
+       font-size: 24px; 
+    } 
+}
+
+@media screen and (max-width:600px) {
+	.card .slide-title {
+		font-size: 27px;
+	}
+}
+
+.slide_10 .caretdiv {
+	display: inline-block;
+	position: absolute;
+
+	transition: transform 0.5s ease;
+	vertical-align: top;
+	width: 100vw;
+
+	z-index: 2;
+
+	text-align: center;
+	animation-name: glow;
+	opacity: 0.75;
+	animation-duration: 2.5s;
+	animation-delay: 0s;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+	top: calc(100dvh - 66px);
+	cursor: pointer;
+}
+
+.slide_10.opened .caretdiv {
+	opacity: 0;
+	z-index: 1;
+	animation: none
+}
+
+.slide_10 .caretdiv a {
+	padding: 20px;
+
+
+}
+
+.slide_10.opened .card-content {
+	padding-bottom: 300px !important
+}
+
+.caretdiviphone {
+	display: none;
+	text-align: center;
+	animation: glow 2.5s linear infinite
+}
+
+@media (max-width: 600px) {
+	.caretdiviphone {
+		display: block;
+	}
+}
+
+@keyframes glow {
+	0% {
+		opacity: 0.9;
+	}
+
+	50% {
+		opacity: 0.90;
+	}
+
+	100% {
+		opacity: 0.9;
+	}
+}
+
+@media screen and (max-width:600px) {
+	h2 br {
+		display: block
+	}
+}
+
+@media (max-width: 1200px) {
+	.card.ct-container {
+		padding: 20px;
+		width: 100%
+	}
+
+}
+
+
+
+.card ul {
+	padding-left: 20px;
+	list-style-type: none !important
+}
+
+.card ul li:before {
+	font-size: 1em;
+	content: "\2022";
+	margin-left: -20px;
+	margin-right: 13px;
+}
+
+.card ul li {
+	margin: 12px 0
+}
+
+.zwt-wp-lnk-prev.full {
+	border: none;
+}
+
+.zwt-wp-lnk-prev.full>a {
+	display: block;
+
+}
+
+.zwt-wp-lnk-prev-texts {
+	padding: 0 !important
+}
+
+.full .zwt-wp-lnk-prev-url-host,
+.zwt-wp-lnk-prev-url-host {
+	color: #000000 !important;
+	text-decoration: underline !important;
+	text-transform: unset !important;
+	font-weight: 450
+}
+
+.card-content .hover-content a {
+	color: #000000
+}
+
+.card-content a {
+	color: rgba(245, 245, 245, 0.9);
+	font-weight: 500;
+	/* font-weight: bold; */
+}
+
+.ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(1),
+.ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(2),
+.ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(3) {
+	fill: #f5f5f5;
+	x: unset;
+	transform: unset;
+	opacity: 1;
+}
+
+.ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(1) {
+	y: 0px
+}
+
+.ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(2) {
+	y: 6.15px
+}
+
+.ct-header-trigger[aria-expanded=true] .ct-icon rect:nth-child(3) {
+	y: 12.3px
+}
+
+
+
+[lang="en-US"] .ct-social-box a:nth-child(4) .ct-icon-container,
+.ct-social-box a:nth-child(4) .ct-icon-container {
+	background: url(https://camp.mx/img/icon/es_mx.png) no-repeat center center !important;
+	background-size: 100% !important;
+}
+
+[lang="es-MX"] .ct-social-box a:nth-child(4) .ct-icon-container {
+	background: url(https://camp.mx/img/icon/en.png) no-repeat center center !important;
+	background-size: 100% !important;
+}
+
+
+.fakebutton {
+	display: none
+}
+
+
+@media screen and (max-width:1050px) {
+	body.bodycardopened header#header .ct-container-fluid>div:first-child {
+		opacity: 0
+	}
+
+	body.bodycardopened .fakebutton {
+        display: block;
+        margin: 18px 20px 20px 21px;
+        width: 36px;
+        height: 36px;
+        position: fixed;
+        top: 0;
+        opacity: 0.9;
+	}
+	body.bodycardopened.mapa .slide_10_scroll,
+	body.bodycardopened.map .slide_10_scroll {
+		position: absolute;
+	}
+
+	.slide_10.opened .slide_10_bg {
+		position: absolute;
+		z-index: 1
+	}
+
+	body.bodycardopened .card.ct-container {
+		position: absolute;
+		width: 100vw;
+
+		;
+	}
+
+}
+
+body,
+#main-container,
+#main,
+#main>.ct-container-full,
+#main>.ct-container-full>article,
+.entry-content {
+	height: 100dvh !important;
+	max-height: 100dvh !important;
+	overflow: hidden
+}
+
+body.bodycardopened .ct-social-box a:nth-child(1) .ct-icon-container,
+body.bodycardopened .ct-social-box a:nth-child(2) .ct-icon-container,
+body.bodycardopened .ct-social-box a:nth-child(3) .ct-icon-container,
+body.bgvideo .ct-social-box a:nth-child(1) .ct-icon-container,
+body.bgvideo .ct-social-box a:nth-child(2) .ct-icon-container,
+body.bgvideo .ct-social-box a:nth-child(3) .ct-icon-container {
+	opacity:0 !important;
+	box-shadow: unset
+}
+body.bodycardopened .ct-social-box a:nth-child(1),
+body.bodycardopened .ct-social-box a:nth-child(2),
+body.bodycardopened .ct-social-box a:nth-child(3),
+body.bgvideo .ct-social-box a:nth-child(1),
+body.bgvideo .ct-social-box a:nth-child(2),
+body.bgvideo .ct-social-box a:nth-child(3)
+{pointer-events: none;}
+
+/* Hide first three social icons (Telegram, Instagram, TikTok) when GIVING/CONTRIBUIR slides are visible */
+body.visible-giving .ct-social-box a:nth-child(1),
+body.visible-giving .ct-social-box a:nth-child(2),
+body.visible-giving .ct-social-box a:nth-child(3),
+body.visible-contribuir .ct-social-box a:nth-child(1),
+body.visible-contribuir .ct-social-box a:nth-child(2),
+body.visible-contribuir .ct-social-box a:nth-child(3) {
+	visibility: hidden !important;
+	pointer-events: none !important;
+}
+
+/* Menu mobile */
+.mobile-menu ul li p, 
+.mobile-menu ul li a {
+	font-family: 'ClearSans', Helvetica, sans-serif;
+	color: rgba(245, 245, 245, 0.95) !important;
+	font-weight: 500;
+	font-size: 22px;
+	text-shadow: rgba(0, 0, 0, 0.6) 0 0 50px, rgba(0, 0, 0, 0.4) 0 0 80px;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: all 0.3s ease-out;
+	margin: 10px 0;
+	line-height: unset;
+	opacity: 0.95;
+}
+
+/* Mobile menu hover effects */
+.mobile-menu ul li p:hover, 
+.mobile-menu ul li a:hover {
+	/* Darker text on hover (noticeably darker than base rgba(245,245,245,0.95)) */
+	color: rgba(255, 255, 255, 1) !important;
+	/* Reduce glow so the perceived color darkens instead of brightening */
+	text-shadow: rgba(0, 0, 0, 0.6) 0 0 10px;
+	transform: scale(1.05);
+}
+
+@media screen and (max-width:600px) {
+	.evo_j_container {
+		margin-left: -4px
+	}
+
+	.mobile-menu ul li p, .mobile-menu ul li a {
+		font-size: 22px;
+	}
+}
+
+.ct-icon-container {
+	transition: 0.5s !important;
+	width: 35px !important;
+	background-color: transparent !important;
+	height: 35px !important;
+	opacity: 1 !important;
+	/*box-shadow: 0 0 60px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 0, 0, 0.4), 0 0 80px rgba(0, 0, 0, 0.1);*/
+}
+
+/* Safari-specific fix to prevent delayed background appearance */
+@supports (-webkit-appearance: none) {
+	.ct-icon-container {
+		background-color: transparent !important;
+		transition: none !important;
+	}
+}
+
+#playbutton {
+	position: absolute;
+	width: 60px;
+    place-items: center;
+    bottom: 15px;
+    right: 40px;
+	display: grid;
+	
+}
+#playbutton:hover{
+	cursor: pointer;
+}
+
+#playbutton img {
+	max-height: 54px;
+	filter: drop-shadow(0 0 25px black);
+}
+
+body.bodycardopened #playbutton {
+	display: none;
+
+}
+
+/*tap close*/
+.tap-top,
+.tap-left,
+.tap-right {
+	position: fixed;
+	z-index: -1;
+	cursor: pointer;
+}
+
+.tap-top{
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 52px;
+	z-index: -1;
+}
+
+.tap-bottom{
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 52px;
+	z-index: -1;
+}
+
+.tap-left {
+	top: 0;
+	left: 0;
+	width: calc((100vw - 1000px)/2);
+	height: 100%
+}
+
+.tap-right {
+	top: 0;
+	right: 0;
+	width: calc((100vw - 1000px)/2);
+	height: 100%
+}
+
+.tap-bottom {
+	position: absolute
+}
+
+@media screen and (max-width: 1000px) {
+	.tap-left {
+		top: 0;
+		left: 0;
+		width: 30px;
+		height: 100%
+	}
+
+	.tap-right {
+		top: 0;
+		right: 0;
+		width: 30px;
+		height: 100%
+	}
+}
+@media screen and (min-width: 1400px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1400px)/2);
+	}
+}
+@media screen and (min-width: 1800px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1800px)/2);
+	}
+}
+
+body.hoveron .tap-left,
+body.hoveron .tap-right,
+body.hoveron .tap-bottom,
+body.hoveron .tap-top {
+	display: none;
+}
+
+/* Hide tap areas on mobile devices for events section to prevent accidental closing */
+@media screen and (max-width: 768px) {
+	#eventos .tap-left,
+	#eventos .tap-right,
+	#eventos .tap-top,
+	#eventos .tap-bottom,
+	#events .tap-left,
+	#events .tap-right,
+	#events .tap-top,
+	#events .tap-bottom {
+		display: none !important;
+		pointer-events: none !important;
+	}
+}
+
+/* Expanded tap areas for events section with pointer cursor */
+#eventos .tap-left,
+#events .tap-left {
+	cursor: pointer;
+}
+
+#eventos .tap-right,
+#events .tap-right {
+	cursor: pointer;
+}
+
+#eventos .tap-top,
+#events .tap-top {
+	cursor: pointer;
+}
+
+#eventos .tap-bottom,
+#events .tap-bottom {
+	cursor: pointer;
+}
+
+/* Larger tap areas for events section on desktop - adjusted for 120% calendar width */
+@media screen and (min-width: 1000px) {
+	#eventos .tap-left,
+	#events .tap-left {
+		width: calc((100vw - 960px)/2);
+	}
+	
+	#eventos .tap-right,
+	#events .tap-right {
+		width: calc((100vw - 960px)/2);
+	}
+}
+
+@media screen and (min-width: 1400px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1440px)/2);
+	}
+}
+@media screen and (min-width: 1800px) {
+	#eventos .tap-left, #events .tap-left, #eventos .tap-right, #events .tap-right {
+		width: calc((100vw - 1680px)/2);
+	}
+}
+
+/*events */
+
+.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+	margin-top: -2px;
+}
+
+.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+	display: grid !important;
+	font-family: 'ClearSans', helvetica, sans-serif !important;
+	grid-template-columns: repeat(5, 1fr) !important;
+}
+
+/* Mobile ≤ 600px: 3-column grid */
+@media screen and (max-width: 600px) {
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		grid-template-columns: repeat(3, 1fr) !important;
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+}
+
+/* Tablet 601-900px: 4 columns */
+@media screen and (min-width: 601px) and (max-width: 900px) {
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		grid-template-columns: repeat(4, 1fr) !important;
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+}
+
+/* Mid-size 901-1200px: 5 columns */
+@media screen and (min-width: 901px) and (max-width: 1200px) {
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		grid-template-columns: repeat(5, 1fr) !important;
+	}
+}
+
+/* Desktop ≥ 1201px: 5 columns */
+@media screen and (min-width: 1201px) {
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		font-family: 'ClearSans', helvetica, sans-serif !important;
+		grid-template-columns: repeat(5, 1fr) !important;
+	}
+}
+
+@media screen and (min-width: 1400px) {
+
+	#events .card.ct-container,
+	#eventos .card.ct-container {
+		max-width: 1400px;
+	}
+
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		font-family: 'ClearSans', helvetica, sans-serif !important;
+		grid-template-columns: repeat(5, 1fr) !important;
+	}
+}
+
+@media screen and (min-width: 1800px) {
+
+	#events .card.ct-container,
+	#eventos .card.ct-container {
+		max-width: 1800px;
+	}
+
+	.ajde_evcal_calendar.boxy #evcal_list.eventon_events_list {
+		display: grid !important;
+		font-family: 'ClearSans', helvetica, sans-serif !important;
+		grid-template-columns: repeat(5, 1fr) !important;
+	}
+}
+
+.calendar-post {
+	padding-top: 5px;
+}
+
+.evo_j_container {
+	padding-top: 8px;
+	padding-bottom: 3px;
+	margin: 0;
+}
+
+.ajde_evcal_calendar .calendar_header .evo_j_dates {
+	margin-bottom: 0;
+}
+
+.ajde_evcal_calendar .calendar_header .evo_j_dates .legend a {
+
+	margin: 0 5px 10px 0;
+}
+
+@media screen and (max-width:820px) {
+	.calendar-post {
+		padding-top: 35px;
+	}
+}
+
+/* Desktop-only: 120% width for calendar */
+@media screen and (min-width: 1000px) {
+	.calendar-post {
+		width: 120%;
+		margin-left: -8%;
+		margin-right: -12%;
+	}
+}
+
+
+
+body.gallery header .site-branding,
+body.galeria header .site-branding {
+	display: none
+}
+
+body.gallery footer,
+body.galeria footer {
+	display: none
+}
+
+/* Ensure gallery logo remains visible during video playback */
+.gallery-logo {
+	position: absolute;
+	z-index: 15 !important;
+	padding: 0;
+	max-width: 55px;
+	top: 0;
+	right: 0;
+	margin-right: 14px;
+	margin-top: 15px;
+	filter: drop-shadow(0 0 60px rgba(0, 0, 0, 1)) drop-shadow(0 0 40px rgba(0, 0, 0, 1));
+	display: block !important;
+}
+
+/* Override any rules that might hide the logo during video playback */
+.slider.play .gallery-logo,
+.slide.videoplaying .gallery-logo,
+.videoplaying .gallery-logo {
+	display: block !important;
+	z-index: 15 !important;
+}
+.time i{
+	display:none
+}
+
+/* gif-detail functionality removed */
+
+/* Map slide pointer events restored - gif-detail removed */
+#mapa .slide_10_scroll,
+#map .slide_10_scroll {
+	pointer-events: auto !important;
+}
+
+.slide_10#mapa, .slide_10#map {
+		background-image: url(https://camp.mx/wp-content/uploads/mapa_escrit.webp) !important;
+	}
+/* gif-detail responsive styles removed */
+
+@media screen and (max-width:600px) {
+	.slide_10#mapa, .slide_10#map {
+		background-image: url(https://camp.mx/wp-content/uploads/mapa_movil.jpg)  !important;
+	}
+}
+
+/* (removed conflicting hover color override so earlier darker hover color applies) */
+
+/* Interactive Map Styles */
+.interactive-map {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.map-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.map.layer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: opacity 0.3s ease, z-index 0.1s ease;
+}
+
+.detail.onmouseover-detail {
+	position: absolute;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	z-index: 10;
+}
+
+
+/* Specific positioning for map detail areas */
+#central-detail {
+	top: 35%;
+	left: 25%;
+	width: 20%;
+	height: 25%;
+}
+
+#casita-detail {
+	top: 25%;
+	left: 5%;
+	width: 18%;
+	height: 20%;
+}
+
+#chozas-detail {
+	top: 25%;
+	left: 25%;
+	width: 18%;
+	height: 20%;
+}
+
+#calle-detail {
+	top: 55%;
+	left: 45%;
+	width: 18%;
+	height: 25%;
+}
+
+#jardin-detail {
+	top: 15%;
+	left: 65%;
+	width: 25%;
+	height: 30%;
+}
+
+/* Map contour overlay styles */
+#map-contour-overlay {
+	transition: opacity 0.3s ease;
+}
+
+.map-contour-image {
+	filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+}
+
+/* Responsive adjustments for mobile */
+@media screen and (max-width: 600px) {
+	
+	.map-contour-image {
+		filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+	}
+}
+
+/* Compact Date Selector for Events Calendar */
+.compact-date-selector {
+    margin-bottom: 15px;
+}
+
+.date-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'ClearSans', helvetica, sans-serif;
+    font-size: 16px;
+    color: #f5f5f5;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.date-selector-container .caret-left,
+.date-selector-container .caret-right {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+    filter: brightness(0) invert(1); /* Make SVG white */
+}
+
+.date-selector-container .caret-left:hover,
+.date-selector-container .caret-right:hover {
+    opacity: 1;
+}
+
+.date-selector-container .caret-left {
+    transform: rotate(90deg);
+}
+
+.date-selector-container .caret-right {
+    transform: rotate(-90deg);
+}
+
+.date-selector-container .current-year,
+.date-selector-container .current-month {
+    min-width: 60px;
+    text-align: center;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.date-selector-container .current-year {
+    margin-right: 20px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 600px) {
+    .date-selector-container {
+        font-size: 14px;
+    }
+    
+    .date-selector-container .caret-left,
+    .date-selector-container .caret-right {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .date-selector-container .current-year {
+        margin-right: 15px;
+    }
+}
+
+/* Hide original calendar navigation to prevent glitch before compact navigation loads */
+.ajde_evcal_calendar .calendar_header .evo_j_dates {
+    display: none !important;
+}
+
+/* Hide individual year and month links in calendar navigation */
+.ajde_evcal_calendar .calendar_header a[href*="year"],
+.ajde_evcal_calendar .calendar_header a[href*="month"],
+.ajde_evcal_calendar .calendar_header .legend a {
+    display: none !important;
+}
+
+/* Ensure any year/month navigation containers are hidden */
+.ajde_evcal_calendar .calendar_header .evo_j_dates .legend,
+.ajde_evcal_calendar .calendar_header .evo_j_dates .evo_j_container {
+    display: none !important;
+}
+
+/* Hide all calendar header navigation elements broadly to prevent any glitch */
+.ajde_evcal_calendar .calendar_header > * {
+    visibility: hidden !important;
+}
+
+/* Show only the compact navigation when it's created */
+.ajde_evcal_calendar .calendar_header .compact-calendar-nav {
+    visibility: visible !important;
+    display: flex !important;
+}
+/*
+a,
+button,
+[onclick],
+input[type="submit"],
+input[type="button"],
+.tap-top,
+.tap-left,
+.tap-right,
+.tap-bottom,
+.mobile-menu p,
+.mobile-menu a,
+.menu-arrow,
+.slide_10_scroll,
+.card-header,
+#playbutton,
+.cursor-pointer {
+    cursor: auto !important;
+}
+*/
+
+/* gif-detail functionality removed */
+
+/* Hide cursor hint when menu is active */
+.slides.menuactive .cursor-hint {
+	display: none !important;
+}
+
+/* gif-detail functionality removed */
+
+/* Cursor Hint – short, single tap, longer fade-in (1.3s total) */
+.cursor-hint {
+	position: fixed;
+	width: 68px;
+	height: 68px;
+	background: url('https://camp.mx/wp-content/uploads/pointer-1.png') no-repeat center;
+	background-size: contain;
+	z-index: 99999999; /* Higher than image flash overlay (9999) */
+	pointer-events: none !important;
+	opacity: 0;
+	top: 55%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0.96);
+	will-change: transform, opacity;
+	/* smooth hide if you manually toggle opacity */
+	transition: opacity 0.1s ease-out;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: none;
+  }
+  
+  /* Add .play to start the sequence */
+  .cursor-hint.play {
+	animation: hintTap 2.0s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  
+  /* Optional: subtle ripple near the pointer tip to visualize the tap */
+  .cursor-hint::after {
+	content: '';
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(255,255,255,0.95);
+	border-radius: 50%;
+	opacity: 0;
+	transform: translate(10px, 10px) scale(0.2);
+	will-change: transform, opacity;
+  }
+  
+  /* Sequence: longer fade-in → single press → release → long hold → fade-out */
+  @keyframes hintTap {
+	0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+	22%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+	/* press */
+	28%  { opacity: 0.9; transform: translate(-50%, -50%) scale(0.92); }
+	/* release */
+	56%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+	/* short hold then fade out */
+	68%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+	100% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  }
+  
+  /* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+	.cursor-hint, .cursor-hint::after { animation: none !important; opacity: 1; }
+}
+
+/* Post Content Hint - Flash-open animation for first encounters */
+.slide_10.flash-hint .card-content {
+	display: block !important;
+	animation: flashOpen 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	opacity: 0;
+	z-index: 5;
+	pointer-events: none; /* Prevent interference during flash */
+}
+
+.slide_10.flash-hint .card-header {
+	position: fixed;
+	width: fit-content;
+	left: 77px;
+	z-index: 10;
+}
+
+@keyframes flashOpen {
+	0% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+	17%{
+		opacity: 0;
+	}
+	/* Flash starts at 35% to sync with hintTap press */
+	28% { 
+		opacity: 0.9;
+		transform: translateY(0);
+	}
+	100% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+}
+
+/* Ensure flash hint doesn't interfere with normal interactions */
+.slide_10.flash-hint {
+	pointer-events: none;
+}
+
+/* Background shadow overlay for normal slide card content hints */
+.slide_10.flash-hint::before {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(32, 16, 16, 0.50);
+	z-index: 1; /* Much lower than card content (z-index: 5) to ensure it's behind text */
+	opacity: 0;
+	animation: backgroundShadowFlash 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	pointer-events: none;
+}
+
+@keyframes backgroundShadowFlash {
+	0% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+	33%{
+		opacity: 0;
+	}
+	/* Flash starts at 35% to sync with hintTap press */
+	55% { 
+		opacity: 0.9;
+		transform: translateY(0);
+	}
+	100% { 
+		opacity: 0;
+		transform: translateY(-5px);
+	}
+}
+
+/* Accessibility for flash hint */
+@media (prefers-reduced-motion: reduce) {
+	.slide_10.flash-hint .card-content {
+		animation: none !important;
+		opacity: 0.6 !important;
+	}
+	
+	.slide_10.flash-hint::before {
+		animation: none !important;
+		opacity: 0.3 !important;
+	}
+	
+	@keyframes flashOpen {
+		0%, 100% { opacity: 0; }
+		50% { opacity: 0.6; }
+	}
+	
+	@keyframes backgroundShadowFlash {
+		0%, 100% { opacity: 0; }
+		50% { opacity: 0.3; }
+	}
+}
+
+/* Post Content Hint - Image Flash Overlay for Heavy Slides */
+.post-hint-image-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-size: cover;
+	background-position: center top; /* Align to top for both desktop and mobile */
+	background-repeat: no-repeat;
+	opacity: 0;
+	z-index: 9999; /* Very high z-index to ensure visibility */
+	pointer-events: none;
+	transition: opacity 0.1s ease-out;
+}
+
+.post-hint-image-overlay.flash-active {
+	animation: imageFlash 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes imageFlash {
+	0% { 
+		opacity: 0;
+		transform: scale(1);
+	}
+	10%{
+		opacity: 0;
+	}
+	/* Flash starts at 40% to sync with hintTap press */
+	40% { 
+		opacity: 1;
+		transform: scale(1);
+	}
+	100% { 
+		opacity: 0;
+		transform: scale(1);
+	}
+}
+
+/* Mobile adjustments for image flash */
+@media screen and (max-width: 768px) {
+	.post-hint-image-overlay {
+		width: 100vw;
+		background-size: cover;
+		background-position: center top;
+		background-repeat: no-repeat;
+		/* Ensure the image aligns to the top of the screen on mobile */
+		object-fit: cover;
+		object-position: center top;
+	}
+}
+
+/* Accessibility for image flash */
+@media (prefers-reduced-motion: reduce) {
+	.post-hint-image-overlay.flash-active {
+		animation: none !important;
+		opacity: 0.7 !important;
+	}
+	
+	@keyframes imageFlash {
+		0%, 100% { opacity: 0; }
+		50% { opacity: 0.7; }
+	}
+}
+  
+  
+
+/* Hide cursor hint when card is opened */
+.slide_10.opened .cursor-hint {
+    display: none !important;
+}
+
+/* Hide cursor hint only on click/active, not on hover */
+.slide_10:active .cursor-hint,
+.slide_10:focus .cursor-hint {
+    display: none !important;
+    animation: none !important;
+}
+
+/* Ensure cursor hint is hidden during any state transitions */
+.slide_10.closing .cursor-hint,
+.slide_10.loading .cursor-hint {
+    display: none !important;
+    animation: none !important;
+}
+
+/* Mobile adjustments for cursor hint */
+@media screen and (max-width: 768px) {
+    .cursor-hint {
+        width: 80px;
+        height: 80px;
+        top: 42%;
+		left: 50%;
+		z-index: 100000; /* Higher than image flash overlay (9999) - same as desktop */
+    }
+}
+
+/* Desktop background positioning for meditators slide */
+#meditators.slide_10 {
+	background-position: center top !important;
+}
+
+#meditadorxs.slide_10 {
+	background-position: center top !important;
+}
+
+/* Mobile background positioning for meditadores slide */
+@media screen and (max-width: 768px) {
+    #meditators.slide_10 {
+        background-position: left top !important;
+    }
+	#meditadorxs.slide_10 {
+        background-position: left top !important;
+    }
+}
+
+/* CSS additions to make video frames clickable for play/pause */
+
+/* Make video frames clearly clickable */
+.slide video {
+    cursor: pointer;
+}
+
+/* Video controls overlay should be clickable */
+.slide > div[style*="position: absolute"][style*="z-index: 22"] {
+    cursor: pointer;
+}
+
+/* Indicate clickable area on hover */
+.slide:hover {
+    cursor: pointer;
+}
+
+/* Don't override cursor for control buttons */
+.playbut,
+.pausebut,
+.fullscreenbut {
+    cursor: pointer !important;
+}
+
+/* Additional visual feedback for better UX */
+.slide-camp .slide {
+    transition: all 1s, transform 0.2s ease;
+}
+
+.slide-camp .slide:hover {
+    transform: scale(1.02);
+}
+
+/* Ensure proper z-index layering for clickable areas */
+.slide > div[style*="z-index: 22"] {
+    pointer-events: auto;
+} 
+
+/* Force hide any old #inite loading overlay - now using PHP-generated spinner */
+#inite {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+/* Loading Spinner Overlay - created by PHP, blocks all interactions until resources load */
+#loading-spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    z-index: 99999; /* Much higher to cover all elements including header, logo, and social icons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    pointer-events: auto;
+    user-select: none;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+#loading-spinner-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Hide all interface elements when loading spinner is active */
+body:has(#loading-spinner-overlay:not(.fade-out)) header#header,
+body:has(#loading-spinner-overlay:not(.fade-out)) .site-branding,
+body:has(#loading-spinner-overlay:not(.fade-out)) footer,
+body:has(#loading-spinner-overlay:not(.fade-out)) .ct-social-box,
+body:has(#loading-spinner-overlay:not(.fade-out)) .gallery-logo,
+body:has(#loading-spinner-overlay:not(.fade-out)) #playbutton,
+body:has(#loading-spinner-overlay:not(.fade-out)) .card-header,
+body:has(#loading-spinner-overlay:not(.fade-out)) .cursor-hint,
+body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Fallback for browsers that don't support :has() */
+.loading-active header#header,
+.loading-active .site-branding,
+.loading-active footer,
+.loading-active .ct-social-box,
+.loading-active .gallery-logo,
+.loading-active #playbutton,
+.loading-active .card-header,
+.loading-active .cursor-hint,
+.loading-active .caretdiv {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.loading-spinner {
+    width: 75px;
+    height: 75px;
+    border: 4.5px solid rgba(245, 245, 245, 0.3);
+    border-top: 4.5px solid rgba(245, 245, 245, 0.9);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile Landscape Orientation Warning Overlay */
+#landscape-warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(32, 16, 16, 0.70);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    touch-action: none;
+    pointer-events: auto;
+    user-select: none;
+}
+
+#landscape-warning-overlay .warning-content {
+    text-align: center;
+    color: rgba(245, 245, 245, 0.95);
+    font-family: 'ClearSans', Helvetica, sans-serif;
+    font-weight: 500;
+    padding: 40px 30px;
+    max-width: 400px;
+    transform: translateY(-25px);
+}
+
+#landscape-warning-overlay .warning-icon {
+    display: none;
+}
+
+#landscape-warning-overlay .warning-title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#landscape-warning-overlay .warning-message {
+    font-size: 18px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+#landscape-warning-overlay .phone-animation {
+    width: 60px;
+    height: 100px;
+    margin: 20px auto;
+    position: relative;
+}
+
+#landscape-warning-overlay .phone-outline {
+    width: 50px;
+    height: 90px;
+    border: 2px solid rgba(245, 245, 245, 0.8);
+    border-radius: 8px;
+    position: relative;
+    margin: 0 auto;
+    background: transparent;
+    animation: rotateToPortrait 3s ease-in-out infinite;
+    transform-origin: center center;
+}
+
+#landscape-warning-overlay .phone-outline::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 2px;
+    background: rgba(245, 245, 245, 0.6);
+    border-radius: 2px;
+}
+
+#landscape-warning-overlay .phone-outline::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border: 2px solid rgba(245, 245, 245, 0.6);
+    border-radius: 50%;
+    background: transparent;
+}
+
+@keyframes rotateToPortrait {
+    0% { 
+        transform: rotate(90deg);
+        opacity: 0.7;
+    }
+    30% { 
+        transform: rotate(90deg);
+        opacity: 1;
+    }
+    70% { 
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+    100% { 
+        transform: rotate(0deg);
+        opacity: 0.7;
+    }
+}
+
+#landscape-warning-overlay .rotation-animation {
+    display: none;
+}
+
+/* Responsive adjustments for very small landscape screens */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #landscape-warning-overlay .warning-content {
+        padding: 20px 25px;
+        max-width: 350px;
+    }
+    
+    #landscape-warning-overlay .warning-icon {
+        font-size: 36px;
+        margin-bottom: 15px;
+    }
+    
+    #landscape-warning-overlay .warning-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    #landscape-warning-overlay .warning-message {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+    
+    #landscape-warning-overlay .rotation-animation {
+        font-size: 28px;
+        margin: 10px 0;
+    }
+}
+
+/* Silent update: hide wrong grids but keep layout height */
+.ajde_evcal_calendar[data-updating="1"] .eventon_events_list,
+.ajde_evcal_calendar[data-updating="1"] .evcal_month_line{
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Smoothness for re-showing */
+.ajde_evcal_calendar .eventon_events_list,
+.ajde_evcal_calendar .evcal_month_line{
+  will-change: opacity, visibility;
+  transition: opacity .18s ease;
+}
+
+/* Force-show EventON built-in loader if present */
+.ajde_evcal_calendar[data-updating="1"] .evo_loader_bar,
+.ajde_evcal_calendar[data-updating="1"] .evcal_loader_bar{
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fallback loader: visible only during updating */
+.ajde_evcal_calendar .calendar-progress{ display:none; }
+.ajde_evcal_calendar[data-updating="1"] .calendar_header .calendar-progress{
+  display:block;
+  position:absolute;
+  left:0; right:0; top:0;
+  height:2px;
+  background: transparent;
+  overflow:hidden;
+}
+.ajde_evcal_calendar[data-updating="1"] .calendar_header .calendar-progress::before{
+  content:"";
+  position:absolute; top:0; bottom:0;
+  left:-40%; width:40%;
+  background: rgba(245,245,245,.95);
+  animation: cal-progress 1.2s linear infinite;
+}
+@keyframes cal-progress{
+  from{ left:-40%; }
+  to{ left:100%; }
+} 
+
+/* Video Loading Spinner - shown while video is loading */
+.video-loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50 !important; /* Much higher z-index to appear above all slide content */
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+    user-select: none;
+}
+
+.video-loading-spinner.hide {
+    opacity: 0;
+}
+
+.video-loading-spinner .spinner {
+    width: 75px;
+    height: 75px;
+    border: 3px solid rgba(245, 245, 245, 0.2);
+    border-top: 3px solid rgba(245, 245, 245, 0.9);
+    border-radius: 50%;
+    animation: videoSpin 1s linear infinite;
+    backdrop-filter: blur(2px); /* Blur background for better visibility */
+}
+
+@keyframes videoSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hide video spinner when card is opened */
+.slide_10.opened .video-loading-spinner {
+    display: none !important;
+}
+
+/* Hide video spinner when menu is active */
+.slides.menuactive .video-loading-spinner {
+    display: none !important;
+}
+
+/* Mobile adjustments for video spinner */
+@media screen and (max-width: 768px) {
+    .video-loading-spinner .spinner {
+        width: 50px;
+        height: 50px;
+        border-width: 2.5px;
+    }
+}
+
+/* Accessibility for video spinner */
+@media (prefers-reduced-motion: reduce) {
+    .video-loading-spinner .spinner {
+        animation: none !important;
+        border: 3px solid rgba(245, 245, 245, 0.6);
+        border-top: 3px solid rgba(245, 245, 245, 0.9);
+    }
+}
+
+/* WPCode – CSS Snippet from Code-snippet by Erick */
+.eventon_full_description strong,
+.eventon_full_description b {
+  font-weight: 700 !important;
+  font-family: inherit !important;
+}

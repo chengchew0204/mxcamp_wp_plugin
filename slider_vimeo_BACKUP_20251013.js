@@ -42,12 +42,11 @@ function SliderConstructor(el) {
             divcontrols.style.zIndex='22!important';
             // Add onmouseover-detail class for emphatic cursor
             divcontrols.classList.add('onmouseover-detail');
-            // thisvideo.setAttribute('type', 'video/mp4');
+            thisvideo.setAttribute('type', 'video/mp4');
             thisvideo.setAttribute('playsinline', 'playsinline');
-            thisvideo.setAttribute('preload', 'metadata');
+            thisvideo.setAttribute('preload', 'auto');
             thisvideo.setAttribute('poster', 'https://archive.org/download/campgaleria' + numvideo + '.jpg');
-            // thisvideo.setAttribute('src', 'https://archive.org/download/campgaleria' + numvideo + '.mp4');
-            thisvideo.setAttribute('crossorigin', 'anonymous');
+            thisvideo.setAttribute('src', 'https://archive.org/download/campgaleria' + numvideo + '.mp4');
             thisvideo.style.transform = 'translateZ(0)';
             thisvideo.style.webkitTransform = 'translate3d(0, 0, 0)';
             thisvideo.style.zIndex = '0!important';
@@ -55,11 +54,6 @@ function SliderConstructor(el) {
             thisvideo.style.position = 'absolute';
             thisvideo.style.width = '100%';
             slides[thisslide].appendChild(divvideo);
-
-            const source = document.createElement('source');
-            source.src = 'https://archive.org/download/campgaleria' + numvideo + '.mp4';
-            source.type = 'video/mp4';
-            thisvideo.appendChild(source);
 
             divvideo.appendChild(thisvideo);
             divvideo.appendChild(divcontrols);

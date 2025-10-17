@@ -83,7 +83,46 @@ function mxcamp_get_posts_cb_v3($atts) {
             $i++;
             setup_postdata($p);
 
-            $large_image_url = get_the_post_thumbnail_url($p->ID, 'full');
+            ///
+            /// 20251008: Reduce loading time by loading first a low resolution/pixelated image
+            ///
+
+            // get featured image (thumbnail) ID and original URL
+            $thumbnail_id = get_post_thumbnail_id($p->ID);
+            $high_res_url = '';
+            $low_res_url = '';
+
+            if ($thumbnail_id) {
+                $high_res_url = wp_get_attachment_image_url($thumbnail_id, 'full');
+
+                // Build expected low-res filename (e.g. filename.webp)
+                $info = pathinfo($high_res_url);
+                $low_res_filename_partial = $info['filename'] . '-low-res';
+
+                // Search for attachment by filename in the Media Library
+                $args = array(
+                    'post_type'      => 'attachment',
+                    'posts_per_page' => 1,
+                    'post_status'    => 'inherit',
+                    'meta_query'     => array(
+                        array(
+                            'key'     => '_wp_attached_file',
+                            'value'   => $low_res_filename_partial,
+                            'compare' => 'LIKE',
+                        )
+                    )
+                );
+
+                $attachments = get_posts($args);
+
+                if ( !empty($attachments) ) {
+                    $low_res_url = wp_get_attachment_url( $attachments[0]->ID );
+                } else {
+                    // fallback to high-res if low-res not found
+                    $low_res_url = $high_res_url;
+                }
+            }
+
             $slide_id = get_post_meta($p->ID, 'slide_id', true);
             $slide_title = get_post_meta($p->ID, 'slide_title', true);
             $title = $p->post_title;
@@ -94,31 +133,56 @@ function mxcamp_get_posts_cb_v3($atts) {
             if ($i != 1) {
                 $output .= '<div class="caretdiv"><a data-target-slide="' . esc_attr($slide_id) . '" style="scroll-behavior:smooth"><img src="https://camp.mx/img/caret3.svg" style="width:60px; margin:20px" /></a></div></div>';
             }
+
+            // 20251008: Reduce loading time by loading first a low resolution/pixelated image //
+            // Output slide (concatenation style)
+            if ($high_res_url) {
+                $output .= '
+                <div class="slide_10 closed" 
+                    id="' . esc_attr($slide_id) . '" 
+                    data-title="' . esc_attr($title) . '" 
+                    data-post="' . esc_attr($p->ID) . '" 
+                    data-bg-low-res="' . esc_url($low_res_url) . '" 
+                    data-bg-high-res="' . esc_url($high_res_url) . '" 
+                    style="background-image:url(' . esc_url($low_res_url) . '); transition:background-image 0.4s ease, opacity 0.4s ease;">
+                    
+                    <img src="' . esc_url($high_res_url) . '" style="display:none" loading="lazy" decoding="async" alt="">
+                    ' . $p->post_excerpt . '
+                ';
+            } else {
+                // if there is no thumbnail, keep a minimal fallback
+                $output .= '
+                <div class="slide_10 closed no-thumbnail" 
+                    id="' . esc_attr($slide_id) . '" 
+                    data-title="' . esc_attr($title) . '" 
+                    data-post="' . esc_attr($p->ID) . '">
+                    ' . $p->post_excerpt . '
+                ';
+            }
+
             $output .= '
-            <div class="slide_10 closed" id="' . esc_attr($slide_id) . '" data-title="' . esc_attr($title) . '" data-post="' . esc_attr($id) . '" style="background-image:url(' . esc_url($large_image_url) . ')">
-            <img src="' . esc_url($large_image_url) . '" style="display:none" preload>
-            ' . $p->post_excerpt . '
-            <div class="slide_10_bg"></div>
-            <div class="slide_10_scroll">
-            <svg class="ct-icon fakebutton" width="18" height="14" viewBox="0 0 18 14" aria-hidden="true" data-type="type-1"><rect y="0.00" width="18" height="1.7" rx="1"></rect><rect y="6.15" width="18" height="1.7" rx="1"></rect><rect y="12.3" width="18" height="1.7" rx="1"></rect></svg>
-            <div class="card ct-container">
-            <div class="card-header"><h2>' . $slide_title . '</h2></div>
-            <div class="card-content">
-            <div class="tap-top"></div>
-            <div class="tap-left"></div>
-            <div class="tap-right"></div>
-            ' . do_shortcode($p->post_content) . '
-            <div class="tap-bottom"></div>
-            <div class="hoverbackground" onclick="desHoverMe()" onmouseover="desHoverMe()"></div>
-            </div>
-            </div>
-            </div>
+                    <div class="slide_10_bg"></div>
+                    <div class="slide_10_scroll">
+                        <svg class="ct-icon fakebutton" width="18" height="14" viewBox="0 0 18 14" aria-hidden="true" data-type="type-1"><rect y="0.00" width="18" height="1.7" rx="1"></rect><rect y="6.15" width="18" height="1.7" rx="1"></rect><rect y="12.3" width="18" height="1.7" rx="1"></rect></svg>
+                        <div class="card ct-container">
+                            <div class="card-header"><h2>' . $slide_title . '</h2></div>
+                            <div class="card-content">
+                                <div class="tap-top"></div>
+                                <div class="tap-left"></div>
+                                <div class="tap-right"></div>
+                                ' . do_shortcode($p->post_content) . '
+                                <div class="tap-bottom"></div>
+                                <div class="hoverbackground" onclick="desHoverMe()" onmouseover="desHoverMe()"></div>
+                            </div>
+                        </div>
+                    </div>
             ';
         }
         wp_reset_postdata(); // Reset the global $post variable to the current post in the main query.
         $output .= '
-        </div>
-        </div>
+                </div>
+            </div>
+        <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/image_swap.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/navigation-v3_0.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/slider_vimeo.js"></script>
 		<script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/hovers.js"></script>

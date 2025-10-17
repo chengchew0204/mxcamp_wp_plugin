@@ -97,6 +97,12 @@ class Navigation {
         // Check if this is a direct URL visit (card will open automatically)
         this.isDirectUrlVisit = this.checkDirectUrlVisit();
         
+        // If direct URL visit, skip low-res and load high-res images immediately
+        if (this.isDirectUrlVisit) {
+            console.log('Direct URL visit detected - skipping low-res images, loading high-res directly');
+            this.skipLowResImages();
+        }
+        
         // Loading state management
         this.isFullyLoaded = false;
         this.gifDetailLoaded = false;
@@ -368,6 +374,26 @@ class Navigation {
             callback(); // Still proceed
         };
         img.src = 'https://camp.mx/wp-content/uploads/pointer-1.png';
+    }
+    
+    // Skip low-res images and load high-res directly for permalink visits
+    skipLowResImages() {
+        console.log('Skipping low-res images for direct URL visit');
+        
+        // Find all slides with low-res/high-res data attributes
+        const slidesWithBackgrounds = document.querySelectorAll('.slide_10[data-bg-high-res]');
+        
+        slidesWithBackgrounds.forEach(slide => {
+            const highResUrl = slide.getAttribute('data-bg-high-res');
+            
+            if (highResUrl) {
+                // Immediately set background to high-res
+                slide.style.backgroundImage = `url(${highResUrl})`;
+                console.log('Swapped to high-res for slide:', slide.id);
+            }
+        });
+        
+        console.log('Low-res skip complete - all slides now using high-res backgrounds');
     }
     
     // Gif-detail functionality removed
@@ -1458,8 +1484,23 @@ class Navigation {
             SliderConstructor('slider4');
           }else if(slideId==="calendar" || slideId==="calendario"){
            // initializeCalendar(jQuery);
+           // Trigger EventON image hydration when calendar card opens
+           setTimeout(() => {
+               if (window.campHydrateEventonImages) {
+                   console.log('Hydrating EventON images for calendar card');
+                   window.campHydrateEventonImages();
+               }
+           }, 150);
            this.initializeCompactCalendarNav();
           }else if(slideId==="eventos" || slideId==="events"){
+           // Trigger EventON image hydration when events card opens
+           setTimeout(() => {
+               if (window.campHydrateEventonImages) {
+                   console.log('Hydrating EventON images for events card');
+                   window.campHydrateEventonImages();
+               }
+           }, 150);
+           
            // Immediately hide original calendar navigation to prevent glitch
            setTimeout(() => {
                const calendar = document.querySelector('.ajde_evcal_calendar');
