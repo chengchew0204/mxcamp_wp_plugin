@@ -1703,6 +1703,35 @@ body.single-ajde_events .event-feature-slider {
     display: contents;
 }
 
+/* Smooth fade + collapse/expand transition for month navigation */
+.ajde_evcal_calendar .eventon_events_list {
+    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+    transform-origin: top center;
+}
+.ajde_evcal_calendar.calendar-fading-out .eventon_events_list {
+    opacity: 0 !important;
+    transform: scaleY(0) !important;
+    pointer-events: none !important;
+    transition: opacity 0.5s ease-out, transform 0.5s ease-in !important;
+}
+.ajde_evcal_calendar.calendar-fading-in .eventon_events_list {
+    opacity: 0 !important;
+    transform: scaleY(0) !important;
+    pointer-events: none;
+    transition: opacity 0.6s ease-in, transform 0.6s ease-out !important;
+}
+/* Prevent white flash from .eventon_main_section background during AJAX swap */
+.ajde_evcal_calendar.calendar-fading-out .eventon_main_section,
+.ajde_evcal_calendar.calendar-fading-in .eventon_main_section,
+.ajde_evcal_calendar.calendar-year-changing .eventon_main_section {
+    background: transparent !important;
+}
+/* Also hide the sortable section wrapper that EventOn uses internally */
+.ajde_evcal_calendar.calendar-fading-out .evo_sortable_section,
+.ajde_evcal_calendar.calendar-fading-in .evo_sortable_section {
+    background: transparent !important;
+}
+
 /* EventOn Full: hide the evoet_data element that disrupts flex layout in tile grid.
    In Lite this was a hidden em element, Full changed it to a visible span. */
 .ajde_evcal_calendar.boxy .eventon_list_event .desc_trig .evoet_data {

@@ -602,25 +602,19 @@
             const existing = document.getElementById('calendar-loading-spinner');
             if (existing) existing.remove();
 
-            // Target the vertical center of the second visible tile row.
-            // The events list may extend far below the fold, so we measure via
-            // getBoundingClientRect (viewport-relative) and clamp to the viewport.
             const eventsList = calendar.querySelector('.eventon_events_list');
-            let spinnerTop = Math.round(window.innerHeight * 0.58); // safe fallback
+            let spinnerTop = Math.round(window.innerHeight * 0.53);
 
             if (eventsList) {
                 const gridRect = eventsList.getBoundingClientRect();
                 const firstTile = eventsList.querySelector('.eventon_list_event');
                 const rowHeight = firstTile ? firstTile.getBoundingClientRect().height : 150;
-                // Center of second row = grid top + 1.7 row heights
-                const targetTop = gridRect.top + rowHeight * 1.63;
-                // Clamp so the spinner is never cut off at the edges
+                const targetTop = gridRect.top + rowHeight * 1.4;
                 spinnerTop = Math.max(60, Math.min(targetTop, window.innerHeight - 60));
             }
 
             const spinner = document.createElement('div');
             spinner.id = 'calendar-loading-spinner';
-            // top/left are set inline so the keyframe translate(-50%,-50%) centres it
             spinner.style.top = spinnerTop + 'px';
             spinner.style.left = '50%';
             document.body.appendChild(spinner);
@@ -631,13 +625,13 @@
         function hideLoadingState() {
             const calendar = document.querySelector('.ajde_evcal_calendar');
             if (calendar) {
-                // Don't hide loading state if year change is in progress
                 if (calendar.classList.contains('calendar-year-changing')) {
-                    console.log('hideLoadingState blocked - year change in progress, keeping spinner visible');
+                    console.log('hideLoadingState blocked - year change in progress');
                     return;
                 }
 
                 calendar.classList.remove('calendar-loading');
+                calendar.classList.remove('calendar-fading-out');
 
                 const spinner = document.getElementById('calendar-loading-spinner');
                 if (spinner) spinner.remove();
@@ -653,14 +647,79 @@
             }
         }
 
+        // Fade out the events grid, then call the callback when done
+        function fadeOutEventsGrid(callback) {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) { if (callback) callback(); return; }
+
+            calendar.classList.add('calendar-fading-out');
+            console.log('Fading out events grid');
+
+            setTimeout(function() {
+                if (callback) callback();
+            }, 520);
+        }
+
+        // Fade the new events grid back in smoothly
+        function fadeInEventsGrid() {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) return;
+
+            const eventsList = calendar.querySelector('.eventon_events_list');
+
+            // Step 1: pin the grid at collapsed/invisible via inline styles
+            if (eventsList) {
+                eventsList.style.transition = 'none';
+                eventsList.style.opacity = '0';
+                eventsList.style.transform = 'scaleY(0)';
+                eventsList.style.pointerEvents = 'none';
+            }
+
+            // Remove all transition-state classes
+            calendar.classList.remove('calendar-fading-out');
+            calendar.classList.remove('calendar-fading-in');
+            calendar.classList.remove('calendar-year-changing');
+            calendar.classList.remove('calendar-loading');
+
+            const spinner = document.getElementById('calendar-loading-spinner');
+            if (spinner) spinner.remove();
+
+            // Step 2: let the browser paint the collapsed state, then
+            // animate to full size by switching to the target inline styles
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    if (eventsList) {
+                        eventsList.style.transition = 'opacity 0.6s ease-in, transform 0.6s ease-out';
+                        eventsList.style.opacity = '1';
+                        eventsList.style.transform = 'scaleY(1)';
+                        eventsList.style.pointerEvents = '';
+                    }
+
+                    // Clean up inline styles after transition completes
+                    setTimeout(function() {
+                        if (eventsList) {
+                            eventsList.style.transition = '';
+                            eventsList.style.opacity = '';
+                            eventsList.style.transform = '';
+                        }
+                    }, 650);
+
+                    calendarState.isLoading = false;
+                    console.log('Events grid expanding in');
+                });
+            });
+        }
+
         // Hide events grid during year change to prevent flash of wrong content
         function hideEventsGrid() {
             const calendar = document.querySelector('.ajde_evcal_calendar');
             if (calendar) {
                 calendar.classList.add('calendar-year-changing');
+                calendar.classList.add('calendar-fading-out');
                 const eventsList = calendar.querySelector('.eventon_events_list');
                 if (eventsList) {
                     eventsList.style.opacity = '0';
+                    eventsList.style.transform = 'scaleY(0)';
                     eventsList.style.pointerEvents = 'none';
                 }
                 console.log('Events grid hidden during year change');
@@ -670,22 +729,9 @@
         // Show events grid after year change completes
         function showEventsGrid() {
             const calendar = document.querySelector('.ajde_evcal_calendar');
-            if (calendar) {
-                // Remove year-changing class to unlock the grid
-                calendar.classList.remove('calendar-year-changing');
-                const eventsList = calendar.querySelector('.eventon_events_list');
-                if (eventsList) {
-                    eventsList.style.opacity = '';
-                    eventsList.style.pointerEvents = '';
-                }
-                calendar.classList.remove('calendar-loading');
-
-                const spinner = document.getElementById('calendar-loading-spinner');
-                if (spinner) spinner.remove();
-
-                calendarState.isLoading = false;
-                console.log('Events grid visible, loading spinner removed');
-            }
+            if (!calendar) return;
+            fadeInEventsGrid();
+            console.log('Events grid visible after year change');
         }
         
         // Find and click the correct month/year link in EventON's native navigation
@@ -805,25 +851,25 @@
         }
         
         function loadMonthOnly(year, month, calendar) {
-            // Re-fetch links after potential year change
             const allLinks = Array.from(calendar.querySelectorAll('a'));
             const monthPattern = new RegExp(`^(${monthNames.en.join('|')}|${monthNames.es.join('|')})$`, 'i');
             
             const targetMonthName = getMonthName(month);
             console.log(`Looking for month: ${targetMonthName} in year: ${year} (lastClickedYear: ${calendarState.lastClickedYear}, lastClickedMonth: ${calendarState.lastClickedMonth})`);
             
-            // Find month link for the current year
             const monthLink = allLinks.find(link => {
                 const text = link.textContent.trim().toUpperCase();
                 return monthPattern.test(text) && text === targetMonthName;
             });
             
             if (monthLink) {
-                console.log('Clicking month:', targetMonthName);
-                monthLink.click();
-                // Update state after click is initiated
-                calendarState.lastClickedYear = year;
-                calendarState.lastClickedMonth = month;
+                // Fade out old grid first, then trigger EventOn's AJAX
+                fadeOutEventsGrid(function() {
+                    console.log('Fade out complete, clicking month:', targetMonthName);
+                    monthLink.click();
+                    calendarState.lastClickedYear = year;
+                    calendarState.lastClickedMonth = month;
+                });
             } else {
                 console.error('Month link not found for:', targetMonthName);
                 hideLoadingState();
@@ -1128,26 +1174,15 @@
                 });
                 
                 if (hasNewContent && calendarState.observerActive) {
-                    // Debounce: Clear previous timer and set new one
-                    // This ensures we only hide loading after ALL events have loaded
                     if (calendarState.hideLoadingTimer) {
                         clearTimeout(calendarState.hideLoadingTimer);
                     }
                     
                     calendarState.hideLoadingTimer = setTimeout(() => {
-                        console.log('New events loaded (debounced), hiding loading state');
-                        
-                        // If we were in year-changing mode, remove that state now
-                        const calendar = document.querySelector('.ajde_evcal_calendar');
-                        if (calendar && calendar.classList.contains('calendar-year-changing')) {
-                            console.log('Year change complete - showing new events grid');
-                            showEventsGrid(); // This will remove year-changing class and loading spinner
-                        } else {
-                            hideLoadingState();
-                        }
-                        
+                        console.log('New events loaded (debounced), fading in new grid');
+                        fadeInEventsGrid();
                         calendarState.hideLoadingTimer = null;
-                    }, 300); // Wait 300ms after last event detection
+                    }, 300);
                 }
             });
             
@@ -1195,27 +1230,12 @@
     /* Loading state styles - only dim events grid, keep nav interactive */
     .ajde_evcal_calendar.calendar-loading {
         position: relative;
-        transition: opacity 0.2s ease;
-    }
-    
-    /* Dim only the events grid during loading */
-    .ajde_evcal_calendar.calendar-loading .eventon_events_list {
-        pointer-events: none;
-        opacity: 0.6;
-        transition: opacity 0.2s ease;
     }
     
     /* Keep navigation controls fully interactive during loading */
     .ajde_evcal_calendar.calendar-loading .compact-calendar-nav {
         pointer-events: auto !important;
         opacity: 1 !important;
-    }
-    
-    /* Year changing state - hide events grid to prevent flash of wrong content */
-    .ajde_evcal_calendar.calendar-year-changing .eventon_events_list {
-        opacity: 0 !important;
-        pointer-events: none !important;
-        transition: opacity 0.1s ease;
     }
 
     /* Spinner element injected by JS - fixed so it is always in the viewport */
