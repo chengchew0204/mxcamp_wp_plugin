@@ -1,8 +1,8 @@
 <!-- wp:html -->
-<div class="calendar-post">
+<div class="calendar-post calendar-post-es">
 
     <!-- /wp:html -->
-    [add_eventon tiles="yes" jumper="yes" exp_jumper="yes" tile_count="5" tile_bg="1" lang='L2']
+    [add_eventon tiles="yes" jumper="yes" exp_jumper="yes" tile_count="5" tile_bg="1" lang='L2' ux_val="0"]
     <!--
     
     
@@ -40,7 +40,20 @@
         .videoplaying:hover .timevideo {
             display: block;
         }
-        
+
+    @media (max-width: 768px) {
+        .year-left::after,
+        .year-right::after,
+        .month-left::after,
+        .month-right::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+        }
+    }
     
     </style>
     <script>
@@ -77,72 +90,66 @@
      * @param {HTMLElement} containerEl - The fullscreen container element
      */
     function setupNormalEventBehavior(videoEl, headerEl, containerEl) {
-        // Find the original header image
+        // Support both EventOn Lite (<img>) and EventOn Full (background-image <span>)
         const headerImg = headerEl.querySelector('img');
-        if (!headerImg) {
+        const bgSpan = headerEl.querySelector('.evocard_main_image > span');
+        const featuredEl = headerImg || bgSpan;
+
+        if (!featuredEl) {
             console.log('No header image found, video will show immediately');
             return;
         }
-        
-        // Keep the original header image visible (like normal events)
-        headerImg.style.display = 'block';
+
+        featuredEl.style.display = 'block';
         console.log('Keeping featured image visible like normal events');
-        
-        // Hide the video initially
+
         videoEl.style.display = 'none';
         console.log('Video hidden initially - will show when ready');
-        
-        // Set video poster for when it becomes visible
-        const posterUrl = headerImg.currentSrc || headerImg.src;
+
+        var posterUrl = '';
+        if (headerImg) {
+            posterUrl = headerImg.currentSrc || headerImg.src;
+        } else if (bgSpan) {
+            var bgMatch = bgSpan.style.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+            posterUrl = bgMatch ? bgMatch[1] : '';
+        }
         if (posterUrl && !videoEl.poster) {
             videoEl.poster = posterUrl;
         }
-        
-        // Create and show loading spinner above the feature image
-        const loadingSpinner = document.createElement('div');
+
+        var loadingSpinner = document.createElement('div');
         loadingSpinner.className = 'video-loading-spinner-overlay';
-        loadingSpinner.innerHTML = `
-            <div class="video-loading-spinner">
-                <div class="spinner"></div>
-            </div>
-        `;
-        
-        // Position spinner in the header container (will be over the feature image)
-        // The containerEl (fullscreen div) will be appended to headerEl later
+        loadingSpinner.innerHTML = '<div class="video-loading-spinner"><div class="spinner"></div></div>';
+
         headerEl.style.position = 'relative';
         headerEl.appendChild(loadingSpinner);
         console.log('Loading spinner added to header container above feature image');
-        
-        // Show video and hide image + spinner when video is ready to play
-        const showVideo = () => {
-            headerImg.style.display = 'none';
+
+        var showVideo = function() {
+            featuredEl.style.display = 'none';
             videoEl.style.display = 'block';
-            // Hide the loading spinner
             if (loadingSpinner) {
                 loadingSpinner.style.display = 'none';
                 console.log('Loading spinner hidden');
             }
-            // Unmute video immediately when it becomes visible and starts playing
             videoEl.muted = false;
             console.log('Video ready - hiding featured image and spinner, showing video with audio');
         };
-        
-        // Listen for video ready events
-        const events = ['loadeddata', 'canplay', 'playing'];
-        const cleanup = () => {
-            events.forEach(event => videoEl.removeEventListener(event, handleReady));
+
+        var events = ['loadeddata', 'canplay', 'playing'];
+        var cleanup = function() {
+            events.forEach(function(event) { videoEl.removeEventListener(event, handleReady); });
         };
-        
-        const handleReady = () => {
+
+        var handleReady = function() {
             showVideo();
             cleanup();
         };
-        
-        events.forEach(event => videoEl.addEventListener(event, handleReady, { once: true }));
-        
-        // On error, hide spinner and keep the featured image visible (like normal events)
-        videoEl.addEventListener('error', () => {
-            headerImg.style.display = 'block';
+
+        events.forEach(function(event) { videoEl.addEventListener(event, handleReady, { once: true }); });
+
+        videoEl.addEventListener('error', function() {
+            featuredEl.style.display = 'block';
             videoEl.style.display = 'none';
             if (loadingSpinner) {
                 loadingSpinner.style.display = 'none';
@@ -151,8 +158,8 @@
             cleanup();
             console.log('Video error - keeping featured image visible like normal event');
         }, { once: true });
-        
-        videoEl.addEventListener('stalled', () => {
+
+        videoEl.addEventListener('stalled', function() {
             if (loadingSpinner) {
                 loadingSpinner.style.display = 'none';
                 console.log('Video stalled - hiding loading spinner');
@@ -197,6 +204,19 @@
             }
         }
     });
+
+    // Prevent EventOn Full's fullscreen image viewer from opening when clicking the featured image.
+    // Use capture phase so this runs before EventOn's own click handler.
+    // Slider nav/dot clicks are allowed through; their own handlers call stopPropagation
+    // to prevent the click from reaching EventOn's fullscreen handler.
+    document.addEventListener('click', function(e) {
+        var ftimage = e.target.closest('#evo_lightboxes .evocard_box.ftimage');
+        if (ftimage && !e.target.closest('.event-slider-nav, .event-slider-dot')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        }
+    }, true);
     
     function goToJan() {
         let janEl = document.querySelector(`.legend.evo_jumper_months a`)
@@ -209,6 +229,40 @@
     
     
     
+    // EventOn Full (v4.x) renders featured images as background-image spans
+    // instead of <img> tags. This converts them to <img> for compatibility.
+    function fixEventOnFullImages() {
+        document.querySelectorAll('.evocard_main_image.direct').forEach(function(el) {
+            if (el.querySelector('img.evo_event_main_img')) return;
+            var imgUrl = el.getAttribute('data-f');
+            if (!imgUrl) {
+                var span = el.querySelector('span');
+                if (span) {
+                    var bgMatch = span.style.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+                    if (bgMatch) imgUrl = bgMatch[1];
+                }
+            }
+            if (imgUrl) {
+                var img = document.createElement('img');
+                img.className = 'evo_event_main_img';
+                img.src = imgUrl;
+                img.loading = 'lazy';
+                img.style.width = '100%';
+                img.style.height = 'auto';
+                img.style.display = 'block';
+                var span = el.querySelector('span');
+                if (span) span.style.display = 'none';
+                el.style.backgroundImage = 'none';
+                el.style.height = 'auto';
+                el.appendChild(img);
+            }
+        });
+    }
+
+    var fixImagesObserver = new MutationObserver(function() { fixEventOnFullImages(); });
+    fixImagesObserver.observe(document.body, { childList: true, subtree: true });
+    fixEventOnFullImages();
+
     function replaceByVideo(){
         let checkIfCalendarExist = setInterval(lookForIt, 100);
         
@@ -254,7 +308,9 @@
                     fullScreenDiv.classList.add('fullscreen', 'videoplaying');
     
                     // Find header container for normal event behavior setup
-                    let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div');
+                    // EventOn Lite uses .evo_metarow_directimg, Full uses .evocard_main_image
+                    let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div')
+                        || eventLightBox.querySelector('.evocard_box.ftimage');
                     fullScreenDiv.appendChild(thisvideo);
                     
                     // Setup normal event behavior - show featured image, hide video until ready
@@ -452,130 +508,689 @@
     }
     removeMonthTitles()
     
-    // Simple and direct arrow key navigation for calendar months
-    console.log('Setting up simple arrow key navigation...');
+    </script>
     
-    function handleCalendarArrowKeys(event) {
-        console.log('KEY PRESSED:', event.key, 'Code:', event.code);
+    <!-- NEW CALENDAR NAVIGATION SYSTEM -->
+    <script>
+    // New EventON Calendar Navigation System
+    // Clean, predictable navigation that works WITH EventON's AJAX system
+    
+    (function() {
+        'use strict';
         
-        // Only handle left/right arrows
-        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
-            return;
+        console.log('Initializing new calendar navigation system...');
+        
+        // Calendar state management
+        const calendarState = {
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth(),
+            isLoading: false,
+            isEnglish: document.documentElement.lang === "en-US",
+            lastClickedYear: null, // Track which year we last clicked to avoid re-detection issues
+            lastClickedMonth: null,  // Track which month we last clicked
+            mutationObserver: null, // Reference to the MutationObserver
+            observerActive: true, // Flag to control when observer should act
+            hideLoadingTimer: null, // Debounce timer for hiding loading state
+            navigationTimer: null // Debounce timer for navigation to allow rapid clicks
+        };
+        
+        // Month names for both languages
+        const monthNames = {
+            en: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+            es: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+        };
+        
+        function getMonthName(monthIndex) {
+            const lang = calendarState.isEnglish ? 'en' : 'es';
+            return monthNames[lang][monthIndex];
         }
         
-        // Don't interfere with typing
-        if (event.target.tagName === 'INPUT' || 
-            event.target.tagName === 'TEXTAREA' || 
-            event.target.isContentEditable) {
-            console.log('User is typing, ignoring arrow key');
-            return;
+        // Loading state management
+        function showLoadingState() {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) return;
+
+            calendar.classList.add('calendar-loading');
+
+            // Remove any stale spinner from a previous call
+            const existing = document.getElementById('calendar-loading-spinner');
+            if (existing) existing.remove();
+
+            // Target the vertical center of the second visible tile row.
+            // The events list may extend far below the fold, so we measure via
+            // getBoundingClientRect (viewport-relative) and clamp to the viewport.
+            const eventsList = calendar.querySelector('.eventon_events_list');
+            let spinnerTop = Math.round(window.innerHeight * 0.58); // safe fallback
+
+            if (eventsList) {
+                const gridRect = eventsList.getBoundingClientRect();
+                const firstTile = eventsList.querySelector('.eventon_list_event');
+                const rowHeight = firstTile ? firstTile.getBoundingClientRect().height : 150;
+                // Center of second row = grid top + 1.7 row heights
+                const targetTop = gridRect.top + rowHeight * 1.63;
+                // Clamp so the spinner is never cut off at the edges
+                spinnerTop = Math.max(60, Math.min(targetTop, window.innerHeight - 60));
+            }
+
+            const spinner = document.createElement('div');
+            spinner.id = 'calendar-loading-spinner';
+            // top/left are set inline so the keyframe translate(-50%,-50%) centres it
+            spinner.style.top = spinnerTop + 'px';
+            spinner.style.left = '50%';
+            document.body.appendChild(spinner);
+
+            console.log('Loading state shown, spinner at viewport y=' + spinnerTop);
+        }
+
+        function hideLoadingState() {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (calendar) {
+                // Don't hide loading state if year change is in progress
+                if (calendar.classList.contains('calendar-year-changing')) {
+                    console.log('hideLoadingState blocked - year change in progress, keeping spinner visible');
+                    return;
+                }
+
+                calendar.classList.remove('calendar-loading');
+
+                const spinner = document.getElementById('calendar-loading-spinner');
+                if (spinner) spinner.remove();
+
+                const eventsList = calendar.querySelector('.eventon_events_list');
+                if (eventsList) {
+                    eventsList.style.opacity = '';
+                    eventsList.style.pointerEvents = '';
+                }
+
+                calendarState.isLoading = false;
+                console.log('Loading state hidden, grid visible');
+            }
+        }
+
+        // Hide events grid during year change to prevent flash of wrong content
+        function hideEventsGrid() {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (calendar) {
+                calendar.classList.add('calendar-year-changing');
+                const eventsList = calendar.querySelector('.eventon_events_list');
+                if (eventsList) {
+                    eventsList.style.opacity = '0';
+                    eventsList.style.pointerEvents = 'none';
+                }
+                console.log('Events grid hidden during year change');
+            }
+        }
+
+        // Show events grid after year change completes
+        function showEventsGrid() {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (calendar) {
+                // Remove year-changing class to unlock the grid
+                calendar.classList.remove('calendar-year-changing');
+                const eventsList = calendar.querySelector('.eventon_events_list');
+                if (eventsList) {
+                    eventsList.style.opacity = '';
+                    eventsList.style.pointerEvents = '';
+                }
+                calendar.classList.remove('calendar-loading');
+
+                const spinner = document.getElementById('calendar-loading-spinner');
+                if (spinner) spinner.remove();
+
+                calendarState.isLoading = false;
+                console.log('Events grid visible, loading spinner removed');
+            }
         }
         
-        // Don't interfere with open event cards
-        const lightboxOpen = document.querySelector('#evo_lightboxes .eventcard.show');
-        if (lightboxOpen) {
-            console.log('Event card is open, ignoring arrow key');
-            return;
-        }
-        
-        console.log('ARROW KEY DETECTED:', event.key);
-        
-        // Find the compact calendar navigation
-        const compactNav = document.querySelector('.compact-calendar-nav');
-        if (!compactNav) {
-            console.log('No compact calendar navigation found');
-            return;
-        }
-        
-        console.log('Found compact navigation:', compactNav);
-        
-        // Find all navigation divs
-        const navDivs = compactNav.querySelectorAll('div.onmouseover-detail');
-        console.log('Found navigation divs:', navDivs.length);
-        
-        if (navDivs.length < 4) {
-            console.log('Not enough navigation divs found');
-            return;
-        }
-        
-        // Select the correct navigation button
-        // Structure: [year-prev, year-next, month-prev, month-next]
-        let targetButton = null;
-        if (event.key === 'ArrowLeft') {
-            targetButton = navDivs[2]; // Month previous
-            console.log('LEFT ARROW: Selecting month previous button');
-        } else {
-            targetButton = navDivs[3]; // Month next  
-            console.log('RIGHT ARROW: Selecting month next button');
-        }
-        
-        if (!targetButton) {
-            console.log('No target button found');
-            return;
-        }
-        
-        console.log('Target button found:', targetButton);
-        console.log('Target button style:', targetButton.style.cssText);
-        console.log('Target button visibility:', targetButton.style.visibility);
-        console.log('Target button pointer events:', targetButton.style.pointerEvents);
-        
-        // Check if button is visible and clickable
-        const isHidden = targetButton.style.visibility === 'hidden' || 
-                        targetButton.style.pointerEvents === 'none';
-        
-        if (isHidden) {
-            console.log('Target button is hidden/disabled, cannot navigate');
-            event.preventDefault(); // Still prevent scrolling
-            return;
-        }
-        
-        console.log('CLICKING TARGET BUTTON...');
-        
-        // Try to click the button
-        try {
-            if (targetButton.onclick) {
-                console.log('Calling onclick handler directly...');
-                targetButton.onclick();
-            } else {
-                console.log('No onclick handler, trying click event...');
-                targetButton.click();
+        // Find and click the correct month/year link in EventON's native navigation
+        function loadCalendarMonth(year, month) {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) {
+                console.error('Calendar not found');
+                hideLoadingState();
+                return;
             }
             
-            console.log('BUTTON CLICKED SUCCESSFULLY');
-            event.preventDefault();
-            event.stopPropagation();
+            console.log(`Loading calendar for ${year}-${month + 1}`);
             
-        } catch (error) {
-            console.error('Error clicking button:', error);
+            // Check if we need to change the year first
+            const needsYearChange = calendarState.lastClickedYear !== null && calendarState.lastClickedYear !== year;
+            
+            if (needsYearChange) {
+                console.log(`Year change needed: ${calendarState.lastClickedYear} → ${year}`);
+                
+                // CRITICAL: Show loading state first (for spinner), then hide events grid
+                showLoadingState(); // Shows spinner overlay
+                hideEventsGrid(); // Hides content underneath
+                
+                // Disable observer during year transition to ignore intermediate loads
+                calendarState.observerActive = false;
+                
+                // Strategy: Click year link first, then immediately click target month
+                // This minimizes intermediate AJAX calls
+                const allLinks = Array.from(calendar.querySelectorAll('a'));
+                const yearPattern = /^\d{4}$/;
+                
+                // Find and click the target year link
+                const yearLink = allLinks.find(link => {
+                    const text = link.textContent.trim();
+                    return yearPattern.test(text) && parseInt(text) === year;
+                });
+                
+                if (yearLink) {
+                    console.log(`Clicking year link for ${year}`);
+                    yearLink.click();
+                    
+                    // Wait for year link AJAX, then click target month
+                    setTimeout(() => {
+                        console.log(`Year AJAX should be complete, now loading target month ${month + 1}`);
+                        // Re-enable observer to detect final month load
+                        calendarState.observerActive = true;
+                        // Update tracking state
+                        calendarState.lastClickedYear = year;
+                        calendarState.lastClickedMonth = month;
+                        // Load target month
+                        loadMonthOnly(year, month, calendar);
+                    }, 800); // Wait for year AJAX to complete
+                } else {
+                    console.error(`Year link not found for ${year}, falling back to month-only load`);
+                    calendarState.observerActive = true;
+                    calendarState.lastClickedYear = year;
+                    calendarState.lastClickedMonth = month;
+                    loadMonthOnly(year, month, calendar);
+                }
+            } else {
+                // Same year, just change month
+                console.log(`Same year (${year}), changing month only`);
+                calendarState.observerActive = true; // Ensure observer is active
+                loadMonthOnly(year, month, calendar);
+            }
         }
+        
+        // Navigate using EventON's arrow buttons (avoids year link AJAX issues)
+        function navigateByArrows(monthDiff, targetYear, targetMonth, callback) {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) {
+                console.error('Calendar not found');
+                hideLoadingState();
+                return;
+            }
+            
+            const nextButton = calendar.querySelector('#evcal_next');
+            const prevButton = calendar.querySelector('#evcal_prev');
+            
+            if (!nextButton || !prevButton) {
+                console.error('Arrow buttons not found - falling back to direct month click');
+                calendarState.observerActive = true;
+                loadMonthOnly(calendarState.currentYear, calendarState.currentMonth, calendar);
+                return;
+            }
+            
+            let clicksRemaining = Math.abs(monthDiff);
+            const button = monthDiff > 0 ? nextButton : prevButton;
+            const direction = monthDiff > 0 ? 'forward' : 'backward';
+            
+            console.log(`Clicking ${direction} arrow ${clicksRemaining} times to reach ${targetYear}-${targetMonth + 1}`);
+            
+            // Disable observer during arrow navigation
+            calendarState.observerActive = false;
+            
+            function clickArrow() {
+                if (clicksRemaining > 0) {
+                    button.click();
+                    clicksRemaining--;
+                    setTimeout(clickArrow, 100); // Small delay between clicks
+                } else {
+                    // All navigation complete - update tracking state to match destination
+                    console.log(`Arrow navigation complete - updating state to ${targetYear}-${targetMonth + 1}`);
+                    calendarState.lastClickedYear = targetYear;
+                    calendarState.lastClickedMonth = targetMonth;
+                    
+                    setTimeout(() => {
+                        // Re-enable observer to detect new events loading
+                        calendarState.observerActive = true;
+                        console.log('Observer re-enabled - will show grid when new events are detected');
+                        // Don't call callback yet - let the observer detect new content first
+                    }, 300); // Small delay to ensure AJAX has started
+                }
+            }
+            
+            clickArrow();
+        }
+        
+        function loadMonthOnly(year, month, calendar) {
+            // Re-fetch links after potential year change
+            const allLinks = Array.from(calendar.querySelectorAll('a'));
+            const monthPattern = new RegExp(`^(${monthNames.en.join('|')}|${monthNames.es.join('|')})$`, 'i');
+            
+            const targetMonthName = getMonthName(month);
+            console.log(`Looking for month: ${targetMonthName} in year: ${year} (lastClickedYear: ${calendarState.lastClickedYear}, lastClickedMonth: ${calendarState.lastClickedMonth})`);
+            
+            // Find month link for the current year
+            const monthLink = allLinks.find(link => {
+                const text = link.textContent.trim().toUpperCase();
+                return monthPattern.test(text) && text === targetMonthName;
+            });
+            
+            if (monthLink) {
+                console.log('Clicking month:', targetMonthName);
+                monthLink.click();
+                // Update state after click is initiated
+                calendarState.lastClickedYear = year;
+                calendarState.lastClickedMonth = month;
+            } else {
+                console.error('Month link not found for:', targetMonthName);
+                hideLoadingState();
+            }
+        }
+        
+        // Navigation functions
+        function navigateMonth(direction) {
+            // CRITICAL FIX: Capture OLD state BEFORE updating, for proper year change detection
+            // Initialize lastClicked state if null using the CURRENT state (before navigation)
+            if (calendarState.lastClickedYear === null) {
+                calendarState.lastClickedYear = calendarState.currentYear;
+                calendarState.lastClickedMonth = calendarState.currentMonth;
+                console.log(`Initialized lastClicked state from current state: ${calendarState.lastClickedYear}-${calendarState.lastClickedMonth + 1}`);
+            }
+            
+            // Now calculate new month/year (AFTER capturing old state)
+            let newMonth = calendarState.currentMonth + direction;
+            let newYear = calendarState.currentYear;
+            
+            // Handle year boundaries
+            if (newMonth < 0) {
+                newMonth = 11;
+                newYear--;
+            } else if (newMonth > 11) {
+                newMonth = 0;
+                newYear++;
+            }
+            
+            calendarState.currentMonth = newMonth;
+            calendarState.currentYear = newYear;
+            
+            console.log(`Navigating to ${newYear}-${newMonth + 1}`);
+            
+            // Show loading state if not already shown
+            if (!calendarState.isLoading) {
+                calendarState.isLoading = true;
+                showLoadingState();
+            }
+            
+            // Clear any pending navigation timer
+            if (calendarState.navigationTimer) {
+                clearTimeout(calendarState.navigationTimer);
+            }
+            
+            // Update UI immediately for responsive feel
+            updateNavigationUI();
+            
+            // Debounce the actual navigation to allow rapid clicks
+            // CRITICAL: Use state variables directly, not captured locals, to avoid race conditions
+            calendarState.navigationTimer = setTimeout(() => {
+                loadCalendarMonth(calendarState.currentYear, calendarState.currentMonth);
+                calendarState.navigationTimer = null;
+            }, 150);
+        }
+        
+        function navigateYear(direction) {
+            // CRITICAL FIX: Capture OLD state BEFORE updating, for proper year change detection
+            // Initialize lastClicked state if null using the CURRENT state (before navigation)
+            if (calendarState.lastClickedYear === null) {
+                calendarState.lastClickedYear = calendarState.currentYear;
+                calendarState.lastClickedMonth = calendarState.currentMonth;
+                console.log(`Initialized lastClicked state from current state: ${calendarState.lastClickedYear}-${calendarState.lastClickedMonth + 1}`);
+            }
+            
+            // Determine target month before updating the year
+            const targetMonth = direction > 0 ? 0 : direction < 0 ? 11 : calendarState.currentMonth;
+            
+            // Update year and force month to January (forward) or December (backward)
+            calendarState.currentYear += direction;
+            calendarState.currentMonth = targetMonth;
+            
+            console.log(`Navigating to ${calendarState.currentYear}-${calendarState.currentMonth + 1}`);
+            
+            // Show loading state if not already shown
+            if (!calendarState.isLoading) {
+                calendarState.isLoading = true;
+                showLoadingState();
+            }
+            
+            // Clear any pending navigation timer
+            if (calendarState.navigationTimer) {
+                clearTimeout(calendarState.navigationTimer);
+            }
+            
+            // Update UI immediately for responsive feel
+            updateNavigationUI();
+            
+            // Debounce the actual navigation to allow rapid clicks
+            // CRITICAL: Use state variables directly, not captured locals, to avoid race conditions
+            calendarState.navigationTimer = setTimeout(() => {
+                loadCalendarMonth(calendarState.currentYear, calendarState.currentMonth);
+                calendarState.navigationTimer = null;
+            }, 150);
+        }
+        
+        // Update navigation UI display
+        function updateNavigationUI() {
+            const yearDisplays = document.querySelectorAll('.calendar-nav-year-display');
+            const monthDisplays = document.querySelectorAll('.calendar-nav-month-display');
+            
+            yearDisplays.forEach(el => {
+                el.textContent = calendarState.currentYear;
+            });
+            
+            monthDisplays.forEach(el => {
+                el.textContent = getMonthName(calendarState.currentMonth);
+            });
+        }
+        
+        // Create navigation controls
+        function createNavigationControls(position = 'top') {
+            const nav = document.createElement('div');
+            nav.className = `compact-calendar-nav compact-calendar-nav-${position}`;
+            nav.setAttribute('data-position', position);
+            
+            // Detect mobile
+            const isMobile = window.innerWidth <= 768;
+            
+            // Positioning styles
+            if (position === 'top') {
+                if (isMobile) {
+                    nav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: absolute; left: -5px; bottom: 0px; z-index: 10;';
+                } else {
+                    nav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; margin-left: -9px;';
+                }
+            } else {
+                if (isMobile) {
+                    nav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: relative; left: -5px; z-index: 10; margin-top: 10px;';
+                } else {
+                    nav.style.cssText = 'display: flex; align-items: center; padding: 7.8px 0; font-family: inherit; color: #f5f5f5; position: relative; left: -9px; z-index: 10; margin-top: 10px;';
+                }
+            }
+            
+            // Create navigation elements with caret styling
+            const caretSize = '19px';
+            const baseCaretStyle = `background-image: url(https://camp.mx/img/caret28.svg); background-repeat: no-repeat; background-size: ${caretSize}; content: ''; display: inline-block; width: ${caretSize}; height: ${caretSize}; cursor: pointer; transform-origin: 9px 6px; filter: brightness(0) invert(1); opacity: 1; flex-shrink: 0; position: relative; top: 4px; transition: transform 0.5s ease; vertical-align: top;`;
+            
+            nav.innerHTML = `
+                <div class="year-left onmouseover-detail" style="${baseCaretStyle} transform: rotate(90deg); left: 3px;"></div>
+                <span class="calendar-nav-year-display" style="margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; font-size: 24px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;">${calendarState.currentYear}</span>
+                <div class="year-right onmouseover-detail" style="${baseCaretStyle} transform: rotate(-90deg); left: -2px; top: 4.7px;"></div>
+                <div class="month-left onmouseover-detail" style="${baseCaretStyle} transform: rotate(90deg); margin-left: ${isMobile ? '8px' : '20px'}; left: 2.6px;"></div>
+                <span class="calendar-nav-month-display" style="margin: 0 8px; min-width: 60px; text-align: center; font-weight: 500; text-transform: uppercase; font-size: 24px; background-color: rgba(245, 245, 245, 0.95); color: rgba(0, 0, 0, 0.85); padding: 3px 8px 4px 8px;">${getMonthName(calendarState.currentMonth)}</span>
+                <div class="month-right onmouseover-detail" style="${baseCaretStyle} transform: rotate(-90deg); left: -2px; top: 4.7px;"></div>
+            `;
+            
+            // Attach event handlers
+            nav.querySelector('.year-left').onclick = () => navigateYear(-1);
+            nav.querySelector('.year-right').onclick = () => navigateYear(1);
+            nav.querySelector('.month-left').onclick = () => navigateMonth(-1);
+            nav.querySelector('.month-right').onclick = () => navigateMonth(1);
+            
+            return nav;
+        }
+        
+        // Initialize navigation
+        let initRetryCount = 0;
+        const maxRetries = 20; // Maximum 5 seconds of retries
+        
+        function initializeNavigation() {
+            const calendar = document.querySelector('.ajde_evcal_calendar');
+            if (!calendar) {
+                initRetryCount++;
+                if (initRetryCount < maxRetries) {
+                    console.log(`Calendar not found, retrying... (${initRetryCount}/${maxRetries})`);
+                    setTimeout(initializeNavigation, 250);
+                } else {
+                    console.log('Calendar not found after maximum retries - skipping navigation initialization');
+                }
+                return;
+            }
+            
+            console.log('Calendar found, setting up navigation');
+            
+            // Initialize state from EventON's current year/month to avoid first click issues
+            const allLinks = Array.from(calendar.querySelectorAll('a'));
+            const yearPattern = /^\d{4}$/;
+            const monthPattern = new RegExp(`^(${monthNames.en.join('|')}|${monthNames.es.join('|')})$`, 'i');
+            
+            // Find current year from EventON
+            const currentYearLink = allLinks.find(link => {
+                const text = link.textContent.trim();
+                return yearPattern.test(text) && link.classList.contains('current');
+            });
+            
+            // Find current month from EventON
+            const currentMonthLink = allLinks.find(link => {
+                const text = link.textContent.trim();
+                return monthPattern.test(text) && link.classList.contains('current');
+            });
+            
+            if (currentYearLink) {
+                calendarState.lastClickedYear = parseInt(currentYearLink.textContent.trim());
+                calendarState.currentYear = calendarState.lastClickedYear;
+                console.log('Initialized year state from EventON:', calendarState.lastClickedYear);
+            }
+            
+            if (currentMonthLink) {
+                const monthText = currentMonthLink.textContent.trim().toUpperCase();
+                // Try current language first, then opposite language (handles mixed-language DOMs)
+                const lang = calendarState.isEnglish ? 'en' : 'es';
+                let monthIndex = monthNames[lang].indexOf(monthText);
+                if (monthIndex === -1) {
+                    // Month name is in opposite language, try that array
+                    const oppositeLang = lang === 'en' ? 'es' : 'en';
+                    monthIndex = monthNames[oppositeLang].indexOf(monthText);
+                }
+                calendarState.lastClickedMonth = monthIndex !== -1 ? monthIndex : new Date().getMonth();
+                calendarState.currentMonth = calendarState.lastClickedMonth;
+                console.log('Initialized month state from EventON:', monthText, '→', calendarState.lastClickedMonth);
+            }
+            
+            // Hide original EventON navigation
+            const calendarHeader = calendar.querySelector('.calendar_header');
+            if (calendarHeader) {
+                const evoJDates = calendarHeader.querySelector('.evo_j_dates');
+                if (evoJDates) {
+                    evoJDates.style.display = 'none';
+                }
+                
+                // Set header positioning for mobile
+                if (window.innerWidth <= 768) {
+                    calendarHeader.style.position = 'relative';
+                }
+            }
+            
+            // Create top navigation
+            const topNav = createNavigationControls('top');
+            if (calendarHeader) {
+                calendarHeader.insertBefore(topNav, calendarHeader.firstChild);
+                console.log('Top navigation inserted');
+
+                // Drop the grid when the year-left caret is within 72px of the card-header.
+                // Re-check on every resize so it adapts to the current viewport.
+                // Always measure from the natural (no-padding) position to prevent
+                // a feedback loop where added padding shifts the caret and invalidates the check.
+                function checkNavTitleOverlap() {
+                    const cardHeader = document.querySelector('.card-header');
+                    const yearLeftEl = topNav.querySelector('.year-left');
+                    const calPost = document.querySelector('.calendar-post');
+                    if (!cardHeader || !yearLeftEl || !calPost) return;
+
+                    const savedPadding = calPost.style.paddingTop;
+                    calPost.style.paddingTop = '';
+                    void calPost.offsetHeight;
+
+                    const caretRect = yearLeftEl.getBoundingClientRect();
+                    const headerRect = cardHeader.getBoundingClientRect();
+                    if (caretRect.width === 0 || headerRect.width === 0) {
+                        calPost.style.paddingTop = savedPadding;
+                        return;
+                    }
+
+                    const gap = caretRect.left - headerRect.right;
+                    if (gap < 72) {
+                        calPost.style.paddingTop = '60px';
+                    }
+                }
+                setTimeout(checkNavTitleOverlap, 300);
+                setTimeout(checkNavTitleOverlap, 800);
+                window.addEventListener('resize', checkNavTitleOverlap);
+
+                // Also re-check when the parent slide gets the 'opened' class,
+                // since the card-header switches to position:fixed at that point.
+                const parentSlide = document.querySelector('.slide_10');
+                if (parentSlide) {
+                    const slideObserver = new MutationObserver(() => {
+                        if (parentSlide.classList.contains('opened')) {
+                            setTimeout(checkNavTitleOverlap, 100);
+                        }
+                    });
+                    slideObserver.observe(parentSlide, { attributes: true, attributeFilter: ['class'] });
+                }
+            }
+            
+            // Create bottom navigation
+            const bottomNav = createNavigationControls('bottom');
+            const eventsList = calendar.querySelector('.eventon_events_list');
+            if (eventsList && eventsList.parentNode) {
+                eventsList.parentNode.insertBefore(bottomNav, eventsList.nextSibling);
+                console.log('Bottom navigation inserted');
+            }
+            
+            // Set up MutationObserver to detect when events finish loading
+            const observer = new MutationObserver((mutations) => {
+                // Only act if observer is active (not during year changes)
+                if (!calendarState.observerActive) {
+                    console.log('Observer inactive - ignoring intermediate event load');
+                    return;
+                }
+                
+                const hasNewContent = mutations.some(m => {
+                    return Array.from(m.addedNodes).some(node => {
+                        if (node.nodeType === 1) {
+                            return node.classList?.contains('eventon_list_event') ||
+                                   node.classList?.contains('evcal_month_line') ||
+                                   node.querySelector?.('.eventon_list_event');
+                        }
+                        return false;
+                    });
+                });
+                
+                if (hasNewContent && calendarState.observerActive) {
+                    // Debounce: Clear previous timer and set new one
+                    // This ensures we only hide loading after ALL events have loaded
+                    if (calendarState.hideLoadingTimer) {
+                        clearTimeout(calendarState.hideLoadingTimer);
+                    }
+                    
+                    calendarState.hideLoadingTimer = setTimeout(() => {
+                        console.log('New events loaded (debounced), hiding loading state');
+                        
+                        // If we were in year-changing mode, remove that state now
+                        const calendar = document.querySelector('.ajde_evcal_calendar');
+                        if (calendar && calendar.classList.contains('calendar-year-changing')) {
+                            console.log('Year change complete - showing new events grid');
+                            showEventsGrid(); // This will remove year-changing class and loading spinner
+                        } else {
+                            hideLoadingState();
+                        }
+                        
+                        calendarState.hideLoadingTimer = null;
+                    }, 300); // Wait 300ms after last event detection
+                }
+            });
+            
+            calendarState.mutationObserver = observer;
+            
+            observer.observe(calendar, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Update OnMouseOverDetailAdder if available
+            if (window.onMouseOverDetailAdder) {
+                setTimeout(() => {
+                    window.onMouseOverDetailAdder.addClasses();
+                }, 100);
+            }
+            
+            console.log('New calendar navigation initialized successfully');
+        }
+        
+        // Start initialization when DOM is ready
+        function safeInitialize() {
+            // Simply check if .calendar-post div exists
+            // This works whether calendar is on homepage (as a card) or on a dedicated page
+            const hasCalendarPost = document.querySelector('.calendar-post');
+            
+            if (hasCalendarPost) {
+                console.log('Calendar post detected - initializing new navigation system');
+                initializeNavigation();
+            } else {
+                console.log('No .calendar-post div found - skipping navigation initialization');
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', safeInitialize);
+        } else {
+            safeInitialize();
+        }
+        
+    })();
+    </script>
+    
+    <style>
+    /* Loading state styles - only dim events grid, keep nav interactive */
+    .ajde_evcal_calendar.calendar-loading {
+        position: relative;
+        transition: opacity 0.2s ease;
     }
     
-    // Add multiple event listeners to ensure it works
-    console.log('Adding arrow key event listeners...');
+    /* Dim only the events grid during loading */
+    .ajde_evcal_calendar.calendar-loading .eventon_events_list {
+        pointer-events: none;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
     
-    // Method 1: Standard event listener
-    document.addEventListener('keydown', handleCalendarArrowKeys);
+    /* Keep navigation controls fully interactive during loading */
+    .ajde_evcal_calendar.calendar-loading .compact-calendar-nav {
+        pointer-events: auto !important;
+        opacity: 1 !important;
+    }
     
-    // Method 2: Capture phase
-    document.addEventListener('keydown', handleCalendarArrowKeys, true);
+    /* Year changing state - hide events grid to prevent flash of wrong content */
+    .ajde_evcal_calendar.calendar-year-changing .eventon_events_list {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transition: opacity 0.1s ease;
+    }
+
+    /* Spinner element injected by JS - fixed so it is always in the viewport */
+    #calendar-loading-spinner {
+        position: fixed;
+        width: 75px;
+        height: 75px;
+        border: 4.5px solid rgba(245, 245, 245, 0.3);
+        border-top: 4.5px solid rgba(245, 245, 245, 0.9);
+        border-radius: 50%;
+        animation: calendar-spin 1s linear infinite;
+        z-index: 9999;
+        pointer-events: none;
+    }
+
+    @keyframes calendar-spin {
+        0%   { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
     
-    // Method 3: Window level
-    window.addEventListener('keydown', handleCalendarArrowKeys);
-    
-    // Method 4: Direct assignment (will override any existing)
-    const originalKeyHandler = document.onkeydown;
-    document.onkeydown = function(event) {
-        handleCalendarArrowKeys(event);
-        // Call original handler if it exists
-        if (originalKeyHandler) {
-            originalKeyHandler(event);
-        }
-    };
-    
-    console.log('Arrow key navigation setup complete - 4 methods added');
-    
-    </script>
-    <style>
+    /* Event card styles */
     .ajde_evcal_calendar.boxy .eventon_list_event.event {
         aspect-ratio:3/4 !important;
         width:auto!important;
@@ -585,6 +1200,19 @@
     .evo_metarow_directimg.evcal_evdata_row {
         padding: 0!important;
         height: auto;
+    }
+    /* EventOn Full: override broken inline height and show image properly */
+    .evocard_main_image.direct {
+        height: auto !important;
+        background-image: none !important;
+    }
+    .evocard_main_image.direct > span {
+        display: none !important;
+    }
+    .evocard_main_image.direct img.evo_event_main_img {
+        width: 100%;
+        height: auto;
+        display: block;
     }
     .desc_trig_outter{
         background-repeat: no-repeat;
@@ -631,4 +1259,4 @@
     </style>
     <div class="tap-bottom" style="height:400px;width:120%; margin-left:-10%; margin-right:-10%; position:relative"></div>
     <!-- /wp:html -->
-    
+

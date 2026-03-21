@@ -24,17 +24,31 @@ window.mapscroll = mapscroll;
 
 function mapScroll() {
   const mapContainer = document.getElementById('imap');
+  
+  // Safety check - return early if map container doesn't exist
+  if (!mapContainer) {
+    return;
+  }
+  
   const mapScrollWidth = mapContainer.scrollWidth; 
   const mapWidth = mapContainer.offsetWidth;
   const centerPosition = (mapScrollWidth - mapWidth) / 2; // Calculate center position
   const targetPosition = centerPosition - 80; // 80px more to the left of center
 
-  const isOpen = mapContainer?.parentNode?.parentNode?.parentNode?.parentNode?.className === 'slide_10 opened';
+  // Check if map card is open - use classList.contains instead of exact className match
+  const mapParent = mapContainer?.parentNode?.parentNode?.parentNode?.parentNode;
+  const isOpen = mapParent && mapParent.classList && mapParent.classList.contains('opened');
 
   if (isOpen) {
+    // If scrolling is complete (mapscroll === 0), don't do anything
+    if (mapscroll === 0) {
+      return;
+    }
+    
+    console.log('Map is open, mapscroll state:', mapscroll, 'scrollLeft:', mapContainer.scrollLeft);
     setTimeout(() => {
       // Verifica nuevamente si sigue abierto antes de continuar
-      const stillOpen = mapContainer?.parentNode?.parentNode?.parentNode?.parentNode?.className === 'slide_10 opened';
+      const stillOpen = mapParent && mapParent.classList && mapParent.classList.contains('opened');
       if (!stillOpen) return; // Si ya no está abierto, no hacer nada
 
       if (mapscroll > 0) {
@@ -63,15 +77,16 @@ function mapScroll() {
         if (mapscroll === 3) {
           const currentPos = mapContainer.scrollLeft;
           
-          // Check if we've reached or passed the target position
-          if (currentPos > targetPosition + 35) {
-            mapContainer.scrollLeft -= 35;
-          } else {
-            // We're close to target position, snap to exact position and stop
-            mapContainer.scrollLeft = Math.max(0, targetPosition); // Ensure we don't go negative
+          // If already at leftmost position (0) or close to target, stop immediately
+          if (currentPos <= 0 || currentPos <= targetPosition + 35) {
+            // Snap to target position (or 0 if target is negative)
+            mapContainer.scrollLeft = Math.max(0, targetPosition);
             mapscroll = 0; // Stop the scrolling sequence
             window.mapscroll = mapscroll; // Update global reference
-            console.log('Map scroll: Positioned 80px left of center and stopped at position', targetPosition);
+            console.log('Map scroll: Positioned and stopped at position', Math.max(0, targetPosition));
+          } else {
+            // Continue scrolling left
+            mapContainer.scrollLeft -= 35;
           }
         }
       }
@@ -85,7 +100,13 @@ function mapScroll() {
 function ciel2(seconde){
     if(document.getElementById("galeria")){var ciel = document.getElementById("galeria");}
     else if(document.getElementById("gallery")){var ciel = document.getElementById("gallery");}
-    ciel.style.backgroundPosition = seconde + "px 0px";
+    
+    // Only update background position if ciel element exists
+    if(ciel){
+        ciel.style.backgroundPosition = seconde + "px 0px";
+    }
+    
+    // Always call mapScroll regardless of whether gallery exists
     mapScroll()
 }
 function changeLangue(){

@@ -1,0 +1,58 @@
+<!-- Interactive Map Component - HTML Structure
+     Version: 1.0.0
+     This is the core HTML structure for the interactive map
+-->
+<div class="interactive-map" id="imap">
+  <div class="map-container">
+    <!-- Map layer images -->
+    <img id="central-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
+    <img id="central-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
+    <img id="central-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
+    <img id="chozas-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
+    <img id="casita-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
+    <img id="casita-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
+    <img id="calle-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
+    <img id="calle-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
+    <img id="calle-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
+    <img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
+    <img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
+    <img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
+    <img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4-2.webp" alt="Map" />
+    
+    <!-- Animation/fake layers for demo -->
+    <img id="ani-02-central-down-1" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-02-central-down-1.webp" alt="Map" />
+    <img id="ani-03-central-down-2" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-03-central-down-2.webp" alt="Map" />
+    <img id="ani-04-central-down-3" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-04-central-down-3.webp" alt="Map" />
+    
+    <!-- Base map (initial state) -->
+    <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" />
+    
+    <!-- Media overlay mount point -->
+    <div id="media-overlay" aria-hidden="true"></div>
+    
+    <!-- Interactive detail areas (clickable regions) -->
+    <div id="central-detail" class="detail onmouseover-detail"></div>
+    <div id="central-detail-demo" class="detail" style="top: 40%; left: 38%; width: 17%; height: 39%; pointer-events: none; z-index: -1; opacity: 0; display: none;"></div>
+    <div id="casita-detail" class="detail onmouseover-detail"></div>
+    <div id="chozas-detail" class="detail onmouseover-detail"></div>
+    <div id="calle-detail" class="detail onmouseover-detail"></div>
+    <div id="jardin-detail" class="detail onmouseover-detail"></div>
+    <div id="cosina-detail" class="detail onmouseover-detail" style="top:65%;left:29%;width:10%;height:15%;"></div>
+    
+    <!-- Non-clickable areas -->
+    <div id="noclick1" class="detail" style="top:28%;left:65%;width:21%;height:28%;" onclick="return false;"></div>
+    <div id="noclick2" class="detail" style="top:46%;left:29%;width:10%;height:20%;" onclick="return false;"></div>
+    
+    <!-- Focus point -->
+    <div id="focus-point" class="detail"></div>
+    
+    <!-- Exit areas (click to close map) -->
+    <div id="mapExit1" class="detail mapExit onmouseover-detail" style="top:10%;left:0%;width:68%;height:20%;opacity:0.1;"></div>
+    <div id="mapExit2" class="detail mapExit onmouseover-detail" style="bottom:0;left:0%;width:74%;height:20%;opacity:0.1;"></div>
+    <div id="mapExit3" class="detail mapExit onmouseover-detail" style="top:55%;left:0%;width:7%;height:55%;opacity:0.1;"></div>
+    <div id="mapExit4" class="detail mapExit onmouseover-detail" style="top:33%;right:0%;width:7%;height:60%;opacity:0.1;"></div>
+    
+    <!-- Demo cursor element -->
+    <div id="demo-cursor" class="demo-cursor"></div>
+  </div>
+</div>

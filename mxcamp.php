@@ -37,7 +37,7 @@ function mxcamp_get_posts_cb_v3($atts) {
         'cat' => 16,
         'post_type' => 'post',
         'post_status' => 'publish',
-        'posts_per_page' => 12,
+        'posts_per_page' => 20,  // Increased from 12 to 20 to show more posts
         'orderby' => 'date',
         'order' => 'DESC'
     );
@@ -62,8 +62,11 @@ function mxcamp_get_posts_cb_v3($atts) {
         $output .= '
         <link rel="stylesheet" type="text/css" href="/wp-content/plugins/mxcamp_V3/css/mxcamp_style-v3_0.css">
         <div class="slides" id="slides">
-        <div id="loading-spinner-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 10000; display: flex; align-items: center; justify-content: center; touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;">
-            <div class="loading-spinner" style="width: 75px; height: 75px; border: 4.5px solid rgba(245, 245, 245, 0.3); border-top: 4.5px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <div id="loading-spinner-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: transparent; z-index: 10000; display: flex; align-items: center; justify-content: center; touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;">
+            <div class="spinner-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
+                <div class="loading-spinner" style="width: 75px; height: 75px; border: 4.5px solid rgba(245, 245, 245, 0.3); border-top: 4.5px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite; margin: 0; padding: 0; flex-shrink: 0; box-sizing: border-box; display: block;"></div>
+                <div id="safari-loading-warning" style="display: none; opacity: 0; transition: opacity 0.8s ease-in-out; font-family: ClearSans, helvetica, sans-serif; font-weight: 500; font-stretch: 70%; background-color: rgba(255, 200, 0, 0.75); color: rgba(0, 0, 0, 0.9); font-size: 16px; line-height: 20px; padding: 10px 18px; border-radius: 8px; text-align: center; box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3); white-space: normal; word-wrap: break-word; max-width: 85vw;"></div>
+            </div>
         </div>
         <style>
             @keyframes spin {
@@ -75,6 +78,26 @@ function mxcamp_get_posts_cb_v3($atts) {
                 pointer-events: none;
             }
         </style>
+        <script>
+        (function() {
+            var ua = navigator.userAgent.toLowerCase();
+            var isSafari = ua.indexOf("safari") !== -1 && ua.indexOf("chrome") === -1 && ua.indexOf("chromium") === -1;
+            var isMobile = /iphone|ipad|ipod|android/i.test(ua) || window.innerWidth <= 768;
+            if (isSafari) {
+                var warn = document.getElementById("safari-loading-warning");
+                if (warn) {
+                    var lang = document.documentElement.lang || "";
+                    var isEs = lang.startsWith("es") || window.location.pathname.indexOf("/es/") !== -1;
+                    warn.textContent = isEs
+                        ? "Estas usando Safari. Para una mejor experiencia, utiliza otro navegador."
+                        : "You are using Safari. For best experience, please use another browser.";
+                    warn.style.display = "block";
+                    setTimeout(function() { warn.style.opacity = "1"; }, 50);
+                    window._safariWarningShownDuringLoading = true;
+                }
+            }
+        })();
+        </script>
         ';
 
         $i = 0;
@@ -188,6 +211,7 @@ function mxcamp_get_posts_cb_v3($atts) {
 		<script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/hovers.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/assets.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/BgVideoSound.js"></script>
+        <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/event-content-videos.js"></script>
         <!-- <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/add-onmouseover-detail.js"></script> -->
         <script src="https://player.vimeo.com/api/player.js"></script>
 		<script>
@@ -1154,5 +1178,18 @@ function mxcamp_inject_hash_redirects() {
 }
 add_action('wp_footer', 'mxcamp_inject_hash_redirects');
 
+/**
+ * Enqueue event feature slider script
+ */
+function mxcamp_enqueue_event_feature_slider() {
+    wp_enqueue_script(
+        'event-feature-slider',
+        plugin_dir_url(__FILE__) . 'event-feature-slider.js',
+        array(),
+        '1.0.0',
+        true
+    );
+}
+add_action('wp_enqueue_scripts', 'mxcamp_enqueue_event_feature_slider');
 
 ?>

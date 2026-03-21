@@ -5,6 +5,13 @@ class Hovers {
       this.activeHover = null;
       this.lastScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
       this.hideTimers = new Map(); // Store timers per hover element
+      this.backdrop = null; // Backdrop element for mobile overlays
+      this.mobileTouchMoveLockHandler = null;
+      
+      // Create backdrop element for mobile devices
+      if (this.isMobileDevice()) {
+        this.createBackdrop();
+      }
       
       // Add click handler for closing all hovers when clicking elsewhere on the page
       document.addEventListener('click', (e) => {
@@ -42,6 +49,11 @@ class Hovers {
       
       // Add scroll handler to detect when user scrolls away from hover content
       window.addEventListener('scroll', () => {
+        // Skip auto-close on mobile devices (they use overlays with close button)
+        if (this.isMobileDevice()) {
+          return;
+        }
+        
         // Only process if we have hovers open
         if (document.body.classList.contains('hoveron')) {
           const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
@@ -59,8 +71,14 @@ class Hovers {
       
       // Add touchmove handler specifically for mobile
       document.addEventListener('touchmove', (e) => {
-        // If we have an open hover and the touch target is not inside it or its content,
-        // close all hovers when user touches and drags elsewhere on the page
+        // Skip auto-close for mobile overlays - they use explicit close button
+        // Only close desktop hovers or menu hovers on touch
+        if (this.isMobileDevice() && document.body.classList.contains('hoveron')) {
+          // Don't auto-close mobile overlays on touchmove
+          return;
+        }
+        
+        // For desktop or non-overlay hovers, close when touching outside
         if (document.body.classList.contains('hoveron')) {
           const target = e.target;
           if (!target.closest('.hover-content') && !target.closest('.hover')) {
@@ -80,6 +98,39 @@ class Hovers {
         (navigator.userAgent.toLowerCase().indexOf('mobile') !== -1) ||
         (navigator.userAgent.toLowerCase().indexOf('android') !== -1)
       );
+    }
+    
+    // Create backdrop for mobile overlays
+    createBackdrop() {
+      this.backdrop = document.createElement('div');
+      this.backdrop.className = 'hover-backdrop';
+      this.backdrop.addEventListener('click', () => {
+        this.closeAllHovers();
+      });
+      document.body.appendChild(this.backdrop);
+    }
+    
+    // Lock page touch scrolling while allowing scroll inside hover content
+    enableMobileTouchMoveLock() {
+      if (this.mobileTouchMoveLockHandler) return;
+      
+      this.mobileTouchMoveLockHandler = (event) => {
+        if (!document.body.classList.contains('hoveron')) return;
+        
+        // Allow scrolling inside hover content only
+        if (event.target.closest('.hover-content')) return;
+        
+        // Block background page scrolling
+        event.preventDefault();
+      };
+      
+      document.addEventListener('touchmove', this.mobileTouchMoveLockHandler, { passive: false });
+    }
+    
+    disableMobileTouchMoveLock() {
+      if (!this.mobileTouchMoveLockHandler) return;
+      document.removeEventListener('touchmove', this.mobileTouchMoveLockHandler);
+      this.mobileTouchMoveLockHandler = null;
     }
   
     init() {
@@ -102,6 +153,11 @@ class Hovers {
         
         // Touch events for mobile - use touchstart/touchend
         hovers[i].addEventListener('touchstart', (e) => {
+          // If touch starts inside visible hover content, do not retrigger hover open logic.
+          if (e.target.closest('.hover-content')) {
+            return;
+          }
+          
           // We need to prevent default for touch events on mobile menu
           // but only for menu-related hovers that have arrows
           if (e.currentTarget.closest('.mobile-menu') && e.currentTarget.querySelector('.menu-arrow')) {
@@ -287,95 +343,86 @@ class Hovers {
 	  let preferredTop = triggerRect.top;
 	  const padding = 20; // Padding from viewport edges
 	  
-	  // Special positioning for mobile devices to ensure highlight isn't hidden
+	  // Mobile overlay approach - fixed full-screen overlay
 	  if (this.isMobileDevice()) {
-		const mobileSpacingAbove = 0;   // Gap when content is above (matches below spacing)
-	    const mobileSpacingBelow = -19;   // Gap when content is below for closest possible positioning
+	    // Apply mobile overlay positioning and scrolling
+	    hoverContent.style.position = 'fixed';
+	    hoverContent.style.setProperty('top', '50%', 'important');
+	    hoverContent.style.setProperty('left', '50%', 'important');
+	    hoverContent.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+	    hoverContent.style.width = 'calc(100vw - 24px)';
+	    hoverContent.style.maxWidth = 'calc(100vw - 24px)';
+	    const maxAllowedHeight = Math.floor(viewportHeight * 0.75); // Top 17% + Bottom 8%
+	    hoverContent.style.setProperty('max-height', `${maxAllowedHeight}px`, 'important');
+	    hoverContent.style.overflowY = 'scroll';
+	    hoverContent.style.overflowX = 'hidden';
+	    hoverContent.style.webkitOverflowScrolling = 'touch';
+	    hoverContent.style.touchAction = 'pan-y';
+	    hoverContent.style.overscrollBehavior = 'contain';
+	    hoverContent.style.zIndex = '2147483646';
 	    
-	    // On mobile, position the hover content below the highlight instead of to the side
-	    preferredLeft = triggerRect.left;
-	    preferredTop = triggerRect.bottom + mobileSpacingBelow; // Negative gap for overlap with highlight
+	    // Keep centered by default, but constrain within top 17% / bottom 8% bounds
+	    const adjustMobileOverlayPosition = () => {
+	      const minTop = Math.floor(viewportHeight * 0.17);
+	      const bottomReserved = Math.floor(viewportHeight * 0.08);
+	      const contentHeight = hoverContent.getBoundingClientRect().height;
+	      const desiredCenterY = Math.round(viewportHeight / 2);
+	      const minCenterY = minTop + Math.round(contentHeight / 2);
+	      const maxCenterY = viewportHeight - bottomReserved - Math.round(contentHeight / 2);
+	      const clampedCenterY = Math.max(minCenterY, Math.min(desiredCenterY, maxCenterY));
+	      hoverContent.style.setProperty('top', `${clampedCenterY}px`, 'important');
+	    };
 	    
-	    // Check if it would overflow right edge on mobile
-	    if (preferredLeft + contentRect.width > viewportWidth - padding) {
-	      // Center it under the highlight if possible
-	      preferredLeft = Math.max(padding, Math.min(viewportWidth - contentRect.width - padding, 
-	        triggerRect.left + (triggerRect.width / 2) - (contentRect.width / 2)));
+	    // Show backdrop and prevent body scroll
+	    if (this.backdrop) {
+	      this.backdrop.classList.add('active');
+	      this.backdrop.style.display = 'block';
 	    }
 	    
-	        // Handle scrolling for mobile devices
-    // Maximum height is 80% of viewport to allow more content visibility
-    const maxContentHeight = Math.floor(viewportHeight * 0.8); 
+    // Lock body scroll - avoid setting height:100vh which causes Safari viewport jumps
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    this.enableMobileTouchMoveLock();
 	    
-	    // Check if we should position above or below the trigger
-	    const positionAbove = triggerRect.top > viewportHeight / 2; // Position above if in bottom half of screen
+	    // Temporarily disable clicks on links to prevent accidental activation
+	    const links = hoverContent.querySelectorAll('a, button');
+	    links.forEach(link => {
+	      link.style.pointerEvents = 'none';
+	    });
 	    
-	    if (positionAbove) {
-	      // Position above the trigger with fixed height
-	      hoverContent.style.bottom = (viewportHeight - triggerRect.top) + "px"; // No gap
-	      hoverContent.style.top = "auto";
-	      hoverContent.style.maxHeight = maxContentHeight + "px";
-	    } else {
-	      // Position below the trigger with fixed height
-	      hoverContent.style.top = preferredTop + "px";
-	      hoverContent.style.bottom = "auto";
-	      hoverContent.style.maxHeight = maxContentHeight + "px";
-	    }
-	    
-	    // Always apply scrolling styles for mobile
-	    hoverContent.style.overflowY = "auto";
-	    hoverContent.style.overflowX = "hidden";
-	    hoverContent.style.webkitOverflowScrolling = "touch"; // Smooth scrolling on iOS
-	    hoverContent.style.scrollbarWidth = "thin";
-	    hoverContent.style.paddingRight = "10px"; // Add padding for better readability
-	    
-        // Add specific CSS to improve scrolling functionality
-        hoverContent.style.touchAction = "pan-y"; // Enable vertical touch scrolling
-        
-        // Create a wrapper for content if it doesn't exist
-        let contentWrapper = hoverContent.querySelector('.hover-content-wrapper');
-        if (!contentWrapper) {
-          // Temporarily store the original content
-          const originalContent = hoverContent.innerHTML;
-          
-          // Create a wrapper div
-          contentWrapper = document.createElement('div');
-          contentWrapper.className = 'hover-content-wrapper';
-          contentWrapper.style.width = '100%';
-          contentWrapper.style.height = '100%';
-          contentWrapper.style.overflow = 'auto';
-          contentWrapper.style.webkitOverflowScrolling = 'touch';
-          contentWrapper.style.touchAction = 'pan-y';
-          
-          // Clear the original content and append the wrapper
-          hoverContent.innerHTML = '';
-          hoverContent.appendChild(contentWrapper);
-          
-          // Restore the original content inside the wrapper
-          contentWrapper.innerHTML = originalContent;
-        }
-
-        // Optimize media elements (images/videos) in hover content
-        this.optimizeMediaInHoverContent(contentWrapper || hoverContent);
-	    
-	    // Add visual cue for scrollability when content exceeds the container
-	    if (contentRect.height > maxContentHeight) {
-	      const scrollIndicator = document.createElement('div');
-	      scrollIndicator.className = 'scroll-indicator';
-	      scrollIndicator.style.position = 'absolute';
-	      scrollIndicator.style.bottom = '5px';
-	      scrollIndicator.style.right = '10px';
-	      scrollIndicator.style.width = '4px';
-	      scrollIndicator.style.height = '20px';
-	      scrollIndicator.style.background = 'rgba(0,0,0,0.3)';
-	      scrollIndicator.style.borderRadius = '2px';
-	      scrollIndicator.style.zIndex = '999';
+	    // Re-enable link clicks and check for scrollable content after a delay
+	    setTimeout(() => {
+	      links.forEach(link => {
+	        link.style.pointerEvents = 'auto';
+	      });
 	      
-	      // Only add the indicator if it doesn't already exist
-	      if (!hoverContent.querySelector('.scroll-indicator')) {
-	        hoverContent.appendChild(scrollIndicator);
+	      if (hoverContent.scrollHeight > hoverContent.clientHeight) {
+	        hoverContent.classList.add('has-scroll');
+	      } else {
+	        hoverContent.classList.remove('has-scroll');
 	      }
+	      
+	      // Re-evaluate after links/media settle
+	      adjustMobileOverlayPosition();
+	    }, 300);
+	    
+	    // Initial/early positioning passes for stable mobile layout
+	    requestAnimationFrame(adjustMobileOverlayPosition);
+	    setTimeout(adjustMobileOverlayPosition, 80);
+	    setTimeout(adjustMobileOverlayPosition, 600);
+	    
+	    // Prevent touches inside overlay from bubbling back to parent .hover handlers.
+	    if (!hoverContent.dataset.touchGuardBound) {
+	      const stopBubble = (event) => {
+	        event.stopPropagation();
+	      };
+	      hoverContent.addEventListener('touchstart', stopBubble, { passive: true });
+	      hoverContent.addEventListener('touchmove', stopBubble, { passive: true });
+	      hoverContent.dataset.touchGuardBound = 'true';
 	    }
+	    
+	    // Optimize media elements (images/videos) in hover content
+	    this.optimizeMediaInHoverContent(hoverContent);
 	  } else {
 	    // Desktop positioning (keep existing behavior)
 	    // Check if would overflow right edge
@@ -444,6 +491,11 @@ class Hovers {
 	}
 	
     scheduleHide(el) {
+      // Skip auto-hide on mobile devices - they use overlays with explicit close button
+      if (this.isMobileDevice() && !el.closest('.mobile-menu')) {
+        return;
+      }
+      
       // Clear any existing timer for this specific element
       const existingTimer = this.hideTimers.get(el);
       if (existingTimer) {
@@ -468,6 +520,21 @@ class Hovers {
       // Get the hover content element
       let hoverContent = el.querySelector('.hover-content');
       if (!hoverContent) return;
+      
+      // Hide backdrop and restore body scroll (mobile overlay)
+      if (this.backdrop) {
+        this.backdrop.classList.remove('active');
+        // Force display none as additional safety
+        this.backdrop.style.display = 'none';
+      }
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      this.disableMobileTouchMoveLock();
+      
+      // Remove scroll indicator class
+      hoverContent.classList.remove('has-scroll');
       
       // Remove the scroll indicator if it exists
       const scrollIndicator = hoverContent.querySelector('.scroll-indicator');

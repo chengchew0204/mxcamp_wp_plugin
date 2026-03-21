@@ -1,0 +1,194 @@
+<!-- ================================================================
+     WordPress Integration Example
+     ================================================================
+     
+     OPTION 1: Direct Include (Recommended for same domain)
+     Copy this code into your WordPress Page/Post using the HTML block
+     
+     Note: Update the BASE_URL to match where you host the component files
+     ================================================================ -->
+
+<!-- wp:html -->
+<link rel="stylesheet" href="https://camp.mx/wp-content/uploads/map-component/map-component.css?v=1.0.0">
+
+<div class="interactive-map" id="imap">
+  <div class="map-container">
+    <!-- Map layer images -->
+    <img id="central-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/02-central-down-1.webp" alt="Map" />
+    <img id="central-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/03-central-down-2.webp" alt="Map" />
+    <img id="central-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/04-central-down-3.webp" alt="Map" />
+    <img id="chozas-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/05-chozas-down-1.webp" alt="Map" />
+    <img id="casita-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/06-casa-down-1.webp" alt="Map" />
+    <img id="casita-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/07-casa-down-2.webp" alt="Map" />
+    <img id="calle-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/08-calle-down-1.webp" alt="Map" />
+    <img id="calle-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/09-calle-down-2.webp" alt="Map" />
+    <img id="calle-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/10-calle-down-3.webp" alt="Map" />
+    <img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
+    <img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
+    <img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
+    <img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4-2.webp" alt="Map" />
+    <img id="ani-02-central-down-1" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-02-central-down-1.webp" alt="Map" />
+    <img id="ani-03-central-down-2" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-03-central-down-2.webp" alt="Map" />
+    <img id="ani-04-central-down-3" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-04-central-down-3.webp" alt="Map" />
+    <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" />
+    
+    <div id="media-overlay" aria-hidden="true"></div>
+    
+    <div id="central-detail" class="detail onmouseover-detail"></div>
+    <div id="central-detail-demo" class="detail" style="top: 40%; left: 38%; width: 17%; height: 39%; pointer-events: none; z-index: -1; opacity: 0; display: none;"></div>
+    <div id="casita-detail" class="detail onmouseover-detail"></div>
+    <div id="chozas-detail" class="detail onmouseover-detail"></div>
+    <div id="calle-detail" class="detail onmouseover-detail"></div>
+    <div id="jardin-detail" class="detail onmouseover-detail"></div>
+    <div id="cosina-detail" class="detail onmouseover-detail" style="top:65%;left:29%;width:10%;height:15%;"></div>
+    <div id="noclick1" class="detail" style="top:28%;left:65%;width:21%;height:28%;" onclick="return false;"></div>
+    <div id="noclick2" class="detail" style="top:46%;left:29%;width:10%;height:20%;" onclick="return false;"></div>
+    <div id="focus-point" class="detail"></div>
+    <div id="mapExit1" class="detail mapExit onmouseover-detail" style="top:10%;left:0%;width:68%;height:20%;opacity:0.1;"></div>
+    <div id="mapExit2" class="detail mapExit onmouseover-detail" style="bottom:0;left:0%;width:74%;height:20%;opacity:0.1;"></div>
+    <div id="mapExit3" class="detail mapExit onmouseover-detail" style="top:55%;left:0%;width:7%;height:55%;opacity:0.1;"></div>
+    <div id="mapExit4" class="detail mapExit onmouseover-detail" style="top:33%;right:0%;width:7%;height:60%;opacity:0.1;"></div>
+    <div id="demo-cursor" class="demo-cursor"></div>
+  </div>
+</div>
+
+<script src="https://camp.mx/wp-content/uploads/map-component/map-component.js?v=1.0.0"></script>
+<!-- /wp:html -->
+
+
+<!-- ================================================================
+     OPTION 2: iframe Embed (Recommended for cross-domain)
+     ================================================================
+     
+     Use this if you want to host the map on one domain and embed
+     it on multiple different domains
+     ================================================================ -->
+
+<!-- wp:html -->
+<div style="width: 100%; height: 100vh; position: relative;">
+  <iframe 
+    id="map-iframe"
+    src="https://camp.mx/map-standalone/"
+    style="width: 100%; height: 100%; border: none; display: block;"
+    allowfullscreen
+    loading="lazy">
+  </iframe>
+</div>
+
+<script>
+// Optional: Handle iframe communication for responsive height
+window.addEventListener('message', function(event) {
+  if (event.origin !== 'https://camp.mx') return;
+  
+  if (event.data.type === 'mapHeight') {
+    const iframe = document.getElementById('map-iframe');
+    if (iframe) {
+      iframe.style.height = event.data.height + 'px';
+    }
+  }
+});
+</script>
+<!-- /wp:html -->
+
+
+<!-- ================================================================
+     OPTION 3: Load from External HTML File
+     ================================================================
+     
+     This loads the entire HTML structure from an external file
+     Useful if you want to update the HTML structure independently
+     ================================================================ -->
+
+<!-- wp:html -->
+<link rel="stylesheet" href="https://camp.mx/wp-content/uploads/map-component/map-component.css?v=1.0.0">
+
+<div id="map-component-container"></div>
+
+<script>
+// Load the HTML structure from external file
+fetch('https://camp.mx/wp-content/uploads/map-component/map-component.html?v=1.0.0')
+  .then(response => response.text())
+  .then(html => {
+    document.getElementById('map-component-container').innerHTML = html;
+    
+    // Load the JavaScript after HTML is inserted
+    const script = document.createElement('script');
+    script.src = 'https://camp.mx/wp-content/uploads/map-component/map-component.js?v=1.0.0';
+    document.body.appendChild(script);
+  })
+  .catch(error => {
+    console.error('Failed to load map component:', error);
+    document.getElementById('map-component-container').innerHTML = 
+      '<p>Unable to load interactive map. Please try again later.</p>';
+  });
+</script>
+<!-- /wp:html -->
+
+
+<!-- ================================================================
+     OPTION 4: WordPress Shortcode (Advanced - Requires PHP)
+     ================================================================
+     
+     Add this to your theme's functions.php or a custom plugin
+     Then use [interactive_map] in your WordPress editor
+     ================================================================ -->
+
+<!--
+<?php
+// Add to functions.php
+function interactive_map_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'version' => '1.0.0'
+    ), $atts);
+    
+    $base_url = 'https://camp.mx/wp-content/uploads/map-component/';
+    $version = esc_attr($atts['version']);
+    
+    wp_enqueue_style('map-component-css', $base_url . 'map-component.css?v=' . $version);
+    wp_enqueue_script('map-component-js', $base_url . 'map-component.js?v=' . $version, array(), $version, true);
+    
+    ob_start();
+    include(get_template_directory() . '/map-component/map-component.html');
+    return ob_get_clean();
+}
+add_shortcode('interactive_map', 'interactive_map_shortcode');
+
+// Usage in WordPress editor:
+// [interactive_map]
+// or with specific version:
+// [interactive_map version="1.0.0"]
+?>
+-->
+
+
+<!-- ================================================================
+     DEPLOYMENT CHECKLIST
+     ================================================================
+     
+     1. Upload files to your primary WordPress site:
+        - /wp-content/uploads/map-component/map-component.css
+        - /wp-content/uploads/map-component/map-component.js
+        - /wp-content/uploads/map-component/map-component.html
+     
+     2. Ensure CORS headers are set if loading from different domain:
+        Add to .htaccess or server config:
+        
+        <FilesMatch "\.(css|js|html)$">
+          Header set Access-Control-Allow-Origin "*"
+        </FilesMatch>
+     
+     3. Test the component on the primary site first
+     
+     4. Copy the integration code to secondary sites
+     
+     5. When updating, increment version number in URLs:
+        ?v=1.0.0 -> ?v=1.0.1
+        This ensures browser cache is cleared
+     
+     6. For production, consider:
+        - Minifying CSS and JS files
+        - Using a CDN for better performance
+        - Adding loading spinners/fallbacks
+        - Implementing error boundaries
+     
+     ================================================================ -->

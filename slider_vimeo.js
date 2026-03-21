@@ -1,4 +1,21 @@
 function SliderConstructor(el) {
+    // Safari detection helper function
+    const isSafari = () => {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isSafariBrowser = userAgent.indexOf('safari') !== -1 && 
+                                userAgent.indexOf('chrome') === -1 && 
+                                userAgent.indexOf('chromium') === -1;
+        const isMobile = /iphone|ipad|ipod|android/i.test(userAgent) || window.innerWidth <= 768;
+        
+        // Return true for desktop Safari only
+        return isSafariBrowser && !isMobile;
+    };
+    
+    const isDesktopSafari = isSafari();
+    if (isDesktopSafari) {
+        console.log('Desktop Safari detected - applying Safari-specific video handling');
+    }
+    
     let divplaying = document.querySelectorAll('.videoplaying');
                 // Parcourir chaque vidéo pour vérifier si elle est en cours de lecture
                 divplaying.forEach(div => {
@@ -44,10 +61,38 @@ function SliderConstructor(el) {
             divcontrols.classList.add('onmouseover-detail');
             // thisvideo.setAttribute('type', 'video/mp4');
             thisvideo.setAttribute('playsinline', 'playsinline');
-            thisvideo.setAttribute('preload', 'metadata');
-            thisvideo.setAttribute('poster', 'https://archive.org/download/campgaleria' + numvideo + '.jpg');
+            
+            // Safari-specific handling: use 'auto' preload instead of 'metadata'
+            // This ensures poster images load properly on desktop Safari
+            if (isDesktopSafari) {
+                thisvideo.setAttribute('preload', 'auto');
+                console.log('Safari: Using preload="auto" for better poster image loading');
+            } else {
+                thisvideo.setAttribute('preload', 'metadata');
+            }
+            
+            // Set poster image with explicit preloading to ensure it displays
+            const posterUrl = 'https://archive.org/download/campgaleria' + numvideo + '.jpg';
+            
+            // Always set poster attribute immediately (browser will handle loading)
+            thisvideo.setAttribute('poster', posterUrl);
+            
+            // Preload poster image in background to verify it exists and cache it
+            const posterImg = new Image();
+            posterImg.onload = () => {
+                console.log('Poster image loaded successfully:', numvideo);
+            };
+            posterImg.onerror = () => {
+                console.warn('Poster image failed to load (might not exist):', posterUrl);
+                // Poster failed to load - video will show black/blank until played
+                // This is acceptable fallback behavior
+            };
+            // Start preloading the poster image in background
+            posterImg.src = posterUrl;
+            
             // thisvideo.setAttribute('src', 'https://archive.org/download/campgaleria' + numvideo + '.mp4');
-            thisvideo.setAttribute('crossorigin', 'anonymous');
+            // REMOVED: crossorigin="anonymous" - archive.org doesn't provide proper CORS headers
+            // This was preventing video playback on all browsers due to CORS blocking
             thisvideo.style.transform = 'translateZ(0)';
             thisvideo.style.webkitTransform = 'translate3d(0, 0, 0)';
             thisvideo.style.zIndex = '0!important';
@@ -62,6 +107,24 @@ function SliderConstructor(el) {
             thisvideo.appendChild(source);
 
             divvideo.appendChild(thisvideo);
+            
+            // Initialize video element after DOM insertion to ensure poster displays
+            // Use setTimeout to avoid blocking and ensure DOM is fully ready
+            setTimeout(() => {
+                // Check if video needs initialization (readyState 0 = nothing loaded)
+                if (thisvideo.readyState === 0) {
+                    // Safari needs explicit load() for poster to appear
+                    if (isDesktopSafari) {
+                        thisvideo.load();
+                        console.log('Safari: Video initialized for:', numvideo);
+                    } else {
+                        // Other browsers: just ensure preload is working
+                        // The preload attribute should handle this automatically
+                        console.log('Video element created for:', numvideo, 'readyState:', thisvideo.readyState);
+                    }
+                }
+            }, 100); // Small delay to ensure DOM is fully constructed
+            
             divvideo.appendChild(divcontrols);
             let playbut= document.createElement('img');
             playbut.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');

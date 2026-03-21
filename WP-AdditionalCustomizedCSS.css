@@ -229,7 +229,7 @@
       .ct-panel-content-inner{
           padding:0 20px;
           width:100vw;
-          height:100vh
+          height:100dvh
       }
       .ct-panel-actions button{
           display:block;
@@ -245,21 +245,42 @@
           display:block
       }
   button.ct-toggle svg.ct-icon{
-          opacity:0.9;
-          fill:white;
-          transition:0.5s;
-      }
-      button.ct-toggle:hover svg.ct-icon{
-          /* opacity:0.6; */
-          fill:white;
-      }
-      button.ct-toggle-close svg.ct-icon{
-          fill:transparent
-      }
-  
-  button.ct-toggle svg.ct-icon {
-      filter: drop-shadow(0px 0px 60px rgba(0, 0, 0, 1)) drop-shadow(0px 0px 40px rgba(0, 0, 0, 1)) drop-shadow(0px 0px 60px rgba(0, 0, 0, 1)) ;
-  }
+        opacity:0.9;
+        fill:white;
+        transition:0.5s;
+    }
+    button.ct-toggle:hover svg.ct-icon{
+        /* opacity:0.6; */
+        fill:white;
+    }
+    button.ct-toggle-close svg.ct-icon{
+        fill:transparent
+    }
+
+/* Burger menu header trigger: hide SVG, show PNG */
+button.ct-header-trigger.ct-toggle svg.ct-icon {
+    display: none !important;
+}
+button.ct-header-trigger.ct-toggle .ct-icon-container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+button.ct-header-trigger.ct-toggle {
+    background-image: url('https://camp.mx/wp-content/uploads/hamburger_withshadow.png') !important;
+    background-repeat: no-repeat !important;
+    background-position: center calc(50% - 3.5px) !important;
+    background-size: 70px 70px !important;
+    background-color: transparent !important;
+    width: 70px !important;
+    height: 70px !important;
+    padding: 0 !important;
+}
+@media screen and (max-width: 1199px) {
+    button.ct-header-trigger.ct-toggle {
+        background-position: center calc(50% + 2.4px) !important;
+    }
+}
   .mobile-menu ul {
       padding-top: 50px;
       padding-bottom: 50px;
@@ -413,7 +434,7 @@
             
         }
     footer{
-            top: calc(100vh - 75px)!important;
+            top: calc(100dvh - 75px)!important;
         }
     
 }
@@ -814,7 +835,7 @@ body.ajde_events-template-default div#main-container > * {
   position:fixed;
   top:0;
   left:0;
-  height:100vh!important;
+  height:100dvh!important;
   width:100vw!important;
   z-index:-2;
   opacity:0.4;
@@ -971,7 +992,7 @@ body.ajde_events-template-default div#main-container > * {
   body.single-ajde_events .evoet_c2.evoet_cx .evo_start {
       display: flex !important;
       flex-direction: row !important;
-      padding-top: 10px !important;
+      padding-top: 13px !important;
   }
   
   /* Set order for elements within evo_start to display month first, then date, then time */
@@ -987,9 +1008,22 @@ body.ajde_events-template-default div#main-container > * {
       order: 3 !important;
   }
   
-  /* Add dash before end date element for single event pages */
-  body.single-ajde_events .evoet_c2.evoet_cx .evo_end em.date::before {
-      content: ", " !important;
+  /* Reorder end date elements for single event pages to show month before date */
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_end {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: baseline !important;
+      padding-top: 13px !important;
+  }
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_end em.month {
+      order: 1 !important;
+  }
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_end em.date {
+      order: 2 !important;
+  }
+  /* Add comma before end month element for single event pages */
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_end em.month::before {
+      content: " " !important;
       color: black !important;
       font-family: 'ClearSans', helvetica, sans-serif !important;
       font-weight: 500 !important;
@@ -998,9 +1032,20 @@ body.ajde_events-template-default div#main-container > * {
       left: -8px !important;
       top: -3.1px !important;
   }
-  /* Add comma before end date element for lightbox popups */
-  #evo_lightboxes .evoet_c2.evoet_cx .evo_end em.date::before {
-      content: ", " !important;
+  /* Add comma before end date for same-month events (when no month is shown) */
+  body.single-ajde_events .evoet_c2.evoet_cx .evo_end:not(:has(em.month)) em.date::before {
+      content: " " !important;
+      color: black !important;
+      font-family: 'ClearSans', helvetica, sans-serif !important;
+      font-weight: 500 !important;
+      font-size: 18px !important;
+      position: relative !important;
+      left: -8px !important;
+      top: -3.1px !important;
+  }
+  /* Add comma before end date element for lightbox popups (only when no month is shown) */
+  #evo_lightboxes .evoet_c2.evoet_cx .evo_end:not(:has(em.month)) em.date::before {
+      content: " " !important;
       color: black !important;
       font-family: 'ClearSans', helvetica, sans-serif !important;
       font-weight: 500 !important;
@@ -1008,6 +1053,28 @@ body.ajde_events-template-default div#main-container > * {
       position: relative !important;
       left: -8px !important;
       top: -3.1px !important;
+  }
+  /* Add comma before end month element for lightbox popups (when month is shown for cross-month events) */
+  #evo_lightboxes .evoet_c2.evoet_cx .evo_end em.month::before {
+      content: " " !important;
+      color: black !important;
+      font-family: 'ClearSans', helvetica, sans-serif !important;
+      font-weight: 500 !important;
+      font-size: 24px !important;
+      position: relative !important;
+      left: -8px !important;
+      top: -3.1px !important;
+  }
+  
+  /* Force capitalize all month names in event dates - comprehensive targeting */
+  .eventon_list_event .evo_eventcard_time_t {
+      text-transform: capitalize !important;
+  }
+
+  /* Add padding-top to lightbox start and end dates for proper alignment */
+  #evo_lightboxes .evoet_c2.evoet_cx .evo_start,
+  #evo_lightboxes .evoet_c2.evoet_cx .evo_end {
+      padding-top: 13px !important;
   }
 
   #evo_lightboxes .evoet_c2.evoet_cx .only_time, body.single-ajde_events .evoet_c2.evoet_cx .only_time{display:none!important}
@@ -1039,13 +1106,26 @@ body.ajde_events-template-default div#main-container > * {
       max-width: 100% !important;
   }
   
-  .mobile-menu li {
-      display: block !important;
-      height: 1.8em;
-  }
-  .mobile-menu li a {
-      display: block !important;
-  }
+.mobile-menu li {
+    display: block !important;
+    height: 1.8em;
+}
+.mobile-menu li a {
+    display: block !important;
+}
+
+@media screen and (max-width: 600px) {
+    .mobile-menu ul {
+        padding-top: 50px;
+        padding-bottom: 20px;
+    }
+    .mobile-menu li {
+        height: 1.6em;
+    }
+    .mobile-menu a {
+        font-size: 24px;
+    }
+}
   
   .card-video-loader {
         width: 100%;
@@ -1244,12 +1324,426 @@ body.single-ajde_events {
 
 
 /* ===== Blocksy Burger Button Safari Fix ===== */
-
-.ct-header, .ct-header * {
-  box-shadow: none !important; /* if shadow is the culprit */
+/* Scoped to the header container only - NOT descendants,
+   so individual elements (burger SVG, logo img) can keep their own filters */
+header#header.ct-header {
+  box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   filter: none !important;
   transform: none !important;
   will-change: auto !important;
+}
+
+/* ===== Event Content Video Controls on Hover ===== */
+
+/* Video hover wrapper */
+.video-hover-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* Videos in event content - always visible */
+.eventon_full_description video,
+.eventon_desc_in video,
+.card-content video,
+body.single-ajde_events .evcal_evdata_cell video {
+  transition: opacity 0.3s ease;
+  visibility: visible !important;
+  display: block !important;
+  /*background-color: #000;*/
+  object-fit: contain;
+  min-height: 200px;
+}
+
+/* Ensure videos show poster/first frame */
+.eventon_full_description video:not([poster]),
+.eventon_desc_in video:not([poster]),
+body.single-ajde_events video:not([poster]) {
+  /*background: #000;*/
+}
+
+/* Visual feedback on hover */
+.video-hover-wrapper:hover video {
+  opacity: 0.95;
+}
+
+/* Ensure video controls are visible when shown */
+.video-hover-wrapper video[controls] {
+  opacity: 1;
+}
+
+/* Make it clear videos are interactive */
+.video-hover-wrapper video {
+  cursor: pointer;
+}
+
+/* Smooth control appearance */
+.video-hover-wrapper video[controls]::-webkit-media-controls-panel {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* For center-aligned videos */
+center .video-hover-wrapper {
+  display: block;
+  width: 100%;
+}
+
+/* Ensure videos don't overflow their containers and are always visible */
+.video-hover-wrapper video {
+  max-width: 100%;
+  max-height: 100%;
+   height: auto; 
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Ensure wrapper doesn't hide video */
+.video-hover-wrapper {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Mobile touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .video-hover-wrapper video {
+    cursor: default;
+  }
+}
+
+/* Event Feature Slider Styles */
+.event-feature-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important;
+}
+
+/* Ensure the parent container maintains proper layout (Lite and Full) */
+.evo_metarow_directimg:has(.event-feature-slider),
+.evocard_main_image.direct:has(.event-feature-slider) {
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  height: auto !important;
+  background-image: none !important;
+}
+
+/* Remove rounded corners from slider container and images only */
+.event-feature-slider,
+.event-slider-wrapper,
+.event-slider-track,
+.event-slide,
+.event-slide img {
+  border-radius: 0 !important;
+}
+
+/* Prevent slider from causing overflow on mobile (Lite and Full) */
+.evo_lightbox .evocard_box.ftimage:has(.event-feature-slider),
+.evo_lightbox .evo_metarow_directimg:has(.event-feature-slider),
+.evo_lightbox .evocard_main_image.direct:has(.event-feature-slider) {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Ensure lightbox content doesn't overflow on mobile */
+@media screen and (max-width: 768px) {
+  .evo_lightbox:has(.event-feature-slider) .evolb_box,
+  .evo_lightbox:has(.event-feature-slider) .evolb_content,
+  .evo_lightbox:has(.event-feature-slider) .evo_lightbox_body {
+    max-width: 100vw !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  .event-feature-slider {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .event-slider-wrapper,
+  .event-slider-track,
+  .event-slide {
+    max-width: 100%;
+  }
+}
+
+/* Ensure slider has proper aspect ratio for calendar events */
+.evo_lightbox .event-feature-slider,
+.ajde_evcal_calendar.boxy .event-feature-slider {
+  aspect-ratio: 3/4;
+}
+
+/* Auto aspect ratio for single event pages */
+body.single-ajde_events .event-feature-slider {
+  aspect-ratio: 3/4;
+  min-height: 300px;
+}
+
+.event-slider-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.event-slider-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.event-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease-in-out;
+}
+
+.event-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.event-slider-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 60px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-slider-nav svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0px 0px 16px rgba(0, 0, 0, 0.4)) 
+          drop-shadow(0px 0px 8px rgba(0, 0, 0, 0.3)) 
+          drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.2));
+}
+
+.event-slider-prev {
+  left: 10px;
+}
+
+.event-slider-next {
+  right: 10px;
+}
+
+.event-feature-slider:hover .event-slider-nav {
+  opacity: 0.9;
+}
+
+.event-slider-nav:hover {
+  opacity: 1;
+}
+
+.event-slider-nav:active {
+  opacity: 0.5;
+}
+
+.event-slider-indicators {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  padding: 8px 12px;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.event-slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(245, 245, 245, 0.9);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.event-slider-dot:hover {
+  border-color: rgba(245, 245, 245, 1);
+  transform: scale(1.15);
+}
+
+.event-slider-dot.active {
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(245, 245, 245, 0.95);
+}
+
+@media screen and (max-width: 600px) {
+  .event-slider-nav {
+    width: 30px;
+    height: 50px;
+  }
+  
+  .event-slider-prev {
+    left: 5px;
+  }
+  
+  .event-slider-next {
+    right: 5px;
+  }
+  
+  .event-slider-indicators {
+    bottom: 10px;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  
+  .event-slider-dot {
+    width: 7px;
+    height: 7px;
+    border-width: 1.5px;
+  }
+  
+  .event-feature-slider .event-slider-nav {
+    opacity: 0.6;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .event-slider-nav {
+    opacity: 0.5;
+  }
+  
+  .event-feature-slider:hover .event-slider-nav {
+    opacity: 0.5;
+  }
+  
+  .event-slider-nav:active {
+    opacity: 0.8;
+  }
+}
+
+/* ===== EventOn Full (v4.x) compatibility fixes ===== */
+
+/* Fix: evocard_main_image needs auto height instead of the broken "600pxpx" inline style */
+.evocard_main_image.direct {
+    height: auto !important;
+    aspect-ratio: auto !important;
+    border-radius: 0 !important;
+    max-height: unset !important;
+    background-size: cover;
+    background-position: center;
+}
+
+/* The inner span holds the actual background-image; show it as a proper block */
+.evocard_main_image.direct > span {
+    display: block !important;
+    height: auto !important;
+    aspect-ratio: auto !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    width: 100% !important;
+    min-height: 300px;
+}
+
+/* Use data-ratio to set correct proportions via padding-bottom trick is not possible
+   in pure CSS, but we can use the data-w/data-h to infer. Since most images are
+   portrait (ratio > 1), use a reasonable default aspect ratio from the image data. */
+.evocard_main_image.direct[data-ratio] > span {
+    min-height: unset;
+    padding-bottom: 0;
+}
+
+/* Override the 1/1 forced square for EventOn Full featured image box */
+.evocard_box.ftimage .evocard_main_image,
+.evocard_box.ftimage .evocard_main_image > span {
+    aspect-ratio: auto !important;
+}
+
+/* Ensure the evo_events_list_box wrapper does not interfere with grid layout */
+.evo_events_list_box {
+    display: contents;
+}
+
+/* EventOn Full: hide the evoet_data element that disrupts flex layout in tile grid.
+   In Lite this was a hidden em element, Full changed it to a visible span. */
+.ajde_evcal_calendar.boxy .eventon_list_event .desc_trig .evoet_data {
+    display: none !important;
+}
+
+/* EventOn Full: hide evoet_c3 with hide_eventtopdata in tile grid
+   (same as Lite's evoet_title display:none, but Full uses a different class) */
+.ajde_evcal_calendar.boxy .eventon_list_event .desc_trig .evoet_c3.hide_eventtopdata {
+    display: none !important;
+}
+
+/* EventOn Full: force date block (evoet_c2) to top-right corner using absolute positioning.
+   The desc_trig anchor fills the whole tile; evoet_c2 is the date block inside it.
+   Flex-based alignment is unreliable in Full because EventOn v4 changed desc_trig layout. */
+.ajde_evcal_calendar.boxy #evcal_list .eventon_list_event .desc_trig {
+    position: relative !important;
+}
+.ajde_evcal_calendar.boxy #evcal_list .eventon_list_event .desc_trig .evoet_c2 {
+    position: absolute !important;
+    top: 10px !important;
+    right: 1px !important;
+    left: auto !important;
+    margin: 0 !important;
+}
+
+/* EventOn Full lightbox: fix close button position.
+   Full's default CSS sets left:18px which overrides our right:20px. */
+.evo_lightboxes .evolb_header {
+    position: relative !important;
+}
+.evo_lightboxes .evolb_close_btn.evolbclose,
+.evo_lightboxes .evolbclose {
+    position: absolute !important;
+    top: 25px !important;
+    right: -10px !important;
+    left: auto !important;
+    z-index: 100;
+}
+
+@media screen and (max-width: 768px) {
+    .ajde_evcal_calendar.boxy #evcal_list .eventon_list_event .desc_trig .evoet_c2 {
+        right: -1px !important;
+    }
+    .evo_lightboxes .evolb_close_btn.evolbclose,
+    .evo_lightboxes .evolbclose {
+        top: 30px !important;
+    }
+}
+
+/* Disable click/zoom on featured image inside lightbox */
+.evo_lightboxes .evocard_box.ftimage img,
+.evo_lightboxes .evocard_box.ftimage .evocard_main_image,
+.evo_lightboxes .evocard_box.ftimage .evo_metarow_directimg {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+/* Re-enable pointer events for slider navigation buttons inside the image area */
+.evo_lightboxes .event-slider-nav,
+.evo_lightboxes .event-slider-dot {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }

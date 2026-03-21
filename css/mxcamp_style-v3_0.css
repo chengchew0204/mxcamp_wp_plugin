@@ -248,6 +248,31 @@ button.ct-header-trigger.ct-toggle {
 	pointer-events: auto !important;
 }
 
+/* Burger menu: hide SVG, use PNG image */
+button.ct-header-trigger.ct-toggle svg.ct-icon {
+	display: none !important;
+}
+button.ct-header-trigger.ct-toggle .ct-icon-container {
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border-radius: 0 !important;
+}
+button.ct-header-trigger.ct-toggle {
+	background-image: url('https://camp.mx/wp-content/uploads/hamburger_withshadow.png') !important;
+	background-repeat: no-repeat !important;
+	background-position: center calc(50% - 3.5px) !important;
+	background-size: 70px 70px !important;
+	background-color: transparent !important;
+	width: 70px !important;
+	height: 70px !important;
+	padding: 0 !important;
+}
+@media screen and (max-width: 1199px) {
+	button.ct-header-trigger.ct-toggle {
+		background-position: center calc(50% + 2.4px) !important;
+	}
+}
+
 
 .slide_10 {
 	height: 100dvh;
@@ -314,6 +339,7 @@ button.ct-header-trigger.ct-toggle {
 	scroll-snap-type: y mandatory;
 	scroll-behavior: smooth !important;
 	-webkit-overflow-scrolling: touch;
+	overscroll-behavior: none;
 }
 
 /* .slides.menuactive .card {
@@ -350,7 +376,7 @@ button.ct-header-trigger.ct-toggle {
 
 .card-header {
 	/*top: 102px;*/
-	top: 21px;
+	top: 21.7px;
 	position: absolute;
 	z-index: 100000;
 	left: 77px;
@@ -490,6 +516,112 @@ h2:after {
     overflow-y: auto;
     max-height: 80vh;
     cursor: default; /* Default cursor for the container */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Mobile hover boxes as fixed overlays */
+@media screen and (max-width: 768px) {
+    /* Backdrop for mobile overlays */
+    .hover-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100dvh;
+        /*background: rgba(0, 0, 0, 0.5); */
+        z-index: 2147483645;
+        display: none;
+        pointer-events: none;
+    }
+    
+    .hover-backdrop.active {
+        display: block;
+    }
+    
+    /* Mobile overlay hover content - centered with dynamic 17%/8% bounds */
+    .hover-content {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        height: auto !important;
+        max-height: 75dvh !important;
+        margin: 0 !important;
+        padding: 12px !important;
+        z-index: 2147483646 !important;
+        overflow-y: scroll !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: contain !important;
+        overscroll-behavior-x: none !important;
+        box-sizing: border-box;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        pointer-events: auto;
+        touch-action: pan-y !important;
+    }
+    
+    /* Add scroll indicator shadow at bottom when content is scrollable */
+    .hover-content::after {
+        content: '';
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+       /* background: linear-gradient(to top, rgba(245, 245, 245, 0.95), transparent);*/
+        pointer-events: none;
+        display: none;
+    }
+    
+    .hover-content.has-scroll::after {
+        display: block;
+    }
+    
+    /* Close button for mobile overlays */
+    .hover-close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        width: 32px;
+        height: 32px;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #282828;
+        font-weight: 300;
+        line-height: 1;
+        padding: 0;
+        pointer-events: auto;
+    }
+    
+    .hover-close-btn:active {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Exception for menu hovers - keep original behavior */
+    .mobile-menu .hover-content,
+    .menu-item .hover-content,
+    #offcanvas .hover-content {
+        position: absolute !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: 80dvh !important;
+        padding: 10px !important;
+        padding-top: 10px !important;
+        z-index: 100 !important;
+    }
 }
 
 /* Immediate pointer cursor for clickable elements in hover content (fallback while JS processes) */
@@ -923,7 +1055,7 @@ body.visible-contribuir .ct-social-box a:nth-child(3) {
 	color: rgba(245, 245, 245, 0.95) !important;
 	font-weight: 500;
 	font-size: 22px;
-	text-shadow: rgba(0, 0, 0, 0.6) 0 0 50px, rgba(0, 0, 0, 0.4) 0 0 80px;
+	text-shadow: rgba(0, 0, 0, 0.2) 0 0 8px, rgba(0, 0, 0, 0.35) 0 0 40px, rgba(0, 0, 0, 0.25) 0 0 70px;
 	text-transform: uppercase;
 	cursor: pointer;
 	transition: all 0.3s ease-out;
@@ -1236,12 +1368,26 @@ body.hoveron .tap-top {
 @media screen and (min-width: 1000px) {
 	.calendar-post {
 		width: 120%;
-		margin-left: -8%;
-		margin-right: -12%;
+		margin-left: -10%;
 	}
 }
 
 
+
+/* Shadow on the img directly, so it works even when parent filter is reset on iOS */
+header .site-branding img {
+	-webkit-filter: drop-shadow(0 0 50px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.09)) !important;
+	filter: drop-shadow(0 0 50px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.09)) !important;
+}
+
+/* Mobile: apply filter to the fixed container itself - iOS Safari renders filters
+   on position:fixed elements more reliably than on their children */
+@media screen and (max-width: 1024px) {
+	.site-branding {
+		-webkit-filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.28)) drop-shadow(0 0 14px rgba(0, 0, 0, 0.2)) !important;
+		filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.28)) drop-shadow(0 0 14px rgba(0, 0, 0, 0.2)) !important;
+	}
+}
 
 body.gallery header .site-branding,
 body.galeria header .site-branding {
@@ -1613,7 +1759,7 @@ input[type="button"],
 	top: 0;
 	left: 0;
 	width: 100vw;
-	height: 100vh;
+	height: 100dvh;
 	background: rgba(32, 16, 16, 0.50);
 	z-index: 1; /* Much lower than card content (z-index: 5) to ensure it's behind text */
 	opacity: 0;
@@ -1669,7 +1815,7 @@ input[type="button"],
 	top: 0;
 	left: 0;
 	width: 100vw;
-	height: 100vh;
+	height: 100dvh;
 	background-size: cover;
 	background-position: center top; /* Align to top for both desktop and mobile */
 	background-repeat: no-repeat;
@@ -1762,11 +1908,11 @@ input[type="button"],
 
 /* Desktop background positioning for meditators slide */
 #meditators.slide_10 {
-	background-position: center top !important;
+	background-position: left top !important;
 }
 
 #meditadorxs.slide_10 {
-	background-position: center top !important;
+	background-position: left top !important;
 }
 
 /* Mobile background positioning for meditadores slide */
@@ -1830,8 +1976,8 @@ input[type="button"],
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    right: 0;
+    bottom: 0;
     background: transparent;
     z-index: 99999; /* Much higher to cover all elements including header, logo, and social icons */
     display: flex;
@@ -1886,6 +2032,11 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
     border-top: 4.5px solid rgba(245, 245, 245, 0.9);
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    display: block;
 }
 
 @keyframes spin {
@@ -1899,7 +2050,7 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     background: rgba(32, 16, 16, 0.70);
     z-index: 9999;
     display: none;
@@ -2035,12 +2186,46 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
     }
 }
 
-/* Silent update: hide wrong grids but keep layout height */
+/* Ensure calendar container is positioned for overlay */
+.ajde_evcal_calendar {
+  position: relative;
+}
+
+/* Silent update: hide wrong grids immediately and show clear empty state */
 .ajde_evcal_calendar[data-updating="1"] .eventon_events_list,
-.ajde_evcal_calendar[data-updating="1"] .evcal_month_line{
-  visibility: hidden;
-  opacity: 0;
+.ajde_evcal_calendar[data-updating="1"] .evcal_month_line,
+.ajde_evcal_calendar[data-updating="1"] .eventon_list_event,
+.ajde_evcal_calendar[data-updating="1"] .ajde_evcal_event,
+.ajde_evcal_calendar[data-updating="1"] .evcal_list_a,
+.ajde_evcal_calendar[data-updating="1"] #evcal_list,
+.ajde_evcal_calendar[data-updating="1"] .evo_calendar_events{
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  display: none !important;
+  transition: none !important;
+  overflow: hidden !important;
+}
+
+/* Add a strong loading overlay to completely cover any content that might leak through */
+.ajde_evcal_calendar[data-updating="1"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.03);
   pointer-events: none;
+  z-index: 9999;
+  display: block !important;
+}
+
+/* Nuclear option: Hide the entire calendar body during loading, keep only header visible */
+.ajde_evcal_calendar[data-updating="1"] > *:not(.calendar_header) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 /* Smoothness for re-showing */
@@ -2058,22 +2243,25 @@ body:has(#loading-spinner-overlay:not(.fade-out)) .caretdiv {
   visibility: visible !important;
 }
 
-/* Fallback loader: visible only during updating */
+/* Enhanced loader: more prominent and visible */
 .ajde_evcal_calendar .calendar-progress{ display:none; }
 .ajde_evcal_calendar[data-updating="1"] .calendar_header .calendar-progress{
   display:block;
   position:absolute;
   left:0; right:0; top:0;
-  height:2px;
-  background: transparent;
+  height:5px;
+  background: rgba(0, 0, 0, 0.08);
   overflow:hidden;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ajde_evcal_calendar[data-updating="1"] .calendar_header .calendar-progress::before{
   content:"";
   position:absolute; top:0; bottom:0;
   left:-40%; width:40%;
-  background: rgba(245,245,245,.95);
-  animation: cal-progress 1.2s linear infinite;
+  background: rgba(245,245,245,.98);
+  animation: cal-progress 1s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(245, 245, 245, 0.6);
 }
 @keyframes cal-progress{
   from{ left:-40%; }

@@ -256,7 +256,7 @@ img {
 }
 
 .demo-cursor.fade-in {
-  animation: smoothFadeIn 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: smoothFadeIn 0.375s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes smoothFadeIn {
@@ -271,7 +271,7 @@ img {
 }
 
 .demo-cursor.click-animation {
-  animation: smoothClick 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: smoothClick 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 @keyframes smoothClick {
@@ -294,7 +294,7 @@ img {
 }
 
 .demo-cursor.fade-out {
-  animation: smoothFadeOut 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+  animation: smoothFadeOut 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
 
 @keyframes smoothFadeOut {
@@ -326,7 +326,7 @@ img {
 .media-item .frame {
   position: absolute;
   inset: 0;
-  background-image: url('https://camp.mx/wp-content/uploads/video_grid_box.webp');
+  //background-image: url('https://camp.mx/wp-content/uploads/video_grid_box.webp');
   background-size: contain;    /* use contain to show full frame image */
   background-position: center;
   background-repeat: no-repeat;
@@ -344,10 +344,41 @@ img {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;           /* fill the box */
+  object-fit: fill;            /* allow independent width/height control */
   z-index: 3;                  /* video on top of the frame */
   border-radius: inherit;      /* match container border radius if any */
   transform: translateX(-0.8%);  /* move video left by 0.8% while keeping frame position unchanged */
+}
+
+/* Fix for WordPress/plugin wrappers that interfere with positioning */
+.media-item > div:not(.frame) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.media-item video {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;  /* force independent sizing, ignore aspect ratio */
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Override WordPress video-hover-wrapper height: auto that prevents height adjustments */
+.media-item .video-hover-wrapper video,
+.media-item video {
+  height: 100% !important;  /* override height: auto from WP CSS */
+  width: 100% !important;
+  min-height: unset !important;
+  max-height: none !important;
 }
 
 /* Optional: quick helpers if you want responsive tweaks later */
@@ -370,11 +401,15 @@ img {
 <img id="jardin-down-1" class="map layer" data-src="https://camp.mx/wp-content/uploads/11-foro-down-1.webp" alt="Map" />
 <img id="jardin-down-2" class="map layer" data-src="https://camp.mx/wp-content/uploads/12-foro-down-2.webp" alt="Map" />
 <img id="jardin-down-3" class="map layer" data-src="https://camp.mx/wp-content/uploads/13-foro-down-3.webp" alt="Map" />
-<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4.webp" alt="Map" />
+<img id="jardin-down-4" class="map layer" data-src="https://camp.mx/wp-content/uploads/14-foro-down-4-2.webp" alt="Map" />
+<img id="ani-02-central-down-1" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-02-central-down-1.webp" alt="Map" />
+<img id="ani-03-central-down-2" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-03-central-down-2.webp" alt="Map" />
+<img id="ani-04-central-down-3" class="map layer fake-layer" data-src="https://camp.mx/wp-content/uploads/ani-04-central-down-3.webp" alt="Map" />
 <img id="map" class="map active" src="https://camp.mx/wp-content/uploads/01-start-palapas.webp" alt="Map" /> 
 <!-- Multi-media overlay mount -->
 <div id="media-overlay" aria-hidden="true"></div>
 <div id="central-detail" class="detail onmouseover-detail"> </div>
+<div id="central-detail-demo" class="detail" style="top: 40%; left: 38%; width: 17%; height: 39%; pointer-events: none; z-index: -1; opacity: 0; display: none;"> </div>
 <div id="casita-detail" class="detail onmouseover-detail"> </div>
 <div id="chozas-detail" class="detail onmouseover-detail"> </div>
 <div id="calle-detail" class="detail onmouseover-detail"> </div>
@@ -707,8 +742,8 @@ if (!ele.contains(event.target)) {
   function removeAllClickListeners() {
     let clickableElements = document.getElementsByClassName("detail")
     for (let element of clickableElements) {
-      // Don't remove listeners from mapExit elements
-      if (element.classList.contains('mapExit')) continue;
+      // Don't remove listeners from mapExit elements or demo elements
+      if (element.classList.contains('mapExit') || element.id === 'central-detail-demo') continue;
       
       // copy and replacing element in order to remove listeners with certainty
       let newElement = element.cloneNode(true)
@@ -1139,40 +1174,162 @@ if (!ele.contains(event.target)) {
   const overlayManager = new OverlayManager({
     mount: '#media-overlay',
     items: [
-      {
-        id: 'vid-foro-1',
-        type: 'video',
-        src: 'https://camp.mx/wp-content/uploads/14-foro-down-4.mp4',
-        poster: '',      // optional
-        mime: 'video/mp4',
-        // Position: Uses your current #video-overlay % parameters
-        rect: {
-          top: '25.8%',
-          right: '33.55%',
-          width: '11%',
-          height: '17.5%'
-        },
-        // Which layers this video should appear on
-        showOn: ['jardin-down-4']
-        // box settings removed, using video_grid_box.webp in CSS as universal frame
-      }
-
-      // ⬇ You can continue adding second, third, etc...
-      // Example: Central area second layer also has a video
-      // {
-      //   id: 'vid-central-2',
-      //   type: 'video',
-      //   src: 'https://camp.mx/wp-content/uploads/central-demo-2.mp4',
-      //   rect: {
-      //     top: '41%',
-      //     left: '39%',
-      //     width: '16%',
-      //     height: '18%'
-      //   },
-      //   showOn: ['central-down-2']
-      // }
-
-      // ...more items as needed
+       {
+         id: 'vid-central-1',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/02-central-down-1.m4v',
+         rect: {
+           top: '62.33%',
+           left: '47.8%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['central-down-1']
+       },
+       {
+         id: 'vid-central-2',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/03-central-down-2.m4v',
+         rect: {
+           top: '24%',
+           left: '36.5%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['central-down-2']
+       },
+       {
+         id: 'vid-central-3',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/04-central-down-3.m4v',
+         rect: {
+           top: '34.65%',
+           left: '28.4%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['central-down-3']
+       },
+       {
+         id: 'vid-chozas-1',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/05-chozas-down-1.m4v',
+         rect: {
+           top: '65.1%',
+           left: '28.5%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['chozas-down-1']
+       },
+       {
+         id: 'vid-casita-1',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/06-casa-down-1.m4v',
+         rect: {
+           top: '58.2%',
+           left: '4.2%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['casita-down-1']
+       },
+       {
+         id: 'vid-casita-2',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/07-casa-down-2.m4v',
+         rect: {
+           top: '37.77%',
+           left: '18%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['casita-down-2']
+       },
+       {
+         id: 'vid-calle-1',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/08-calle-down-1.m4v',
+         rect: {
+           top: '38.65%',
+           left: '68.2%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['calle-down-1']
+       },
+       {
+         id: 'vid-calle-2',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/09-calle-down-2.m4v',
+         rect: {
+           top: '39.1%',
+           left: '74.9%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['calle-down-2']
+       },
+       {
+         id: 'vid-calle-3',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/10-calle-down-3.m4v',
+         rect: {
+           top: '38.6%',
+           left: '68.2%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['calle-down-3']
+       },
+       {
+         id: 'vid-jardin-1',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/11-foro-down-1.m4v',
+         rect: {
+           top: '37.08%',
+           left: '83.7%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['jardin-down-1']
+       },
+       {
+         id: 'vid-jardin-2',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/12-foro-down-2.m4v',
+         rect: {
+           top: '34.2%',
+           left: '72.5%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['jardin-down-2']
+       },
+       {
+         id: 'vid-jardin-3',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/13-foro-down-3.m4v',
+         rect: {
+           top: '30.55%',
+           left: '74.34%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['jardin-down-3']
+       },
+       {
+         id: 'vid-jardin-4',
+         type: 'video',
+         src: 'https://camp.mx/wp-content/uploads/14-foro-down-4-2.m4v',
+         rect: {
+           top: '47.2%',
+           left: '75.7%',
+           width: '11.5%',
+           height: '18.5%'
+         },
+         showOn: ['jardin-down-4']
+       }
     ]
   });
 
@@ -1523,7 +1680,7 @@ if (!ele.contains(event.target)) {
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait a moment at the central building
-      await this.wait(150);
+      await this.wait(75);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Perform the click sequence through all central layers (now includes return to base)
@@ -1531,7 +1688,7 @@ if (!ele.contains(event.target)) {
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Wait before fading out
-      await this.wait(200);
+      await this.wait(100);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Re-enable user interactions when fade-out starts (not when it completes)
@@ -1579,39 +1736,90 @@ if (!ele.contains(event.target)) {
           this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
           this.ensureCursorVisibility(); // Final visibility check
           resolve();
-        }, 1500); // Match fade-in animation duration
+        }, 750); // Match fade-in animation duration
       });
     }
 
     async performCentralClickSequence() {
-      const centralDetail = document.querySelector('#central-detail');
-      if (!centralDetail) {
-        console.warn('Central detail element not found');
+      const centralDetailDemo = document.querySelector('#central-detail-demo');
+      if (!centralDetailDemo) {
+        console.warn('Central detail demo element not found');
         return;
       }
 
-      console.log('Starting central click sequence...');
+      console.log('Starting central click sequence with fake layers...');
       
-      // Click to start the sequence (from base to central-down-1)
-      await this.performClick(centralDetail, 'Click 1: Base -> Central Down 1');
+      // Click to start the sequence (from base to ani-02-central-down-1)
+      await this.performDemoClick(centralDetailDemo, 'ani-02-central-down-1', 'Click 1: Base -> Fake Layer 1');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(500);
-      if (this.demoInterrupted) return; // Check for interrupt
-      
-      // Click to go to central-down-2  
-      await this.performClick(centralDetail, 'Click 2: Central Down 1 -> Central Down 2');
-      if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(500);
+      await this.wait(250);
       if (this.demoInterrupted) return; // Check for interrupt
       
-      // Click to go to central-down-3
-      await this.performClick(centralDetail, 'Click 3: Central Down 2 -> Central Down 3');
+      // Click to go to ani-03-central-down-2  
+      await this.performDemoClick(centralDetailDemo, 'ani-03-central-down-2', 'Click 2: Fake Layer 1 -> Fake Layer 2');
       if (this.demoInterrupted) return; // Check for interrupt
-      await this.wait(500);
+      await this.wait(250);
+      if (this.demoInterrupted) return; // Check for interrupt
+      
+      // Click to go to ani-04-central-down-3
+      await this.performDemoClick(centralDetailDemo, 'ani-04-central-down-3', 'Click 3: Fake Layer 2 -> Fake Layer 3');
+      if (this.demoInterrupted) return; // Check for interrupt
+      await this.wait(250);
       if (this.demoInterrupted) return; // Check for interrupt
       
       // Click to return to base (fourth click)
-      await this.performFinalClick(centralDetail, 'Click 4: Central Down 3 -> Base');
+      await this.performFinalClick(centralDetailDemo, 'Click 4: Fake Layer 3 -> Base');
+    }
+
+    async performDemoClick(element, layerId, logMessage) {
+      console.log(logMessage);
+      
+      // Ensure cursor is visible and properly positioned before click
+      this.ensureCursorVisibility();
+      
+      // Add click animation to cursor
+      this.demoCursor.classList.add('click-animation');
+      
+      // Wait for click animation to start
+      await this.wait(75);
+      
+      // Show the fake layer directly without triggering real click handlers
+      const fakeLayer = document.querySelector('#' + layerId);
+      if (fakeLayer) {
+        // Hide all other fake layers and current layer
+        const allLayers = document.querySelectorAll('.layer');
+        allLayers.forEach(layer => {
+          layer.classList.remove('active');
+          layer.style.zIndex = -1;
+          layer.style.display = 'none';
+        });
+        
+        // Show the fake layer
+        fakeLayer.style.display = 'block';
+        fakeLayer.classList.add('active');
+        fakeLayer.style.zIndex = 2;
+        fakeLayer.style.opacity = '1';
+        
+        // Update currentLayer reference
+        currentLayer = fakeLayer;
+        
+        setTimeout(() => {
+          fakeLayer.style.zIndex = 0;
+        }, 50);
+      }
+      
+      // Ensure cursor stays visible during layer transition
+      this.maintainCursorDuringTransition();
+      
+      // Remove click animation but keep cursor visible
+      setTimeout(() => {
+        this.demoCursor.classList.remove('click-animation');
+        // Reset to stable state after click animation
+        this.demoCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        this.demoCursor.style.opacity = '1';
+        // Re-ensure visibility after transition
+        this.ensureCursorVisibility();
+      }, 200); // Match click animation duration
     }
 
     async performClick(element, logMessage) {
@@ -1624,7 +1832,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(150);
+      await this.wait(75);
       
       // Create a synthetic click event marked as demo-generated
       const clickEvent = new MouseEvent('click', {
@@ -1658,7 +1866,7 @@ if (!ele.contains(event.target)) {
         this.demoCursor.style.opacity = '1';
         // Re-ensure visibility after transition
         this.ensureCursorVisibility();
-      }, 400); // Match click animation duration
+      }, 200); // Match click animation duration
     }
 
     async performFinalClick(element, logMessage) {
@@ -1671,7 +1879,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(150);
+      await this.wait(75);
       
       // Reset to base map by calling reset function directly (no need for event)
       resetMapToInitialState();
@@ -1724,7 +1932,7 @@ if (!ele.contains(event.target)) {
       this.demoCursor.classList.add('click-animation');
       
       // Wait for click animation to start
-      await this.wait(150);
+      await this.wait(75);
       
       // Reset to base map by simulating a click outside or calling reset function
       resetMapToInitialState();
@@ -1759,8 +1967,8 @@ if (!ele.contains(event.target)) {
             this.demoCursor.classList.remove('fade-out');
             this.demoCursor.style.opacity = '0';
             resolve();
-          }, 600); // Match fade-out animation duration
-        }, 100); // Brief pause for smooth transition
+          }, 300); // Match fade-out animation duration
+        }, 50); // Brief pause for smooth transition
       });
     }
 

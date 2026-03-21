@@ -56,6 +56,7 @@ class Navigation {
         this.targetSlide = 'none';
         this.menuopened = false;
         this.scrolling = false;
+        this.isHashChangeFromRedirect = false;
         // connexion des elements structurels
         this.allmenulink = document.querySelectorAll('nav.mobile-menu a.ct-menu-link');
         this.slider = document.getElementById('slides');
@@ -138,6 +139,27 @@ class Navigation {
             document.body.classList.add('loading-active');
             // Ensure interactions are blocked
             this.blockAllInteractions();
+            
+            // Inject Safari warning into the existing PHP spinner if not already shown
+            if (this.isSafari() && !window._safariWarningShownDuringLoading) {
+                const wrapper = this.loadingSpinner.querySelector('.spinner-wrapper');
+                let warn = document.getElementById('safari-loading-warning');
+                if (wrapper) {
+                    if (!warn) {
+                        warn = document.createElement('div');
+                        warn.id = 'safari-loading-warning';
+                        wrapper.appendChild(warn);
+                    }
+                    const lang = this.detectLanguage();
+                    warn.textContent = lang === 'es'
+                        ? 'Estas usando Safari. Para una mejor experiencia, utiliza otro navegador.'
+                        : 'You are using Safari. For best experience, please use another browser.';
+                    warn.style.cssText = 'opacity: 0; transition: opacity 0.8s ease-in-out; font-family: ClearSans, helvetica, sans-serif; font-weight: 500; font-stretch: 70%; background-color: rgba(255, 200, 0, 0.75); color: rgba(0, 0, 0, 0.9); font-size: 16px; line-height: 20px; padding: 10px 18px; border-radius: 8px; text-align: center; box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3); white-space: normal; word-wrap: break-word; max-width: 85vw; display: block;';
+                    setTimeout(function() { warn.style.opacity = '1'; }, 50);
+                    window._safariWarningShownDuringLoading = true;
+                    console.log('Safari warning injected into existing PHP spinner');
+                }
+            }
         } else {
             console.warn('Loading spinner not found from PHP, creating fallback');
             this.createFallbackSpinner();
@@ -148,13 +170,32 @@ class Navigation {
     createFallbackSpinner() {
         const spinnerOverlay = document.createElement('div');
         spinnerOverlay.id = 'loading-spinner-overlay';
-        spinnerOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 99999; display: flex; align-items: center; justify-content: center; touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;';
+        spinnerOverlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: transparent; z-index: 99999; display: flex; align-items: center; justify-content: center; touch-action: none; pointer-events: auto; user-select: none; opacity: 1; transition: opacity 0.5s ease-out;';
+        
+        const spinnerWrapper = document.createElement('div');
+        spinnerWrapper.className = 'spinner-wrapper';
+        spinnerWrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 24px;';
         
         const spinner = document.createElement('div');
         spinner.className = 'loading-spinner';
-        spinner.style.cssText = 'width: 75px; height: 75px; border: 4.5px solid rgba(245, 245, 245, 0.3); border-top: 4.5px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite;';
+        spinner.style.cssText = 'width: 75px; height: 75px; border: 4.5px solid rgba(245, 245, 245, 0.3); border-top: 4.5px solid rgba(245, 245, 245, 0.9); border-radius: 50%; animation: spin 1s linear infinite; margin: 0; padding: 0; flex-shrink: 0; box-sizing: border-box; display: block;';
         
-        spinnerOverlay.appendChild(spinner);
+        spinnerWrapper.appendChild(spinner);
+        
+        if (this.isSafari() && !window._safariWarningShownDuringLoading) {
+            const warn = document.createElement('div');
+            warn.id = 'safari-loading-warning';
+            const lang = this.detectLanguage();
+            warn.textContent = lang === 'es'
+                ? 'Estas usando Safari. Para una mejor experiencia, utiliza otro navegador.'
+                : 'You are using Safari. For best experience, please use another browser.';
+            warn.style.cssText = 'opacity: 0; transition: opacity 0.8s ease-in-out; font-family: ClearSans, helvetica, sans-serif; font-weight: 500; font-stretch: 70%; background-color: rgba(255, 200, 0, 0.75); color: rgba(0, 0, 0, 0.9); font-size: 16px; line-height: 20px; padding: 10px 18px; border-radius: 8px; text-align: center; box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3); white-space: normal; word-wrap: break-word; max-width: 85vw;';
+            spinnerWrapper.appendChild(warn);
+            setTimeout(function() { warn.style.opacity = '1'; }, 50);
+            window._safariWarningShownDuringLoading = true;
+        }
+        
+        spinnerOverlay.appendChild(spinnerWrapper);
         document.body.appendChild(spinnerOverlay);
         
         this.loadingSpinner = spinnerOverlay;
@@ -194,8 +235,33 @@ class Navigation {
     // Hide loading spinner and enable interactions
     hideLoadingSpinner() {
         if (this.loadingSpinner) {
+            const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()) || window.innerWidth <= 768;
+            if (isMobile && window._safariWarningShownDuringLoading) {
+                const warn = document.getElementById('safari-loading-warning');
+                if (warn && warn.parentNode) {
+                    // Snapshot exact position and width before detaching
+                    const rect = warn.getBoundingClientRect();
+
+                    // Hide the spinner circle immediately so only the warning remains
+                    const spinnerCircle = this.loadingSpinner.querySelector('.loading-spinner');
+                    if (spinnerCircle) spinnerCircle.style.display = 'none';
+
+                    warn.parentNode.removeChild(warn);
+                    warn.style.position = 'fixed';
+                    warn.style.top = rect.top + 'px';
+                    warn.style.left = rect.left + 'px';
+                    warn.style.width = rect.width + 'px';
+                    warn.style.transform = 'none';
+                    warn.style.zIndex = '10000';
+                    warn.style.pointerEvents = 'none';
+                    warn.style.transition = 'opacity 0.5s ease-out';
+                    document.body.appendChild(warn);
+                    this._safariWarningPersisted = true;
+                    console.log('Safari warning pinned at', rect.top, rect.left, rect.width);
+                }
+            }
+            
             this.loadingSpinner.classList.add('fade-out');
-            // Remove body class to show interface elements again
             document.body.classList.remove('loading-active');
             
             setTimeout(() => {
@@ -203,11 +269,29 @@ class Navigation {
                     this.loadingSpinner.parentNode.removeChild(this.loadingSpinner);
                 }
                 this.loadingSpinner = null;
-            }, 500); // Match CSS transition time
+            }, 500);
         }
         
         this.enableInteractions();
         console.log('Loading spinner hidden - interactions enabled');
+    }
+    
+    // Dismiss the persisted mobile Safari warning, synced with cursor hint fade-out.
+    // hintTap animation: 2.0s total, fade-out starts at 68% (1.36s).
+    // This is called when cursor hint play starts, so delay to match the hint fade-out.
+    dismissSafariWarning() {
+        if (!this._safariWarningPersisted) return;
+        this._safariWarningPersisted = false;
+        setTimeout(() => {
+            const warn = document.getElementById('safari-loading-warning');
+            if (warn && warn.parentNode) {
+                warn.style.opacity = '0';
+                setTimeout(() => {
+                    if (warn.parentNode) warn.parentNode.removeChild(warn);
+                }, 500);
+                console.log('Safari warning fading out with cursor hint');
+            }
+        }, 1360);
     }
     
     // initialisation de la navigation
@@ -242,23 +326,66 @@ class Navigation {
         try {
             // Phase 3: Complete setup
             this.LetsListen();
-            this.UrlVerif();
             this.ashTagLinks();
             
-            // Hide spinner first
+            // Set up hash change listener for redirects that happen after page load
+            this.initHashChangeListener();
+            
+            // Hide spinner and enable interactions FIRST
             this.hideLoadingSpinner();
             
-            // Phase 4: Show cursor hint after spinner disappears
+            // Phase 4: After spinner is hidden and interactions are enabled, check URL hash
+            // This ensures cards can actually open (not blocked by spinner overlay)
             setTimeout(() => {
+                // Check URL hash after interactions are enabled - works for all hashes (#guia, #orientacion, etc.)
+                this.UrlVerif();
+                
+                // Mobile-specific: Add additional delayed hash check to catch hashes that arrive late
+                // This fixes the issue where hash navigation doesn't auto-open on mobile
+                if (this.isMobileDevice()) {
+                    setTimeout(() => {
+                        const currentHash = window.location.hash;
+                        if (currentHash && currentHash.length > 1 && !this.cardopened) {
+                            console.log('Mobile delayed hash check triggered for:', currentHash);
+                            this.UrlVerif();
+                        }
+                    }, 400); // Additional delay for mobile to ensure hash is processed
+                }
+                
+                // Initialize scroll hints
                 this.initScrollHints();
                 this.isFullyLoaded = true;
                 console.log('Site fully loaded and ready for interaction');
-            }, 600); // Delay to ensure spinner fade-out is complete (500ms + buffer)
+            }, 100); // Small delay to ensure interactions are fully enabled
             
         } catch (error) {
             console.error('Complete initialization error:', error);
             this.hideLoadingSpinner();
         }
+    }
+    
+    // Initialize hash change listener to handle URL hash navigation
+    initHashChangeListener() {
+        window.addEventListener('hashchange', () => {
+            // Skip if this is a programmatic hash change from a redirect
+            if (this.isHashChangeFromRedirect) {
+                console.log('Skipping hashchange event (redirect in progress)');
+                return;
+            }
+            
+            const urlHash = window.location.hash;
+            if (urlHash && urlHash.length > 1) {
+                console.log('Hash changed to:', urlHash);
+                const cleanHash = urlHash.substring(1);
+                const slideData = {
+                    post: 'dontknow',
+                    divId: cleanHash,
+                    openTheCard: true
+                };
+                this.gotoSlide(slideData);
+            }
+        });
+        console.log('Hash change listener initialized');
     }
     
     // Load all resources (gif-detail, background images, etc.) with callback when ready
@@ -465,9 +592,29 @@ class Navigation {
             return;
         }
         */
-        // Handle specific redirect cases for events/eventos
+        // Handle specific hash redirect cases
         if (urlHash) {
             const cleanHash = urlHash.substring(1);
+            
+            // Redirect #guia and #guide to #orientacion
+            if (cleanHash === 'guia' || cleanHash === 'guide') {
+                // Navigate directly to orientacion
+                const slideData = {
+                    post: 'dontknow',
+                    divId: 'orientacion',
+                    openTheCard: true
+                };
+                this.gotoSlide(slideData);
+                // Update hash after navigation starts, with flag to prevent double navigation
+                setTimeout(() => {
+                    this.isHashChangeFromRedirect = true;
+                    window.location.hash = 'orientacion';
+                    setTimeout(() => {
+                        this.isHashChangeFromRedirect = false;
+                    }, 100);
+                }, 100);
+                return;
+            }
             
             // Redirect #events to calendar (English)
             if (cleanHash === 'events' && (currentPath.includes('/en') || document.documentElement.lang === 'en-US')) {
@@ -690,9 +837,9 @@ class Navigation {
         hoverDiv.style.position = 'absolute';
         hoverDiv.style.left = 'calc(100% - 70px)'; // Changed from 75px to 50px to move it more to the right
         hoverDiv.style.top = '0px'; // Position below the menu item
-        hoverDiv.style.border = '1px solid white'; // Add white border around the entire hover div
+        hoverDiv.style.border = '1px solid white';
         hoverDiv.style.backgroundColor = 'white'; // Set background to white
-        hoverDiv.style.padding = '3.5px'; // Adjust padding to 3.5px
+        hoverDiv.style.padding = '2px';
         hoverDiv.style.lineHeight = '0'; // Remove line height spacing
         hoverDiv.style.boxSizing = 'border-box'; // Ensure border is included in element dimensions
         
@@ -730,7 +877,7 @@ class Navigation {
         domainLabel.style.color = "black";
         domainLabel.style.fontSize = "12px";
         domainLabel.style.textAlign = "center";
-        domainLabel.style.padding = "3.5px"; // Adjust padding to 3.5px
+        domainLabel.style.padding = "2px";
         domainLabel.style.margin = "0"; // No margin
         domainLabel.style.backgroundColor = "transparent";
         domainLabel.style.width = "100%";
@@ -753,6 +900,7 @@ class Navigation {
             volunteerIsHovering = false;
             arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
             hoverDiv.style.display = 'none';
+            NewParagraph.style.zIndex = '';
             volunteerPreviewShown = false;
             
             /* COMMENTED OUT: Restaurant preview variables - no longer needed
@@ -771,10 +919,27 @@ class Navigation {
         function showVolunteerPreview() {
             // Close any open previews first
             closeAllPreviews();
-            
+
+            // Override all CSS !important rules that bleed in from post hover styles.
+            // setProperty with 'important' is the only way to beat CSS !important.
+            // Position the top-left corner of the hover box directly under the caret arrow.
+            const caretLeft = arrowImg.offsetLeft;
+            const paragraphHeight = NewParagraph.offsetHeight;
+            hoverDiv.style.setProperty('position', 'absolute', 'important');
+            hoverDiv.style.setProperty('left', caretLeft + 'px', 'important');
+            hoverDiv.style.setProperty('top', paragraphHeight + 'px', 'important');
+            hoverDiv.style.setProperty('width', '150px', 'important');
+            hoverDiv.style.setProperty('margin-top', '0', 'important');
+            hoverDiv.style.setProperty('margin-left', '0', 'important');
+            hoverDiv.style.setProperty('transform', 'none', 'important');
+            hoverDiv.style.setProperty('z-index', '1000', 'important');
+            hoverDiv.style.setProperty('padding', '2px', 'important');
+            hoverDiv.style.setProperty('padding-top', '2px', 'important');
+
             // Then open this preview
             arrowImg.style.setProperty('transform', 'rotate(0deg)', 'important');
             hoverDiv.style.display = 'block';
+            NewParagraph.style.zIndex = '1000';
             volunteerIsHovering = true;
             volunteerPreviewShown = true;
         }
@@ -802,6 +967,7 @@ class Navigation {
                 if (!volunteerIsHovering) {
                     arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
                     hoverDiv.style.display = 'none';
+                    NewParagraph.style.zIndex = '';
                     volunteerPreviewShown = false;
                 }
             }, 250);
@@ -867,6 +1033,7 @@ class Navigation {
                 volunteerIsHovering = false;
                 arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
                 hoverDiv.style.display = 'none';
+                NewParagraph.style.zIndex = '';
                 volunteerPreviewShown = false;
             } else {
                 // If preview is hidden, show it (this will close any other open previews)
@@ -887,6 +1054,7 @@ class Navigation {
                     volunteerIsHovering = false;
                     arrowImg.style.setProperty('transform', 'rotate(-90deg)', 'important');
                     hoverDiv.style.display = 'none';
+                    NewParagraph.style.zIndex = '';
                     volunteerPreviewShown = false;
                 } else {
                     // If preview is hidden, show it
@@ -1482,6 +1650,10 @@ class Navigation {
             SliderConstructor('slider2');
             SliderConstructor('slider3');
             SliderConstructor('slider4');
+            // Show Safari warning for gallery if needed
+            setTimeout(() => {
+                this.showGallerySafariWarningIfNeeded();
+            }, 200); // Small delay to ensure card is fully opened
           }else if(slideId==="calendar" || slideId==="calendario"){
            // initializeCalendar(jQuery);
            // Trigger EventON image hydration when calendar card opens
@@ -1518,11 +1690,13 @@ class Navigation {
            // Initialize compact calendar navigation for events section
            this.initializeCompactCalendarNav();
           }
-          // Pause all background videos when opening a card
-          this.theFrontVideo.forEach(function(el) {
-              console.log(el);
-              el.pause();
-          });
+         // Pause all background videos when opening a card (skip for calendar slides)
+         if (slideId !== "calendar" && slideId !== "calendario") {
+             this.theFrontVideo.forEach(function(el) {
+                 console.log(el);
+                 el.pause();
+             });
+         }
         //this.cardopened ?? this.closeCards();
         this.desActivateMenu();
         this.targetSlide = slideId;
@@ -1650,11 +1824,6 @@ class Navigation {
             return;
         }
         
-        // Check if cursor hint has already been shown for this slide this session
-        if (this.cursorHintShown.has(slideId)) {
-            console.log('Cursor hint skipped for slide:', slideId, '- already shown this session');
-            return; // Don't show cursor hint again
-        }
         
         // Remove any existing cursor hint to allow fresh animation
         const existingHint = slideElement.querySelector('.cursor-hint');
@@ -1683,22 +1852,17 @@ class Navigation {
         // Show post content hint on every slide (no longer limited to first 3)
         const isExcludedSlide = false;
         
-        // Show post content hint if not excluded, not direct URL visit, and not already shown this session
-        const shouldShowPostContentHint = !isExcludedSlide && 
-                                         !this.isDirectUrlVisit && 
-                                         !this.slideHintShown.has(slideId);
+        // Show post content hint if not excluded and not a direct URL visit
+        const shouldShowPostContentHint = !isExcludedSlide && !this.isDirectUrlVisit;
         
         if (shouldShowPostContentHint) {
-            console.log('Post content TEXT HINT will show for slide:', slideId, '- first time this session');
+            console.log('Post content TEXT HINT will show for slide:', slideId);
         } else if (this.isDirectUrlVisit) {
             console.log('Post content hint skipped for slide:', slideId, '- direct URL visit detected');
-        } else if (this.slideHintShown.has(slideId)) {
-            console.log('Post content hint skipped for slide:', slideId, '- already shown this session');
         } else {
             console.log('Post content hint conditions not met for slide:', slideId, {
                 isExcludedSlide,
-                isDirectUrlVisit: this.isDirectUrlVisit,
-                alreadyShown: this.slideHintShown.has(slideId)
+                isDirectUrlVisit: this.isDirectUrlVisit
             });
         }
         
@@ -1712,21 +1876,15 @@ class Navigation {
             if (cursorHint && cursorHint.parentNode) {
                 cursorHint.classList.add('play');
                 
-                // Mark this slide as having shown its cursor hint
-                this.cursorHintShown.add(slideId);
-                console.log('Added slide to cursor hint tracking:', slideId, 'Total slides with cursor hints shown:', this.cursorHintShown.size);
+                this.dismissSafariWarning();
                 
                 // Use the stored decision to schedule the post content hint
                 if (shouldShowPostContentHint) {
                     console.log('Scheduling post content TEXT HINT for slide:', slideElement.id);
                     this.schedulePostContentHint(slideElement, isHeavySlide);
-                    
-                    // Mark this slide as having shown its content hint
-                    this.slideHintShown.add(slideId);
-                    console.log('Added slide to content hint tracking:', slideId, 'Total slides with content hints shown:', this.slideHintShown.size);
                 }
             }
-        }, 1100);
+        }, 450);
         
         // Create cleanup function with smooth fade-out
         const cleanupHint = () => {
@@ -1904,7 +2062,7 @@ class Navigation {
             top: 0 !important;
             left: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
+            height: 100dvh !important;
             background-image: url(${screenshotPath}) !important;
             background-size: cover !important;
             background-position: ${backgroundPosition} !important;
@@ -2291,6 +2449,14 @@ class Navigation {
                 message: isEnglish ? `(${actionWord} to open GIVING)` : `(${actionWord} para abrir CONTRIBUIR)`
             },
             
+            // Invest/Invertir slides
+            'invertir': {
+                message: isEnglish ? `(${actionWord} to open INVEST)` : `(${actionWord} para abrir INVERTIR)`
+            },
+            'invest': {
+                message: isEnglish ? `(${actionWord} to open INVEST)` : `(${actionWord} para abrir INVERTIR)`
+            },
+            
             // Events slides
             'eventos': {
                 message: isEnglish ? `(${actionWord} to open EVENTS)` : `(${actionWord} para abrir EVENTOS)`
@@ -2366,13 +2532,17 @@ class Navigation {
         return isMobile ? 'mobiles' : 'desktop';
     }
     
+    // Detect if user is on any Safari browser (desktop or mobile)
+    isSafari() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        return userAgent.indexOf('safari') !== -1 && userAgent.indexOf('chrome') === -1 && userAgent.indexOf('chromium') === -1;
+    }
+
     // Detect if user is on desktop Safari (not mobile Safari)
     isDesktopSafari() {
         const userAgent = navigator.userAgent.toLowerCase();
-        const isSafari = userAgent.indexOf('safari') !== -1 && userAgent.indexOf('chrome') === -1 && userAgent.indexOf('chromium') === -1;
         const isMobile = /iphone|ipad|ipod|android/i.test(userAgent) || window.innerWidth <= 768;
-        
-        return isSafari && !isMobile;
+        return this.isSafari() && !isMobile;
     }
     
     // Show Safari warning message for desktop Safari users
@@ -2391,11 +2561,11 @@ class Navigation {
         console.log('Contains chrome:', userAgent.indexOf('chrome') !== -1);
         console.log('Contains chromium:', userAgent.indexOf('chromium') !== -1);
         console.log('Window width:', window.innerWidth);
-        console.log('Is desktop Safari:', this.isDesktopSafari());
+        console.log('Is Safari:', this.isSafari());
         
-        // Check if desktop Safari
-        if (!this.isDesktopSafari()) {
-            console.log('Not desktop Safari, skipping browser warning');
+        // Check if Safari (desktop or mobile)
+        if (!this.isSafari()) {
+            console.log('Not Safari, skipping browser warning');
             return;
         }
         
@@ -2421,10 +2591,12 @@ class Navigation {
         const warningOverlay = document.createElement('div');
         warningOverlay.className = 'safari-warning-overlay';
         
-        // Position the warning at the top center of the screen
+        const isMobileDevice = /iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()) || window.innerWidth <= 768;
+        const overlayTop = isMobileDevice ? '55%' : '38%';
+        
         warningOverlay.style.cssText = `
             position: fixed;
-            top: 38%;
+            top: ${overlayTop};
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10000;
@@ -2451,14 +2623,15 @@ class Navigation {
             letter-spacing: 0px;
             background-color: rgba(255, 200, 0, 0.75);
             color: rgba(0, 0, 0, 0.9);
-            font-size: 18px;
-            line-height: 22px;
+            font-size: ${isMobileDevice ? '15px' : '18px'};
+            line-height: ${isMobileDevice ? '20px' : '22px'};
             padding: 12px 20px;
             border-radius: 8px;
             text-align: center;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
-            white-space: nowrap;
+            max-width: ${isMobileDevice ? '85vw' : '700px'};
+            white-space: normal;
+            word-wrap: break-word;
         `;
         
         // Add message to overlay
@@ -2496,6 +2669,118 @@ class Navigation {
         // Mark as shown for this page load only (resets on reload/language change)
         window._safariWarningShown = true;
         console.log('Safari warning marked as shown for this page load');
+    }
+    
+    // Show Safari warning for gallery feature specifically
+    showGallerySafariWarningIfNeeded() {
+        // Don't show gallery warning if menu is open
+        if (this.menuopened) {
+            console.log('Gallery Safari warning skipped - menu is open');
+            return;
+        }
+        
+        // Check if Safari (desktop or mobile)
+        if (!this.isSafari()) {
+            console.log('Not Safari, skipping gallery browser warning');
+            return;
+        }
+        
+        // REMOVED: Gallery warning check removed - it should show EVERY time gallery is opened
+        // This is because gallery functionality is consistently problematic in Safari
+        
+        console.log('Showing Safari browser warning for gallery feature (every time)');
+        
+        // Detect current language
+        const language = this.detectLanguage();
+        const isEnglish = language === 'en';
+        
+        // Set warning message based on language
+        const warningMessage = isEnglish ? 
+            'This feature doesn\'t work reliably in Safari. Please open it in another browser for full functionality.' :
+            'Esta función no funciona de manera confiable en Safari. Ábrela en otro navegador para obtener todas sus capacidades.';
+        
+        // Create the warning overlay
+        const warningOverlay = document.createElement('div');
+        warningOverlay.className = 'gallery-safari-warning-overlay';
+        
+        const isMobileDevice = /iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()) || window.innerWidth <= 768;
+        const overlayTop = isMobileDevice ? '55%' : '38%';
+        
+        warningOverlay.style.cssText = `
+            position: fixed;
+            top: ${overlayTop};
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+        `;
+        
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.className = 'gallery-safari-warning-message';
+        messageElement.textContent = warningMessage;
+        
+        messageElement.style.cssText = `
+            font-family: 'ClearSans', helvetica, sans-serif;
+            font-weight: 500;
+            font-stretch: 70%;
+            letter-spacing: 0px;
+            background-color: rgba(255, 200, 0, 0.75);
+            color: rgba(0, 0, 0, 0.9);
+            font-size: ${isMobileDevice ? '15px' : '18px'};
+            line-height: ${isMobileDevice ? '20px' : '22px'};
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: ${isMobileDevice ? '85vw' : '700px'};
+            white-space: normal;
+            word-wrap: break-word;
+        `;
+        
+        // Add message to overlay
+        warningOverlay.appendChild(messageElement);
+        
+        // Add to document body
+        document.body.appendChild(warningOverlay);
+        
+        // Force reflow and trigger fade in
+        warningOverlay.offsetHeight;
+        
+        setTimeout(() => {
+            if (warningOverlay && warningOverlay.parentNode) {
+                warningOverlay.style.opacity = '1';
+                console.log('Gallery Safari warning faded in');
+            }
+        }, 100);
+        
+        // Hold for 5 seconds then fade out (longer for slow readers)
+        setTimeout(() => {
+            if (warningOverlay && warningOverlay.parentNode) {
+                warningOverlay.style.opacity = '0';
+                console.log('Gallery Safari warning fading out');
+                
+                // Remove after fade completes
+                setTimeout(() => {
+                    if (warningOverlay && warningOverlay.parentNode) {
+                        warningOverlay.parentNode.removeChild(warningOverlay);
+                        console.log('Gallery Safari warning removed');
+                    }
+                }, 500); // Match transition duration
+            }
+        }, 5000);
+        
+        // REMOVED: Gallery warning flag removed - warning shows every time gallery is opened
+        // No need to mark as shown since we want it to appear every time
+        console.log('Gallery Safari warning displayed (will show again on next gallery open)');
     }
     
     getScreenshotPath(slideId, language, deviceType) {
@@ -2648,22 +2933,15 @@ class Navigation {
     initScrollHints() {
         console.log('Initializing cursor hints - site is ready for interaction');
         
-        // Check if Safari warning will be shown
-        const willShowSafariWarning = this.isDesktopSafari() && !window._safariWarningShown;
-        
-        // Show Safari warning for desktop Safari users before showing hints
-        this.showSafariWarningIfNeeded();
-        
-        // Calculate delay for cursor hints if Safari warning was shown
-        // Safari warning timing: 100ms fade in + 5000ms display + 500ms fade out = 5600ms total
-        const cursorHintDelay = willShowSafariWarning ? 5600 : 0;
-        
-        if (willShowSafariWarning) {
-            console.log('Safari warning shown - delaying cursor hints by', cursorHintDelay, 'ms');
+        // Safari warning is only shown inside the loading spinner phase.
+        // Mark as shown so standalone overlay never appears after loading.
+        if (window._safariWarningShownDuringLoading) {
+            console.log('Safari warning was shown during loading - cursor hints will appear promptly');
         }
+        window._safariWarningShown = true;
         
-        // Store the Safari warning state for intersection observer to use
-        this._safariWarningDelay = cursorHintDelay;
+        const cursorHintDelay = 0;
+        this._safariWarningDelay = 0;
         this._safariWarningTime = Date.now();
         
         // Immediate setup since we're now the "ready" signal
@@ -2710,7 +2988,7 @@ class Navigation {
                 console.log('Showing initial cursor hint as ready signal');
                 this.showCursorHint(currentSlide);
             }
-        }, 1100 + cursorHintDelay); // Brief delay + Safari warning delay
+        }, 450 + cursorHintDelay); // Brief delay + Safari warning delay
     }
     
     // Debug function to test cursor hints manually
@@ -2825,6 +3103,7 @@ class Navigation {
         console.log('=== Testing Safari Warning ===');
         console.log('Browser info:');
         console.log('- User Agent:', navigator.userAgent);
+        console.log('- Is Safari:', this.isSafari());
         console.log('- Is Desktop Safari:', this.isDesktopSafari());
         console.log('- Window dimensions:', window.innerWidth, 'x', window.innerHeight);
         console.log('- Current language:', this.detectLanguage());
@@ -2847,7 +3126,7 @@ class Navigation {
             top: 0;
             left: 0;
             width: 100vw;
-            height: 100vh;
+            height: 100dvh;
             background-color: rgba(255, 0, 0, 0.8);
             z-index: 9999;
             pointer-events: none;
@@ -3282,6 +3561,18 @@ class Navigation {
 
 
     initializeCompactCalendarNav() {
+        // OLD CALENDAR NAVIGATION SYSTEM DISABLED
+        // The new calendar files (calendar-new.html and calendario-new.html) use a self-contained
+        // navigation system that works WITH EventON's AJAX, preventing race conditions and errors.
+        // This method is kept as a compatibility shim to prevent errors in existing code.
+        console.log('OLD calendar navigation disabled - using new self-contained system in calendar-new.html files');
+        return; // Exit immediately - code below never executes
+        
+        // ====================================================================================
+        // OLD IMPLEMENTATION BELOW - UNREACHABLE CODE (kept for reference only)
+        // This code is never executed due to the return statement above
+        // ====================================================================================
+        
         // Implementation of initializeCompactCalendarNav method
         console.log('Compact calendar navigation initialized for eventos/events section');
         
@@ -3364,19 +3655,32 @@ class Navigation {
             // Mark calendar as pending reveal and hide the list
             cal.classList.add('calendar-reveal-pending');
 
+            // ULTRA-AGGRESSIVE hiding - find ALL content elements and hide them
+            const allContentElements = cal.querySelectorAll('.eventon_events_list, .evcal_month_line, .eventon_list_event, .ajde_evcal_event, .evcal_list_a, #evcal_list, .evo_calendar_events');
+            
+            allContentElements.forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+                el.style.setProperty('opacity', '0', 'important');
+                el.style.setProperty('visibility', 'hidden', 'important');
+                el.style.setProperty('max-height', '0', 'important');
+                el.style.setProperty('overflow', 'hidden', 'important');
+            });
+
+            // Also hide the main list specifically
+            list.style.setProperty('display', 'none', 'important');
+            list.style.setProperty('opacity', '0', 'important');
+            list.style.setProperty('visibility', 'hidden', 'important');
+            list.style.height = '0px';
+
             // jQuery-first: hard hide for a clean slideDown start
             try {
                 const $ = window.jQuery;
                 if ($) { 
                     $(list).stop(true, true).hide(); 
-                    console.log('List hidden with jQuery');
+                    console.log('List and all content hidden with jQuery + ultra-aggressive inline styles');
                 }
                 else {
-                    // Vanilla fallback
-                    list.style.display = 'none';
-                    list.style.opacity = '0';
-                    list.style.height = '0px';
-                    console.log('List hidden with vanilla CSS');
+                    console.log('List and all content hidden with ultra-aggressive vanilla CSS');
                 }
             } catch(e){ 
                 console.warn('Failed to hide list:', e);
@@ -3471,10 +3775,58 @@ class Navigation {
             const loaderRef = ensureCalendarProgressEl(cal);
             cal.setAttribute('data-updating', '1');
 
+            // Create observer to aggressively maintain loading state even if plugin removes attribute
+            const dataUpdatingObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && 
+                        mutation.attributeName === 'data-updating' &&
+                        !cal.hasAttribute('data-updating')) {
+                        console.log('Calendar plugin removed data-updating, immediately re-applying...');
+                        cal.setAttribute('data-updating', '1');
+                    }
+                });
+            });
+
+            dataUpdatingObserver.observe(cal, { attributes: true, attributeFilter: ['data-updating'] });
+
+            // Create SECOND observer to fight against inline style changes on content elements
+            const styleObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const target = mutation.target;
+                        // Re-hide any content element that the plugin tries to show
+                        if (target.classList.contains('eventon_events_list') ||
+                            target.classList.contains('evcal_month_line') ||
+                            target.classList.contains('eventon_list_event') ||
+                            target.classList.contains('ajde_evcal_event') ||
+                            target.id === 'evcal_list') {
+                            
+                            // Check if it's being made visible
+                            const display = target.style.display;
+                            const visibility = target.style.visibility;
+                            const opacity = target.style.opacity;
+                            
+                            if (display !== 'none' || visibility !== 'hidden' || (opacity !== '0' && opacity !== '')) {
+                                console.log('Plugin trying to show content during loading, re-hiding:', target.className);
+                                target.style.setProperty('display', 'none', 'important');
+                                target.style.setProperty('opacity', '0', 'important');
+                                target.style.setProperty('visibility', 'hidden', 'important');
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Observe all content elements for style changes
+            const allContentElements = cal.querySelectorAll('.eventon_events_list, .evcal_month_line, .eventon_list_event, .ajde_evcal_event, .evcal_list_a, #evcal_list, .evo_calendar_events');
+            allContentElements.forEach(el => {
+                styleObserver.observe(el, { attributes: true, attributeFilter: ['style'] });
+            });
+
             // Safety timeout to avoid stuck state
-            const killer = setTimeout(() => endCalendarSilentUpdate({ cal, list, loaderRef }), 7000);
-            console.log('Calendar silent update started with loader');
-            return { cal, list, loaderRef, killer };
+            const killer = setTimeout(() => endCalendarSilentUpdate({ cal, list, loaderRef, observer: dataUpdatingObserver, styleObserver, allContentElements }), 7000);
+            console.log('Calendar silent update started with dual observer protection');
+            return { cal, list, loaderRef, observer: dataUpdatingObserver, styleObserver, allContentElements, killer };
         }
 
         // End silent update: remove flags and unlock height
@@ -3482,6 +3834,28 @@ class Navigation {
             const cal = state?.cal || document.querySelector('.ajde_evcal_calendar');
             const list = state?.list || cal?.querySelector('.eventon_events_list');
             if (!cal) return;
+
+            // Disconnect BOTH observers BEFORE removing data-updating to prevent interference during reveal
+            if (state?.observer) {
+                state.observer.disconnect();
+                console.log('Data-updating observer disconnected before reveal');
+            }
+            if (state?.styleObserver) {
+                state.styleObserver.disconnect();
+                console.log('Style observer disconnected before reveal');
+            }
+
+            // Remove all aggressive inline styles from content elements before reveal
+            if (state?.allContentElements) {
+                state.allContentElements.forEach(el => {
+                    el.style.removeProperty('display');
+                    el.style.removeProperty('opacity');
+                    el.style.removeProperty('visibility');
+                    el.style.removeProperty('max-height');
+                    el.style.removeProperty('overflow');
+                });
+                console.log('Removed aggressive inline styles from content elements');
+            }
 
             // Keep minHeight until after we trigger reveal
             if (list) {
@@ -4077,13 +4451,13 @@ class Navigation {
             
             // Year navigation with enhanced stability checking
             yearLeft.onclick = () => {
+                // Hide grid immediately before any processing
+                const silentState = startCalendarSilentUpdate();
+                
                 if (changeYear('previous')) {
                     // When going to previous year, default to December
                     updateToMonth(decemberName);
                     console.log('Clicking previous year, targeting December');
-                    
-                    // Start silent update before cross-year transition
-                    const silentState = startCalendarSilentUpdate();
                     
                     // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                     currentYear.click();
@@ -4179,17 +4553,20 @@ class Navigation {
                             }
                         }
                     }, null); // No target month for year loading - just wait for year to stabilize
+                } else {
+                    // If year change failed, end the silent state
+                    endCalendarSilentUpdate(silentState);
                 }
             };
             
             yearRight.onclick = () => {
+                // Hide grid immediately before any processing
+                const silentState = startCalendarSilentUpdate();
+                
                 if (changeYear('next')) {
                     // When going to next year, default to January
                     updateToMonth(januaryName);
                     console.log('Clicking next year, targeting January');
-                    
-                    // Start silent update before cross-year transition
-                    const silentState = startCalendarSilentUpdate();
                     
                     // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                     currentYear.click();
@@ -4288,32 +4665,27 @@ class Navigation {
                             }
                         }
                     }, null); // No target month for year loading - just wait for year to stabilize
+                } else {
+                    // If year change failed, end the silent state
+                    endCalendarSilentUpdate(silentState);
                 }
             };
             
-            // Function to update caret visibility based on current month
+            // Function to update caret visibility - now always shows all carets since cross-year navigation is supported
             const updateCaretVisibility = (navEls = navElements) => {
                 const currentMonthName = navigationState.currentMonth.textContent.toUpperCase();
                 
-                // Hide back caret on January
-                if (currentMonthName === januaryName.toUpperCase()) {
-                    navEls.monthLeft.style.visibility = 'hidden';
-                    navEls.monthLeft.style.pointerEvents = 'none';
-                } else {
-                    navEls.monthLeft.style.visibility = 'visible';
-                    navEls.monthLeft.style.pointerEvents = 'auto';
-                }
+                // Always show all carets - cross-year navigation is supported
+                navEls.monthLeft.style.visibility = 'visible';
+                navEls.monthLeft.style.pointerEvents = 'auto';
+                navEls.monthRight.style.visibility = 'visible';
+                navEls.monthRight.style.pointerEvents = 'auto';
+                navEls.yearLeft.style.visibility = 'visible';
+                navEls.yearLeft.style.pointerEvents = 'auto';
+                navEls.yearRight.style.visibility = 'visible';
+                navEls.yearRight.style.pointerEvents = 'auto';
                 
-                // Hide forward caret on December
-                if (currentMonthName === decemberName.toUpperCase()) {
-                    navEls.monthRight.style.visibility = 'hidden';
-                    navEls.monthRight.style.pointerEvents = 'none';
-                } else {
-                    navEls.monthRight.style.visibility = 'visible';
-                    navEls.monthRight.style.pointerEvents = 'auto';
-                }
-                
-                console.log(`Caret visibility updated for month: ${currentMonthName} (${position} nav)`);
+                console.log(`Caret visibility updated for month: ${currentMonthName} (${position} nav) - all carets visible`);
             };
             
             // Call initially to set correct visibility
@@ -4323,57 +4695,42 @@ class Navigation {
             if (!updateAllCaretVisibility) {
                 updateAllCaretVisibility = () => {
                     if (navigationState.topNavElements) {
-                        const currentMonthName = navigationState.currentMonth.textContent.toUpperCase();
                         const topNavEls = navigationState.topNavElements;
                         
-                        // Hide back caret on January
-                        if (currentMonthName === januaryName.toUpperCase()) {
-                            topNavEls.monthLeft.style.visibility = 'hidden';
-                            topNavEls.monthLeft.style.pointerEvents = 'none';
-                        } else {
-                            topNavEls.monthLeft.style.visibility = 'visible';
-                            topNavEls.monthLeft.style.pointerEvents = 'auto';
-                        }
-                        
-                        // Hide forward caret on December
-                        if (currentMonthName === decemberName.toUpperCase()) {
-                            topNavEls.monthRight.style.visibility = 'hidden';
-                            topNavEls.monthRight.style.pointerEvents = 'none';
-                        } else {
-                            topNavEls.monthRight.style.visibility = 'visible';
-                            topNavEls.monthRight.style.pointerEvents = 'auto';
-                        }
+                        // Always show all carets - cross-year navigation is supported
+                        topNavEls.monthLeft.style.visibility = 'visible';
+                        topNavEls.monthLeft.style.pointerEvents = 'auto';
+                        topNavEls.monthRight.style.visibility = 'visible';
+                        topNavEls.monthRight.style.pointerEvents = 'auto';
+                        topNavEls.yearLeft.style.visibility = 'visible';
+                        topNavEls.yearLeft.style.pointerEvents = 'auto';
+                        topNavEls.yearRight.style.visibility = 'visible';
+                        topNavEls.yearRight.style.pointerEvents = 'auto';
                     }
                     
                     if (navigationState.bottomNavElements) {
-                        const currentMonthName = navigationState.currentMonth.textContent.toUpperCase();
                         const bottomNavEls = navigationState.bottomNavElements;
                         
-                        // Hide back caret on January
-                        if (currentMonthName === januaryName.toUpperCase()) {
-                            bottomNavEls.monthLeft.style.visibility = 'hidden';
-                            bottomNavEls.monthLeft.style.pointerEvents = 'none';
-                        } else {
-                            bottomNavEls.monthLeft.style.visibility = 'visible';
-                            bottomNavEls.monthLeft.style.pointerEvents = 'auto';
-                        }
-                        
-                        // Hide forward caret on December
-                        if (currentMonthName === decemberName.toUpperCase()) {
-                            bottomNavEls.monthRight.style.visibility = 'hidden';
-                            bottomNavEls.monthRight.style.pointerEvents = 'none';
-                        } else {
-                            bottomNavEls.monthRight.style.visibility = 'visible';
-                            bottomNavEls.monthRight.style.pointerEvents = 'auto';
-                        }
+                        // Always show all carets - cross-year navigation is supported
+                        bottomNavEls.monthLeft.style.visibility = 'visible';
+                        bottomNavEls.monthLeft.style.pointerEvents = 'auto';
+                        bottomNavEls.monthRight.style.visibility = 'visible';
+                        bottomNavEls.monthRight.style.pointerEvents = 'auto';
+                        bottomNavEls.yearLeft.style.visibility = 'visible';
+                        bottomNavEls.yearLeft.style.pointerEvents = 'auto';
+                        bottomNavEls.yearRight.style.visibility = 'visible';
+                        bottomNavEls.yearRight.style.pointerEvents = 'auto';
                     }
                     
-                    console.log('Updated caret visibility for all navigations');
+                    console.log('Updated caret visibility for all navigations - all carets visible');
                 };
             }
             
             // Enhanced month navigation with stability checking for cross-year transitions
             monthLeft.onclick = () => {
+                // Hide grid immediately before any processing
+                const silentState = startCalendarSilentUpdate();
+                
                 const currentMonthName = currentMonth.textContent.toUpperCase();
                 console.log(`Month left clicked, current month: ${currentMonthName}`);
                 
@@ -4382,9 +4739,6 @@ class Navigation {
                     if (changeYear('previous')) {
                         updateToMonth(decemberName);
                         console.log('Month left triggering year change: January -> Previous Year December');
-                        
-                        // Start silent update before cross-year transition
-                        const silentState = startCalendarSilentUpdate();
                         
                         // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                         currentYear.click();
@@ -4471,6 +4825,9 @@ class Navigation {
                                 }
                             }
                         }, null); // No target month for year loading - just wait for year to stabilize
+                    } else {
+                        // If year change failed, end the silent state
+                        endCalendarSilentUpdate(silentState);
                     }
                 } else {
                     // Normal previous month navigation using pattern-based approach
@@ -4478,11 +4835,13 @@ class Navigation {
                     if (currentPatternIndex > 0) {
                         const previousMonthName = getMonthByIndex(currentPatternIndex - 1);
                         if (previousMonthName && updateToMonth(previousMonthName)) {
-                            const silentState = startCalendarSilentUpdate();
                             currentMonth.click();
                             waitForCalendarUpdate(() => {
                                 endCalendarSilentUpdate(silentState);
                             }, previousMonthName);
+                        } else {
+                            // If update failed, end the silent state
+                            endCalendarSilentUpdate(silentState);
                         }
                     } else {
                         // Fallback to array-based navigation
@@ -4495,7 +4854,6 @@ class Navigation {
                         updateAllNavigationDisplays();
                         // Update caret visibility immediately when month text changes
                         updateAllCaretVisibility();
-                        const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
                         waitForCalendarUpdate(() => {
                             endCalendarSilentUpdate(silentState);
@@ -4505,6 +4863,9 @@ class Navigation {
             };
             
             monthRight.onclick = () => {
+                // Hide grid immediately before any processing
+                const silentState = startCalendarSilentUpdate();
+                
                 const currentMonthName = currentMonth.textContent.toUpperCase();
                 console.log(`Month right clicked, current month: ${currentMonthName}`);
                 
@@ -4513,9 +4874,6 @@ class Navigation {
                     if (changeYear('next')) {
                         updateToMonth(januaryName);
                         console.log('Month right triggering year change: December -> Next Year January');
-                        
-                        // Start silent update before cross-year transition
-                        const silentState = startCalendarSilentUpdate();
                         
                         // Step 1: Click year and wait for YEAR to load completely (no month verification yet)
                         currentYear.click();
@@ -4601,6 +4959,9 @@ class Navigation {
                                 }
                             }
                         }, null); // No target month for year loading - just wait for year to stabilize
+                    } else {
+                        // If year change failed, end the silent state
+                        endCalendarSilentUpdate(silentState);
                     }
                 } else {
                     // Normal next month navigation using pattern-based approach
@@ -4608,11 +4969,13 @@ class Navigation {
                     if (currentPatternIndex >= 0 && currentPatternIndex < monthPattern.length - 1) {
                         const nextMonthName = getMonthByIndex(currentPatternIndex + 1);
                         if (nextMonthName && updateToMonth(nextMonthName)) {
-                            const silentState = startCalendarSilentUpdate();
                             currentMonth.click();
                             waitForCalendarUpdate(() => {
                                 endCalendarSilentUpdate(silentState);
                             }, nextMonthName);
+                        } else {
+                            // If update failed, end the silent state
+                            endCalendarSilentUpdate(silentState);
                         }
                     } else {
                         // Fallback to array-based navigation
@@ -4625,7 +4988,6 @@ class Navigation {
                         updateAllNavigationDisplays();
                         // Update caret visibility immediately when month text changes
                         updateAllCaretVisibility();
-                        const silentState = startCalendarSilentUpdate();
                         currentMonth.click();
                         waitForCalendarUpdate(() => {
                             endCalendarSilentUpdate(silentState);
@@ -4716,6 +5078,7 @@ class Navigation {
                 cal.setAttribute('data-revealed', '1');
             }
         }, 10000);
+        // END OF OLD IMPLEMENTATION - UNREACHABLE CODE
     }
     
     // Mobile Landscape Warning Methods
