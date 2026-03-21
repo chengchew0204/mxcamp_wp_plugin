@@ -25,21 +25,40 @@
         /* Event videos no longer use play/pause buttons - they are click-to-play */
     
      .evocard_row .fullscreen .timevideo {
-        margin-top: 5px !important;
+       margin-top: 5px !important;
+       position: absolute !important;
+       bottom: 0 !important;
+       top: unset !important;
+       right: 0 !important;
+       font-size: 15px !important;
+       z-index: 10 !important;
+       display: none;
+   }
+       .fullscreen .timevideo  {
+           color: #F5f5f5 !important;
+       }
+       .videoplaying:hover .timevideo {
+           display: block;
+       }
+
+    /* Play button sits inside .fullscreen which now always fills the card.
+       Size and position are enforced with !important to beat any Gallery-page
+       .playbut rules that share the same DOM when both pages are loaded as slides. */
+    .evo_lightboxes .evocard_box.ftimage .fullscreen img.playbut {
         position: absolute !important;
-        bottom: 0 !important;
-        top: unset !important;
-        right: 0 !important;
-        font-size: 15px !important;
-        z-index: 10 !important;
-        display: none;
+        left: 0px !important;
+        bottom: 0px !important;
+        width: 80px !important;
+        height: auto !important;
+        max-width: none !important;
+        transform: none !important;
+        cursor: pointer !important;
+        z-index: 5 !important;
+        display: block !important;
     }
-        .fullscreen .timevideo  {
-            color: #F5f5f5 !important;
-        }
-        .videoplaying:hover .timevideo {
-            display: block;
-        }
+    .evo_lightboxes .evocard_box.ftimage .fullscreen.videoplaying img.playbut {
+        display: none !important;
+    }
 
     @media (max-width: 768px) {
         .year-left::after,
@@ -211,7 +230,7 @@
     // to prevent the click from reaching EventOn's fullscreen handler.
     document.addEventListener('click', function(e) {
         var ftimage = e.target.closest('#evo_lightboxes .evocard_box.ftimage');
-        if (ftimage && !e.target.closest('.event-slider-nav, .event-slider-dot')) {
+        if (ftimage && !e.target.closest('.event-slider-nav, .event-slider-dot, video, .playbut')) {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
@@ -293,7 +312,16 @@
                 let eventLightBox = document.getElementById('evo_lightboxes');
                 let thisvideo = eventLightBox.querySelector('.eventon_full_description video.video-events-grid');
                 if(thisvideo && thisvideo!=''){
-    
+                    // Scope all DOM work to the exact .evo_lightbox that owns thisvideo.
+                    // Searching the whole #evo_lightboxes can return elements from a
+                    // previously-opened (still-in-DOM) lightbox, causing duplicate buttons.
+                    const thisLightbox = thisvideo.closest('.evo_lightbox') || eventLightBox;
+
+                    // Remove stale play buttons and fullscreen divs from every lightbox
+                    // so nothing lingers from a previous event card.
+                    eventLightBox.querySelectorAll('.evocard_box.ftimage img.playbut').forEach(el => el.remove());
+                    eventLightBox.querySelectorAll('.evocard_box.ftimage .fullscreen').forEach(el => el.remove());
+
                     // Old spinner removed - using new spinner system in setupNormalEventBehavior
                     
                     thisvideo.removeAttribute("controls");
@@ -305,12 +333,12 @@
                     thisvideo.volume = 0.5; // Will be applied when unmuted
     
                     let fullScreenDiv = document.createElement('div');
-                    fullScreenDiv.classList.add('fullscreen', 'videoplaying');
+                    fullScreenDiv.classList.add('fullscreen');
     
-                    // Find header container for normal event behavior setup
+                    // Find header container scoped to THIS lightbox only.
                     // EventOn Lite uses .evo_metarow_directimg, Full uses .evocard_main_image
-                    let thisHeader = eventLightBox.querySelector('.evocard_box.ftimage > div')
-                        || eventLightBox.querySelector('.evocard_box.ftimage');
+                    let thisHeader = thisLightbox.querySelector('.evocard_box.ftimage > div')
+                        || thisLightbox.querySelector('.evocard_box.ftimage');
                     fullScreenDiv.appendChild(thisvideo);
                     
                     // Setup normal event behavior - show featured image, hide video until ready
@@ -339,6 +367,12 @@
                         if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
                             controlsVisible = true;
                           }
+                    });
+                    thisvideo.addEventListener('play', function () {
+                        fullScreenDiv.classList.add('videoplaying');
+                    });
+                    thisvideo.addEventListener('pause', function () {
+                        fullScreenDiv.classList.remove('videoplaying');
                     });
                     thisHeader.appendChild(fullScreenDiv);
                     
@@ -375,7 +409,19 @@
                 timeDisplay.classList.add('timevideo');
     
                 fullScreenDiv.appendChild(timeDisplay);
-                // Play/pause buttons removed - videos are click-to-play without buttons
+
+                // Play button lives inside fullScreenDiv so there can only ever be
+                // one instance (fullScreenDiv itself is unique per searchAndReplace call).
+                const playButton = document.createElement('img');
+                playButton.setAttribute('src', 'https://camp.mx/wp-content/uploads/play-2.png');
+                playButton.classList.add('playbut');
+                playButton.style.cssText = 'position:absolute!important;left:0!important;bottom:0!important;width:80px!important;height:auto!important;max-width:none!important;transform:none!important;cursor:pointer;z-index:5;';
+                fullScreenDiv.appendChild(playButton);
+                playButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    playVideo();
+                });
                 
                 // Add click-to-pause/play functionality to the video element
                 thisvideo.addEventListener('click', function(event) {

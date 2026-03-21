@@ -947,6 +947,25 @@ body.ajde_events-template-default div#main-container > * {
       width: 100%;
       z-index: 0;
   }
+
+  /* Play button inside the lightbox .fullscreen container:
+     Fixed size so it looks identical before the video starts
+     and after the video is paused. */
+  .evo_lightboxes .evocard_box.ftimage .fullscreen img.playbut {
+      position: absolute !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      width: 80px !important;
+      height: auto !important;
+      max-width: none !important;
+      max-height: none !important;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      transform: none !important;
+      object-fit: contain !important;
+      cursor: pointer !important;
+      z-index: 5 !important;
+  }
   /*event card*/
   #event_eventdetails .evcal_evdata_icons,#event_eventdetails h3.padb5.evo_h3{display:none}
   .eventon_desc_in p, .eventon_desc_in strong, .eventon_desc_in center, .eventon_desc_in, #event_location p, #event_time p{font-size:19px!important}
@@ -1744,6 +1763,13 @@ body.single-ajde_events .event-feature-slider {
 /* Re-enable pointer events for slider navigation buttons inside the image area */
 .evo_lightboxes .event-slider-nav,
 .evo_lightboxes .event-slider-dot {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+/* Re-enable pointer events for videos and play button inside the image area */
+.evo_lightboxes .evocard_box.ftimage video,
+.evo_lightboxes .evocard_box.ftimage .video-hover-wrapper,
+.evo_lightboxes .evocard_box.ftimage .playbut {
     pointer-events: auto !important;
     cursor: pointer !important;
 }

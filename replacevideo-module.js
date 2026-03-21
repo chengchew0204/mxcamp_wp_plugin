@@ -120,12 +120,11 @@ function replaceByVideo(){
                     console.log('Video is playing - spinner hidden');
                 });
                 
-                // Handle timeupdate for showing controls
+                // Native controls intentionally disabled - Calendar.html handles play/pause
+                // with a custom img.playbut overlay to avoid overlapping with it.
                 thisvideo.addEventListener('timeupdate', function () {
                     if (thisvideo.currentTime >= 0.5 && !controlsVisible) {
-                        thisvideo.controls = true;
-                        controlsVisible = true; // Fixed: was set to false
-                        console.log('Controls shown');
+                        controlsVisible = true;
                     }
                 });
                 
