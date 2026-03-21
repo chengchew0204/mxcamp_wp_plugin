@@ -2535,6 +2535,10 @@ class Navigation {
     // Detect if user is on any Safari browser (desktop or mobile)
     isSafari() {
         const userAgent = navigator.userAgent.toLowerCase();
+        // iOS Chrome/Firefox/Edge/Opera use WebKit and include "Safari" in the UA but are not Safari.
+        if (/crios|fxios|edgios|opios|opr\/|opt\//.test(userAgent)) {
+            return false;
+        }
         return userAgent.indexOf('safari') !== -1 && userAgent.indexOf('chrome') === -1 && userAgent.indexOf('chromium') === -1;
     }
 

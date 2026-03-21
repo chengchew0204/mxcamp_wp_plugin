@@ -81,7 +81,9 @@ function mxcamp_get_posts_cb_v3($atts) {
         <script>
         (function() {
             var ua = navigator.userAgent.toLowerCase();
-            var isSafari = ua.indexOf("safari") !== -1 && ua.indexOf("chrome") === -1 && ua.indexOf("chromium") === -1;
+            // iOS Chrome/Firefox/Edge/Opera use WebKit and include "Safari" in the UA but are not Safari.
+            var isOtherIosBrowser = /crios|fxios|edgios|opios|opr\/|opt\//.test(ua);
+            var isSafari = !isOtherIosBrowser && ua.indexOf("safari") !== -1 && ua.indexOf("chrome") === -1 && ua.indexOf("chromium") === -1;
             var isMobile = /iphone|ipad|ipod|android/i.test(ua) || window.innerWidth <= 768;
             if (isSafari) {
                 var warn = document.getElementById("safari-loading-warning");

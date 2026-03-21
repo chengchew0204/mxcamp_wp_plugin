@@ -2,6 +2,9 @@ function SliderConstructor(el) {
     // Safari detection helper function
     const isSafari = () => {
         const userAgent = navigator.userAgent.toLowerCase();
+        if (/crios|fxios|edgios|opios|opr\/|opt\//.test(userAgent)) {
+            return false;
+        }
         const isSafariBrowser = userAgent.indexOf('safari') !== -1 && 
                                 userAgent.indexOf('chrome') === -1 && 
                                 userAgent.indexOf('chromium') === -1;
