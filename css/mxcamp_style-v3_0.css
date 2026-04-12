@@ -733,6 +733,14 @@ h2:after {
 	height: auto;
 }
 
+.hover-content video {
+	min-height: unset !important;
+	height: auto !important;
+	object-fit: unset !important;
+	max-width: 100%;
+	width: 100%;
+}
+
 @media screen and (max-width: 1200px) {
 	.card-header {
 
