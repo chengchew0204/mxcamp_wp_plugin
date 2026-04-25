@@ -115,10 +115,7 @@
 <!-- wp:html -->
 <hr><hr><h4>Arrival</h4>
 <div>There is no arrival desk. To enter CAMP, do not ring the deliveries-only doorbell, instead operate the entrance with the code sent to you.
-    Use this <div class="hover"><div class="hover-content" style=" min-width: 60vw; max-width: 90vw; max-height: 90vh; overflow: auto; box-sizing: border-box;"><img data-src="https://camp.mx/wp-content/uploads/mapa2.jpg" alt="">
-    </div>plan</div>
-    
-    of CAMP to locate your quarters or bed. Bedding is provided, though you will need to make your bed upon arrival.
+    Use the <div class="hover"><div class="hover-content"><a href="#map" target="_blank" rel="noopener noreferrer"><img class="wp-image-846" alt="" data-src="https://camp.mx/wp-content/uploads/map_thumbnail.gif" /><center><a href="#map">jump to <u>MAP</u> ...</a></center></div>map</div> of CAMP to locate your quarters or bed. Bedding is provided, though you will need to make your bed upon arrival.
     Your accommodations will be ready at or before 14:00 (2:00pm) on the day your stay begins (you may arrive
     earlier and store your things by the lockers).
 </div>
@@ -126,7 +123,7 @@
 
 <!-- wp:html -->
 <hr><hr><h4>Lockers</h4>
-<div>Dormitory beds have assigned lockers. In your reservation message, you&apos;ll receive your locker&apos;s <div class="hover"><div class="hover-content" style=" min-width: 60vw; max-width: 90vw; max-height: 90vh; overflow: auto; box-sizing: border-box;"><img data-src="https://camp.mx/wp-content/uploads/guia-2.jpg" alt="">
+<div>Dormitory beds have assigned lockers. In your reservation message, you&apos;ll receive your locker&apos;s <div class="hover"><div class="hover-content" style=" min-width: 60vw; max-width: 90vw; max-height: 90vh; overflow: auto; box-sizing: border-box;"><img data-src="https://camp.mx/wp-content/uploads/guia.jpeg" alt="">
     </div>name</div>
      and
     combination. While your belongings are quite safe in quarters or in lockers, CAMP is not responsible for your
@@ -651,6 +648,161 @@
     // 3) Watch for previews added after initial render
     setupMutationWatcher();
   });
+})();
+</script>
+
+<style>
+/* Expandable h4 sections (accordion) */
+.h4-expand {
+    cursor: pointer;
+    user-select: none;
+}
+
+.h4-expand::after {
+    background-image: url(https://camp.mx/img/caret28.svg);
+    background-repeat: no-repeat;
+    background-size: 19px;
+    content: '';
+    display: inline-block;
+    filter: brightness(0) invert(1);
+    height: 19px;
+    width: 19px;
+    left: 3px;
+    position: relative;
+    top: 14px;
+    transform-origin: 9px 6px;
+    transform: rotate(-90deg);
+    transition: transform 0.5s ease;
+    vertical-align: top;
+}
+
+.h4-expand.open::after {
+    transform: rotate(0deg);
+}
+
+.h4-expand-content {
+    display: none;
+    overflow: hidden;
+}
+
+.h4-expand-content.open {
+    display: block;
+    animation: h4ExpandFade 0.3s ease-in-out;
+}
+
+@keyframes h4ExpandFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
+
+<script>
+// Accordion-style expandable h4 sections
+(function () {
+    function isSectionHeader(h4) {
+        if (h4.classList.contains('slide-title')) return true;
+        var firstEl = h4.firstElementChild;
+        if (firstEl && firstEl.tagName === 'BR') return true;
+        return false;
+    }
+
+    // Treat <hr> elements that only precede the next <h4> as belonging to the
+    // next section visually; stop gathering when we reach such an <hr>.
+    function isHrBeforeNextH4(node) {
+        if (!node || node.nodeType !== 1 || node.tagName !== 'HR') return false;
+        var sib = node.nextSibling;
+        while (sib) {
+            if (sib.nodeType === 1) {
+                if (sib.tagName === 'HR') { sib = sib.nextSibling; continue; }
+                return sib.tagName === 'H4';
+            }
+            sib = sib.nextSibling;
+        }
+        return false;
+    }
+
+    function findScope() {
+        try {
+            var selfScript = document.currentScript;
+            if (selfScript) {
+                var container = selfScript.closest('.card, article, .post, [class*="slide_"]');
+                if (container) return container;
+            }
+        } catch (e) { /* ignore */ }
+        return document;
+    }
+
+    function init() {
+        var scope = findScope();
+        var h4s = Array.prototype.slice.call(scope.querySelectorAll('h4'));
+        if (!h4s.length) return;
+
+        var sections = [];
+
+        h4s.forEach(function (h4) {
+            if (isSectionHeader(h4)) return;
+            if (h4.dataset.h4ExpandInit === '1') return;
+
+            var wrapper = document.createElement('div');
+            wrapper.className = 'h4-expand-content';
+
+            var node = h4.nextSibling;
+            while (node) {
+                var next = node.nextSibling;
+                if (node.nodeType === 1 && node.tagName === 'H4') break;
+                if (isHrBeforeNextH4(node)) break;
+                wrapper.appendChild(node);
+                node = next;
+            }
+
+            h4.parentNode.insertBefore(wrapper, h4.nextSibling);
+            h4.classList.add('h4-expand');
+            h4.setAttribute('role', 'button');
+            h4.setAttribute('tabindex', '0');
+            h4.setAttribute('aria-expanded', 'false');
+            h4.dataset.h4ExpandInit = '1';
+
+            sections.push({ h4: h4, wrapper: wrapper });
+        });
+
+        function closeAll() {
+            sections.forEach(function (s) {
+                s.h4.classList.remove('open');
+                s.h4.setAttribute('aria-expanded', 'false');
+                s.wrapper.classList.remove('open');
+            });
+        }
+
+        function toggle(section) {
+            var wasOpen = section.h4.classList.contains('open');
+            closeAll();
+            if (!wasOpen) {
+                section.h4.classList.add('open');
+                section.h4.setAttribute('aria-expanded', 'true');
+                section.wrapper.classList.add('open');
+            }
+        }
+
+        sections.forEach(function (s) {
+            s.h4.addEventListener('click', function (e) {
+                if (e.target.closest('a, .hover')) return;
+                e.preventDefault();
+                toggle(s);
+            });
+            s.h4.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle(s);
+                }
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
 </script>
 

@@ -258,10 +258,10 @@ button.ct-header-trigger.ct-toggle .ct-icon-container {
 	border-radius: 0 !important;
 }
 button.ct-header-trigger.ct-toggle {
-	background-image: url('https://camp.mx/wp-content/uploads/hamburger_withshadow.png') !important;
+	background-image: url('https://camp.mx/wp-content/uploads/hamburger.png') !important;
 	background-repeat: no-repeat !important;
 	background-position: center calc(50% - 3.5px) !important;
-	background-size: 70px 70px !important;
+	background-size: 30px 30px !important;
 	background-color: transparent !important;
 	width: 70px !important;
 	height: 70px !important;
