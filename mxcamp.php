@@ -214,6 +214,7 @@ function mxcamp_get_posts_cb_v3($atts) {
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/assets.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/BgVideoSound.js"></script>
         <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/event-content-videos.js"></script>
+        <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/accordion-h4.js"></script>
         <!-- <script type="text/javascript" src="/wp-content/plugins/mxcamp_V3/add-onmouseover-detail.js"></script> -->
         <script src="https://player.vimeo.com/api/player.js"></script>
 		<script>

@@ -448,6 +448,51 @@ h2:after {
 	}
 }
 
+/* Expandable h4 sections (accordion).
+   Behavior is wired in accordion-h4.js. Sections toggle independently and
+   the clicked title is anchored in place when expanding/collapsing. */
+.h4-expand {
+	cursor: pointer;
+	user-select: none;
+}
+
+.h4-expand::after {
+	background-image: url(https://camp.mx/img/caret28.svg);
+	background-repeat: no-repeat;
+	background-size: 19px;
+	content: '';
+	display: inline-block;
+	filter: brightness(0) invert(1);
+	height: 19px;
+	width: 19px;
+	left: 3px;
+	position: relative;
+	top: 14px;
+	transform-origin: 9px 6px;
+	transform: rotate(-90deg);
+	transition: transform 0.5s ease;
+	vertical-align: top;
+}
+
+.h4-expand.open::after {
+	transform: rotate(0deg);
+}
+
+.h4-expand-content {
+	display: none;
+	overflow: hidden;
+}
+
+.h4-expand-content.open {
+	display: block;
+	animation: h4ExpandFade 0.3s ease-in-out;
+}
+
+@keyframes h4ExpandFade {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
 .slide_10.opened .card-content {
 
 	display: block;
